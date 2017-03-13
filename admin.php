@@ -62,14 +62,14 @@ function tornevall_dnsbl_options()
                 </td>
                 <td>
                     <select multiple size="8" name="tornevall_dnsbl_filter_types[]">
-                        <option value="checked" <?php echo (in_array("checked", $types) ? "selected=selected": ""); ?>>Checked proxy</option>
-                        <option value="working" <?php echo (in_array("working", $types) ? "selected=selected": ""); ?>>Working proxy</option>
-                        <option value="email" <?php echo (in_array("email", $types) ? "selected=selected": ""); ?>>Mailspam host</option>
-                        <option value="timeout" <?php echo (in_array("timeout", $types) ? "selected=selected": ""); ?>>Proxies that has been tested but timed out</option>
-                        <option value="error" <?php echo (in_array("error", $types) ? "selected=selected": ""); ?>>Proxies that has been tested but probably not works</option>
-                        <option value="elite" <?php echo (in_array("elite", $types) ? "selected=selected": ""); ?>>Anonymous proxies / TOR Exit nodes</option>
-                        <option value="abuse" <?php echo (in_array("abuse", $types) ? "selected=selected": ""); ?>>Ip-adress that has been marked as abusive host (spam, etc)</option>
-                        <option value="anonymous" <?php echo (in_array("anonymous", $types) ? "selected=selected": ""); ?>>Anonymous hosts (where ip has another kinds of anonymous states)</option>
+                        <option value="checked" <?php echo (isset($types) && is_array($types) && in_array("checked", $types) ? "selected=selected": ""); ?>>Checked proxy</option>
+                        <option value="working" <?php echo (isset($types) && is_array($types) && in_array("working", $types) ? "selected=selected": ""); ?>>Working proxy</option>
+                        <option value="email" <?php echo (isset($types) && is_array($types) && in_array("email", $types) ? "selected=selected": ""); ?>>Mailspam host</option>
+                        <option value="timeout" <?php echo (isset($types) && is_array($types) && in_array("timeout", $types) ? "selected=selected": ""); ?>>Proxies that has been tested but timed out</option>
+                        <option value="error" <?php echo (isset($types) && is_array($types) && in_array("error", $types) ? "selected=selected": ""); ?>>Proxies that has been tested but probably not works</option>
+                        <option value="elite" <?php echo (isset($types) && is_array($types) && in_array("elite", $types) ? "selected=selected": ""); ?>>Anonymous proxies / TOR Exit nodes</option>
+                        <option value="abuse" <?php echo (isset($types) && is_array($types) && in_array("abuse", $types) ? "selected=selected": ""); ?>>Ip-adress that has been marked as abusive host (spam, etc)</option>
+                        <option value="anonymous" <?php echo (isset($types) && is_array($types) && in_array("anonymous", $types) ? "selected=selected": ""); ?>>Anonymous hosts (where ip has another kinds of anonymous states)</option>
                     </select>
                 </td>
             </tr>

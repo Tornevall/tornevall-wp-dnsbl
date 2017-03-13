@@ -24,12 +24,12 @@ class t_dnsbl {
         $table_stats_name = $wpdb->prefix . "dnsblstats";
 
         $cacheAge = (get_option( "tornevall_dnsbl_cache_age" ) > 0 ? get_option( "tornevall_dnsbl_cache_age" ) : 900);
-        // 2014-12-05: https://tornevall.net/forum/issue.php?68-Avoid-using-internal-function-for-UNIX_TIMESTAMP()
+        // 2014-12-05: http://tracker.tornevall.net/browse/TSDWP-6
         $resolveHistory = strftime("%Y-%m-%d %H:%M:%S", time() - $cacheAge);
         // Clean up before checking
-        $wpdb->query("DELETE FROM $table_cache_name WHERE resolvetime < '".$resolveHistory."'");
+        $wpdb->query("DELETE FROM ".$table_cache_name." WHERE resolvetime < '".$resolveHistory."'");
         $dnsbl_bitmask = null;
-        $test_ip = $wpdb->get_results("SELECT * FROM $table_cache_name WHERE ip = '$ip'");
+        $test_ip = $wpdb->get_results("SELECT * FROM ".$table_cache_name." WHERE ip = '".$ip."'");
         if (!isset($test_ip[0]->ip))
         {
             $fetchResolve = $this->rblresolve($ip);
@@ -41,7 +41,7 @@ class t_dnsbl {
                     $wpdb->insert(
                         $table_cache_name,
                         array(
-                            'ip' => $_SERVER['REMOTE_ADDR'],
+                            'ip' => $ip,
                             'resolvetime' => current_time('mysql', 1),
                             'resolve' => $fetchResolve[3]
                         ),
@@ -79,7 +79,7 @@ class t_dnsbl {
                     $wpdb->insert(
                         $table_stats_name,
                         array(
-                            'ip' => $_SERVER['REMOTE_ADDR'],
+                            'ip' => $ip,
                             'resolvetime' => current_time('mysql', 1),
                             'blocked' => $blockType
                         ),
@@ -96,12 +96,13 @@ class t_dnsbl {
         }
         else
         {
-            // 2014-12-05: https://tornevall.net/forum/issue.php?67-Duplicate-keys
+            // http://tracker.tornevall.net/browse/TSDWP-1
             if (!isset($test_ip[0]->ip)) {
+		// http://tracker.tornevall.net/projects/TSDWP/issues/TSDWP-10
                 $wpdb->insert(
-                    $table_name,
+                    $table_cache_name,
                     array(
-                        'ip' => $_SERVER['REMOTE_ADDR'],
+                        'ip' => $ip,
                         'resolvetime' => current_time('mysql', 1),
                         'resolve' => '0'
                     ),
@@ -111,9 +112,10 @@ class t_dnsbl {
                 );
             }
             else{
-                // https://tornevall.net/forum/issue.php?69-Update-timestamps-instead-of-expire
+                // http://tracker.tornevall.net/browse/TSDWP-6
                 if (get_option("tornevall_dnsbl_update_timestamp")) {
-                    $wpdb->query("UPDATE $table_name SET resolvetime = '" . strftime("%Y-%m-%d %H:%M:%S", time()) . "' WHERE resolvetime < '" . $resolveHistory . "')");
+                    // http://tracker.tornevall.net/projects/TSDWP/issues/TSDWP-10
+                    $wpdb->query("UPDATE ".$table_cache_name." SET resolvetime = '" . strftime("%Y-%m-%d %H:%M:%S", time()) . "' WHERE resolvetime < '" . $resolveHistory . "')");
                 }
             }
         }
@@ -149,8 +151,6 @@ class t_dnsbl {
 $DNSBL = new t_dnsbl();
 
 if ( !is_admin() ) {
-    // Debugging
-    //$_SERVER['REMOTE_ADDR'] = "194.213.74.1";
     $DNSBL->testip($_SERVER['REMOTE_ADDR'], "dnsbl.tornevall.org");
 }
 

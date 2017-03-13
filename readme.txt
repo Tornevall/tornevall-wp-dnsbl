@@ -4,10 +4,11 @@ Donate link: https://tornevall.net/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist
 Requires at least: 3.0.1
 Tested up to: 4.x
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Project URL: https://tornevall.net/forum/project.php?12-Wordpress-DNSBL
+Project URL: http://tracker.tornevall.net/projects/TSDWP/
+Plugin URL: http://tracker.tornevall.net/projects/TSDWP/
 
 Tornevall Networks DNS Blacklist support for Wordpress
 
@@ -33,13 +34,17 @@ Empty space
 
 1. Screen shot that shows how the control panel looks like
 
-https://tornevall.net/forum/issue.php?36-Primary-DNSBL-Blocking-of-bad-hosts
+http://tracker.tornevall.net/secure/attachment/10200/dnsbl_config_comments.jpg
 
 2. Full view for 1.0.1-updates (141205)
 
-https://tornevall.net/forum/attachment.php?attachmentid=11954
+http://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
 
 == Changelog ==
+
+= 1.0.3 =
+
+* Issue tracker switched to JIRA (http://tracker.tornevall.net/projects/TSDWP)
 
 = 1.0.2 =
 
@@ -47,14 +52,14 @@ https://tornevall.net/forum/attachment.php?attachmentid=11954
 
 = 1.0.1 =
 
-* Minimalistic statistics (https://tornevall.net/forum/issue.php?39-DNSBL-Statistics)
-* Update timestamps before expire (https://tornevall.net/forum/issue.php?69-Update-timestamps-instead-of-expire)
-* Avoid using internal MySQL Calls (https://tornevall.net/forum/issue.php?68-Avoid-using-internal-function-for-UNIX_TIMESTAMP)
-* Duplicate key-fixes (https://tornevall.net/forum/issue.php?67-Duplicate-keys)
+* Minimalistic statistics (http://tracker.tornevall.net/browse/TSDWP-7)
+* Update timestamps before expire (http://tracker.tornevall.net/browse/TSDWP-6)
+* Avoid using internal MySQL Calls (http://tracker.tornevall.net/browse/TSDWP-2)
+* Duplicate key-fixes (http://tracker.tornevall.net/browse/TSDWP-1)
 
 = 1.0.0 =
 
-* Plugin init
+* Plugin init (http://tracker.tornevall.net/browse/TSDWP-9, http://tracker.tornevall.net/projects/TSDWP/issues/TSDWP-5)
 * Admin control panel added
 * Detection of hosts on bitmask level
 
@@ -62,5 +67,6 @@ https://tornevall.net/forum/attachment.php?attachmentid=11954
 == Upgrade Notice ==
 
 = 1.0.0 =
+
 Nothing to see here
 

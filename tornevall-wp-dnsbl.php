@@ -2,17 +2,17 @@
 
 /*
  * Plugin Name: Tornevall Networks DNSBL Implementation
- * Plugin URI: https://dev.tornevall.net/projects/tornevall-wp-dnsbl/
- * Project URI: https://tornevall.net/forum/project.php?12-Wordpress-DNSBL
+ * Plugin URI: http://docs.tornevall.net/x/AoA_/
+ * Project URI: http://tracker.tornevall.net/projects/TSDWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Tomas Tornevall
  * Author URI: http://tornevalls.se/blog/
  *
  */
 
 define( 'TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'TORNEVALL_DNSBL_VERSION', '1.0.2' );
+define( 'TORNEVALL_DNSBL_VERSION', '1.0.3' );
 define( 'TORNEVALL_DNSBL_DATA_VERSION', '1.0.1' );
 
 require_once('tornevall-wp-dnsbl-functions.php');
