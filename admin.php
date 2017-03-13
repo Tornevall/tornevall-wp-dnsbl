@@ -6,6 +6,8 @@ function register_dnsbl_settings()
     register_setting( 'dnsblOptions-group', 'tornevall_dnsbl_filter_types' );
     register_setting( 'dnsblOptions-group', 'tornevall_dnsbl_nocomment' );
     register_setting( 'dnsblOptions-group', 'tornevall_dnsbl_blockfull' );
+    register_setting( 'dnsblOptions-group', 'tornevall_dnsbl_update_timestamp' );
+    register_setting( 'dnsblOptions-group', 'tornevall_dnsbl_db_version' );
 }
 
 function tornevall_dnsbl_options()
@@ -13,6 +15,14 @@ function tornevall_dnsbl_options()
     if ( !current_user_can( 'manage_options' ) )  {
         wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
     }
+    global $wpdb;
+
+    $blockHistoryTime = strftime("%Y-%m-%d %H:%M:%S", time() - 86400);
+
+    $dnsblCounter = 0;
+    $statsInfo = $wpdb->get_results("SELECT COUNT(*) AS count FROM ".($wpdb->prefix . "dnsblstats")." WHERE resolvetime > '".$blockHistoryTime."'");
+    if (isset($statsInfo[0]->count)) {$dnsblCounter = $statsInfo[0]->count;}
+
     ?>
     <h1>Tornevall Networks DNSBL Options</h1>
 
@@ -24,6 +34,9 @@ function tornevall_dnsbl_options()
     <a href="https://tornevall.net/forum/project.php?2-DNSBL-Project" target="_blank">Project status for the major DNSBL project</a><br>
     <a href="https://dnsbl.tornevall.org/" target="_blank">Primary site for the DNSBL with removal instructions, usage, etc</a><br>
     <br>
+
+    Database version: <?php echo get_option("tornevall_dnsbl_db_version"); ?><br>
+    Handled hosts the last 24 hours: <?php echo $dnsblCounter; ?><br>
 
     <h2>DNSBL Actions</h2>
     <form method="post" action="options.php">
@@ -64,6 +77,7 @@ function tornevall_dnsbl_options()
                 <td colspan="2">
                     <input type="checkbox" <?php echo (get_option("tornevall_dnsbl_nocomment") ? "checked": ""); ?> value="1" name="tornevall_dnsbl_nocomment"> Hide comment section on detection<br>
                     <input type="checkbox" <?php echo (get_option("tornevall_dnsbl_blockfull") ? "checked": ""); ?> value="1" name="tornevall_dnsbl_blockfull"> Block access to whole page on detection (Redirecting to DNSBL-page)<br>
+                    <input type="checkbox" <?php echo (get_option("tornevall_dnsbl_update_timestamp") ? "checked": ""); ?> value="1" name="tornevall_dnsbl_update_timestamp"> Update timestamps on cached entries (<a href="https://tornevall.net/forum/issue.php?69-Update-timestamps-instead-of-expire" target="_blank">delayed expires</a>)<br>
                 </td>
             </tr>
 

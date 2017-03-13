@@ -19,13 +19,17 @@ class t_dnsbl {
     function testip($ip = null)
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . "dnsblcache";
+        if (is_null($ip)) return;
+        $table_cache_name = $wpdb->prefix . "dnsblcache";
+        $table_stats_name = $wpdb->prefix . "dnsblstats";
 
         $cacheAge = (get_option( "tornevall_dnsbl_cache_age" ) > 0 ? get_option( "tornevall_dnsbl_cache_age" ) : 900);
+        // 2014-12-05: https://tornevall.net/forum/issue.php?68-Avoid-using-internal-function-for-UNIX_TIMESTAMP()
+        $resolveHistory = strftime("%Y-%m-%d %H:%M:%S", time() - $cacheAge);
         // Clean up before checking
-        $wpdb->query("DELETE FROM $table_name WHERE resolvetime < FROM_UNIXTIME(UNIX_TIMESTAMP() - $cacheAge)");
+        $wpdb->query("DELETE FROM $table_cache_name WHERE resolvetime < '".$resolveHistory."'");
         $dnsbl_bitmask = null;
-        $test_ip = $wpdb->get_results("SELECT * FROM $table_name WHERE ip = '$ip'");
+        $test_ip = $wpdb->get_results("SELECT * FROM $table_cache_name WHERE ip = '$ip'");
         if (!isset($test_ip[0]->ip))
         {
             $fetchResolve = $this->rblresolve($ip);
@@ -35,7 +39,7 @@ class t_dnsbl {
                 {
                     $dnsbl_bitmask = $fetchResolve[3];
                     $wpdb->insert(
-                        $table_name,
+                        $table_cache_name,
                         array(
                             'ip' => $_SERVER['REMOTE_ADDR'],
                             'resolvetime' => current_time('mysql', 1),
@@ -65,7 +69,24 @@ class t_dnsbl {
                 foreach ($filterOn as $filterParam) {if (in_array($filterParam, $bitList)) {$dnsblHit = true;}}
                 if ($dnsblHit)
                 {
-                    if ($testBlockComments) {add_filter( 'comments_open', 'dnsbl_disable_comments', 10, 2 );}
+                    $blockType = "";
+                    if ($testBlockComments)
+                    {
+                        add_filter( 'comments_open', 'dnsbl_disable_comments', 10, 2 );
+                        $blockType = "comments";
+                    }
+                    if ($testBlockFull) {$blockType = "redirect";}
+                    $wpdb->insert(
+                        $table_stats_name,
+                        array(
+                            'ip' => $_SERVER['REMOTE_ADDR'],
+                            'resolvetime' => current_time('mysql', 1),
+                            'blocked' => $blockType
+                        ),
+                        array(
+                            '%s', '%s', '%s'
+                        )
+                    );
                     if ($testBlockFull) {
                         header("Location: https://dnsbl.tornevall.org/scan/", 0, 301);
                         exit;
@@ -75,17 +96,26 @@ class t_dnsbl {
         }
         else
         {
-            $wpdb->insert(
-                $table_name,
-                array(
-                    'ip' => $_SERVER['REMOTE_ADDR'],
-                    'resolvetime' => current_time('mysql', 1),
-                    'resolve' => '0'
-                ),
-                array(
-                    '%s', '%s', '%d'
-                )
-            );
+            // 2014-12-05: https://tornevall.net/forum/issue.php?67-Duplicate-keys
+            if (!isset($test_ip[0]->ip)) {
+                $wpdb->insert(
+                    $table_name,
+                    array(
+                        'ip' => $_SERVER['REMOTE_ADDR'],
+                        'resolvetime' => current_time('mysql', 1),
+                        'resolve' => '0'
+                    ),
+                    array(
+                        '%s', '%s', '%d'
+                    )
+                );
+            }
+            else{
+                // https://tornevall.net/forum/issue.php?69-Update-timestamps-instead-of-expire
+                if (get_option("tornevall_dnsbl_update_timestamp")) {
+                    $wpdb->query("UPDATE $table_name SET resolvetime = '" . strftime("%Y-%m-%d %H:%M:%S", time()) . "' WHERE resolvetime < '" . $resolveHistory . "')");
+                }
+            }
         }
     }
 

@@ -2,39 +2,48 @@
 
 /*
  * Plugin Name: Tornevall Networks DNSBL Implementation
- * Plugin URI: https://dev.tornevall.net/projects/tornevall-wp-dnsbl
+ * Plugin URI: https://dev.tornevall.net/projects/tornevall-wp-dnsbl/
+ * Project URI: https://tornevall.net/forum/project.php?12-Wordpress-DNSBL
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Tomas Tornevall
  * Author URI: http://tornevalls.se/blog/
  *
  */
 
 define( 'TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'TORNEVALL_DNSBL_VERSION', '1.0.0' );
-define( 'TORNEVALL_DNSBL_DATA_VERSION', '1.0.0' );
+define( 'TORNEVALL_DNSBL_VERSION', '1.0.1' );
+define( 'TORNEVALL_DNSBL_DATA_VERSION', '1.0.1' );
 
 require_once('tornevall-wp-dnsbl-functions.php');
 
 function tornevall_wp_dnsbl_install_db()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . "dnsblcache";
+    $table_cache_name = $wpdb->prefix . "dnsblcache";
+    $table_stats_name = $wpdb->prefix . "dnsblstats";
     $charset_collate = '';
     if ( ! empty( $wpdb->charset ) ) {$charset_collate = "DEFAULT CHARACTER SET {$wpdb->charset}";}
     if ( ! empty( $wpdb->collate ) ) {$charset_collate .= " COLLATE {$wpdb->collate}";}
 
     //$installed_db = get_option( "tornevall_dnsbl_db_version" );
 
-    $sql = "CREATE TABLE $table_name (
+    $sql_cache = "CREATE TABLE $table_cache_name (
       ip varchar(45) NOT NULL DEFAULT '',
       resolvetime datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
       resolve int(10) unsigned NOT NULL DEFAULT '0',
       UNIQUE KEY (ip)
       ) $charset_collate;";
+    $sql_stats = "CREATE TABLE $table_stats_name (
+      ip varchar(45) NOT NULL DEFAULT '',
+      resolvetime datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+      blocked varchar(16) NOT NULL DEFAULT '',
+      INDEX index_blocks (blocked)
+      ) $charset_collate;";
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-    add_option( "tornevall_dnsbl_db_version", TORNEVALL_DNSBL_DATA_VERSION );
+    dbDelta( $sql_cache );
+    dbDelta( $sql_stats );
+    update_option( "tornevall_dnsbl_db_version", TORNEVALL_DNSBL_DATA_VERSION );
 }
 
 function tornevall_wp_dnsbl_admin()
