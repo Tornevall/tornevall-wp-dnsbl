@@ -4,7 +4,7 @@ Donate link: https://tornevall.net/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist
 Requires at least: 3.0.1
 Tested up to: 4.x
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Project URL: https://tornevall.net/forum/project.php?12-Wordpress-DNSBL
@@ -40,6 +40,10 @@ https://tornevall.net/forum/issue.php?36-Primary-DNSBL-Blocking-of-bad-hosts
 https://tornevall.net/forum/attachment.php?attachmentid=11954
 
 == Changelog ==
+
+= 1.0.2 =
+
+* Tablename fixes
 
 = 1.0.1 =
 
