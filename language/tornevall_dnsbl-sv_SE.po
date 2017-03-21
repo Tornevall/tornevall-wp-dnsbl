@@ -1,0 +1,165 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
+"POT-Creation-Date: 2016-02-04 14:36+0100\n"
+"PO-Revision-Date: 2016-02-04 14:46+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: tornevall-wp-dnsbl.php\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: admin.php:16
+msgid "You do not have sufficient permissions to access this page."
+msgstr "Du har inte tillräckliga behörigheter för att nå denna sidan"
+
+#: admin.php:27
+msgid "Tornevall Networks DNSBL Options"
+msgstr "Tornevall Networks DNSBL Inställningar"
+
+#: admin.php:29
+msgid "Information"
+msgstr "Information"
+
+#: admin.php:30
+msgid ""
+"Tornevall Networks is offering some ways for you, to get information about "
+"the ongoing projects. You can always go there for support, help and updates."
+msgstr ""
+"Tornevall Networks erbjuder några sätt, för att delge dig information om "
+"pågående projekt. Du kan alltid gå dit för att få support, hjälp och "
+"uppdateringar."
+
+#: admin.php:31
+msgid "Here are some links for you, that you may want to remember."
+msgstr "Här följer några länkar till dig, som du kanske vill komma ihåg."
+
+#: admin.php:33
+msgid "Project status for this plugin"
+msgstr "Projektstatus för pluginet"
+
+#: admin.php:34
+msgid "Project status for the major DNSBL project"
+msgstr "Projektstatus för huvudprojektet DNSBL."
+
+#: admin.php:35
+msgid "Primary site for the DNSBL with removal instructions, usage, etc"
+msgstr ""
+"Primär webbsida för DNSBL-plattformet med borttagningsinstruktioner, "
+"användning, med mera"
+
+#: admin.php:38
+msgid "Database version"
+msgstr "Databasversion"
+
+#: admin.php:39
+msgid "Handled hosts the last 24 hours"
+msgstr "Antal hanterade adresser de senaste 24 timmarna"
+
+#: admin.php:52
+msgid "Cache age"
+msgstr "Cachens ålder"
+
+#: admin.php:53
+msgid ""
+"Defines for how long one blacklisted ip should checked against cache instead "
+"of resolvers."
+msgstr ""
+"Ställer hur länge en svartlistad IP-adress skall kontrolleras mot cache i "
+"stället för direkt mot DNS."
+
+#: admin.php:61
+msgid "Actions on"
+msgstr "Agera vid"
+
+#: admin.php:65
+msgid "Checked proxy"
+msgstr "Kontrollerad proxy"
+
+#: admin.php:66
+msgid "Working proxy"
+msgstr "Fungerande proxy"
+
+#: admin.php:67
+msgid "Mailspam host"
+msgstr "Mailspam-adress"
+
+#: admin.php:68
+msgid "Proxies that has been tested but timed out"
+msgstr "Proxys som har blivit testade, men som gjort timeout"
+
+#: admin.php:69
+msgid "Proxies that has been tested but probably not works"
+msgstr "Proxys som har blivit testade, men förmodligen inte fungerar längre"
+
+#: admin.php:70
+msgid "Anonymous proxies / TOR Exit nodes"
+msgstr "Anonyma Proxys / TOR Exit-noder"
+
+#: admin.php:71
+msgid "Ip-adress that has been marked as abusive host (spam, etc)"
+msgstr "IP-adress som har markerats som abuse (spam, med mera)"
+
+#: admin.php:72
+msgid "Anonymous hosts (where ip has another kinds of anonymous states)"
+msgstr "Anonyma adresser (där IP-adressen har en annan anonymitetsgrad)"
+
+#: admin.php:78
+msgid "Hide comment section on detection"
+msgstr "Göm kommentarsmöjligheter när en proxy upptäcks"
+
+#: admin.php:79
+msgid "Block access to whole page on detection (Redirecting to DNSBL-page)"
+msgstr ""
+"Blockera tillgång till  hela sidan när Proxy upptäcks (Ompekning till DNSBL-"
+"sida)"
+
+#: admin.php:80
+msgid "Update timestamps on cached entries"
+msgstr "Uppdatera tidsstämplar på poster som ligger i cache"
+
+#: admin.php:80
+msgid "delayed expires"
+msgstr "fördröjd utgång"
+
+#. Plugin Name of the plugin/theme
+msgid "Tornevall Networks DNSBL Implementation"
+msgstr "Tornevall Networks DNSBL Implementation"
+
+#. Plugin URI of the plugin/theme
+msgid "http://docs.tornevall.net/x/AoA_/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Implements functions related to Tornevall Networks DNS Blacklist. Adds "
+"options to comment functions that will disable comments if an ip is "
+"blacklisted etc"
+msgstr ""
+"Implementerar funktioner relaterade till Tornevall Networks DNS-svartlista. "
+"Lägger till möjligheten att stänga av kommentarsfunktioner om en IP-adress "
+"är svartlistad, med mera."
+
+#. Author of the plugin/theme
+msgid "Tomas Tornevall"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://tornevalls.se/blog/"
+msgstr ""
+
+#~ msgid ""
+#~ "Tornevall Networks is offering some ways to get information about the "
+#~ "ongoing projects. You can always go there for support, help and updates."
+#~ msgstr "Tornevall Networks erbjuder några sätt att "

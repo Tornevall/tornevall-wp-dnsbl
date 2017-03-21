@@ -2,7 +2,8 @@
 
 global $wpdb;
 
-class t_dnsbl {
+class t_dnsbl
+{
 
     var $rbl_tornevall = array
     (
@@ -116,48 +117,45 @@ class t_dnsbl {
     }
 
     /* Imported from TorneEngine v3 */
-    function rblresolve ($ip = null, $rbldomain = 'dnsbl.tornevall.org')
+    function rblresolve($ip = null, $rbldomain = 'dnsbl.tornevall.org')
     {
         if (!$ip) {
             return false;
         }                       // No data should return nothing
-        // No rbl = ignore
         if (!$rbldomain) {
             return false;
-        }
-
-        // Yes, ipv6 resolving is supported, in this check.
+        }        // No rbl = ignore
         $returnthis = (long2ip(ip2long($ip)) != "0.0.0.0" ? explode('.', gethostbyname(implode('.', array_reverse(explode('.', $ip))) . '.' . $rbldomain)) : explode(".", gethostbyname($this->v6arpa($ip) . "." . $rbldomain)));
         if (implode(".", $returnthis) != (long2ip(ip2long($ip)) != "0.0.0.0" ? implode('.', array_reverse(explode('.', $ip))) . '.' . $rbldomain : $this->v6arpa($ip) . "." . $rbldomain)) {
             return $returnthis;
         } else {
             return false;
         }
-    }
-    function torneBits($lastvalue = 0, $returnstrings = false)
-    {
-        $stringarr = array();
-        $hasabuse = false;
-        foreach ($this->rbl_tornevall as $OPM_t => $OPM_tc) {
-            $bit = ((($lastvalue & $OPM_tc) == 0) ? null : $OPM_t);
-            if ($bit != null) {
-                $stringarr[] = $bit;
+
+        function torneBits($lastvalue = 0, $returnstrings = false)
+        {
+            $stringarr = array();
+            $hasabuse = false;
+            foreach ($this->rbl_tornevall as $OPM_t => $OPM_tc) {
+                $bit = ((($lastvalue & $OPM_tc) == 0) ? null : $OPM_t);
+                if ($bit != null) {
+                    $stringarr[] = $bit;
+                }
             }
+            return $stringarr;
         }
-        return $stringarr;
-    }
-    function v6arpa($ip = '::')
-    {
-        $unpack = @unpack('H*hex', inet_pton($ip));
-        $hex = $unpack['hex'];
-        return implode('.', array_reverse(str_split($hex)));
+
+        function v6arpa($ip = '::')
+        {
+            $unpack = @unpack('H*hex', inet_pton($ip));
+            $hex = $unpack['hex'];
+            return implode('.', array_reverse(str_split($hex)));
+        }
     }
 }
 
 $DNSBL = new t_dnsbl();
-
-if ( !is_admin() ) {
-    $DNSBL->testip($_SERVER['REMOTE_ADDR'], "dnsbl.tornevall.org");
-}
+if (is_admin()) { $DNSBL->testip($_SERVER['REMOTE_ADDR'], "dnsbl.tornevall.org"); }
 
 function dnsbl_disable_comments($open='', $post_id='') {return false;}
+load_plugin_textdomain('tornevall_dnsbl', false, dirname( plugin_basename( __FILE__ ) ) . '/language');
