@@ -5,7 +5,7 @@
  * Plugin URI: http://docs.tornevall.net/x/AoA_/
  * Project URI: http://tracker.tornevall.net/projects/TSDWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: Tomas Tornevall
  * Author URI: http://tornevalls.se/blog/
  */

@@ -4,7 +4,7 @@ Donate link: https://tornevall.net/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
 Tested up to: 4.4.2
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,9 +43,11 @@ http://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
 
 == Changelog ==
 
-= 1.0.4 =
+= 1.0.5 =
 
-Tiny update
+* Found a html-tag that was not closed properly in the translation releae (which was 1.0.4)
+
+= 1.0.4 =
 
 * Added support for language Swedish (http://tracker.tornevall.net/browse/TSDWP-13)
 
