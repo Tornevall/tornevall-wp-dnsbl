@@ -3,10 +3,9 @@ Contributors: Tornevall
 Donate link: https://tornevall.net/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
-Tested up to: 4.4.2
-Stable tag: 1.0.5
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tested up to: 4.8
+Stable tag: 1.1.0
+License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
 
@@ -14,8 +13,8 @@ Tornevall Networks DNS Blacklist support for Wordpress
 
 Tornevall Networks DNS Blacklist support. Blocks comment functions or redirects visitors who is blacklisted to external site.
 
-Project URL: http://tracker.tornevall.net/projects/TSDWP/
-Plugin URL: http://tracker.tornevall.net/projects/TSDWP/
+[Project and plugin development](https://tracker.tornevall.net/projects/DNSBLWP/issues) - [Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
+
 
 
 == Installation ==
@@ -39,9 +38,15 @@ http://tracker.tornevall.net/secure/attachment/10200/dnsbl_config_comments.jpg
 
 2. Full view for 1.0.1-updates (141205)
 
-http://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
+https://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
 
 == Changelog ==
+
+= 1.1.0 =
+
+ * DNSBLWP-16 - Activation failures
+ * DNSBLWP-14 - Synch with current bitmask set
+ * Resolver class update
 
 = 1.0.5 =
 
