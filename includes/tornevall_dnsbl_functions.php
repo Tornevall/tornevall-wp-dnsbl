@@ -242,7 +242,8 @@ class TornevallDNSBL {
             }
             if ($dnsblReact) {
                 if ($this->canRedirect()) {
-                    header("Location: https://dnsbl.tornevall.org/scan/", 0, 301);
+                    header("Location: " . $this->scanUrl, 0, 301);
+                    die();
                 }
                 if ($this->canBlockComments()) {
                     add_filter('comments_open', 'dnsbl_disable_comments', 1, 2);
