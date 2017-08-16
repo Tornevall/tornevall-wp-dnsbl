@@ -1,2 +1,5 @@
 .svn
 .idea
+includes/klarna.php
+includes/resursbank.php
+log

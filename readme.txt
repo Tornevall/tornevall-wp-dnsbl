@@ -42,6 +42,11 @@ https://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
 
 == Changelog ==
 
+= 1.1.1 =
+
+ * DNSBLWP-17: Incorrect index on table alteration might still cause headers already sent (Final!)
+ * Making sure that curl is really active before approving usage (showing notice if not available or disabled)
+
 = 1.1.0 =
 
  * DNSBLWP-16 - Activation failures
