@@ -2,32 +2,23 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
 "POT-Creation-Date: 2017-08-16 21:48+0200\n"
-"PO-Revision-Date: 2017-08-16 21:00+0000\n"
-"Last-Translator: thorne <thorne@tornevall.net>\n"
-"Language-Team: Swedish\n"
-"Language: sv-SE\n"
+"PO-Revision-Date: 2017-08-16 21:48+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: sv_SE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Loco - https://localise.biz/\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-WPHeader: tornevall-wp-dnsbl.php\n"
-"Plural-Forms: nplurals=2; plural=n != 1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
 "esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
 "_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
-"Report-Msgid-Bugs-To: "
-
-#: admin.php:124
-msgid "Tornevall Networks DNSBL - FraudBLv2"
-msgstr "Tornevall Networks DNSBL - FraudBLv2"
-
-#: tornevall-wp-dnsbl.php:63
-msgid "Tornevall DNSBL"
-msgstr "Tornevall DNSBL"
 
 #: admin.php:30 admin.php:120
 msgid "You do not have sufficient permissions to access this page."
@@ -128,6 +119,10 @@ msgstr ""
 msgid "Enable FraudBLv2 for Resurs Bank WooCommerce Plugin"
 msgstr "Aktivera FraudBLv2 för Resurs Bank WooCommerce Plugin"
 
+#: admin.php:124
+msgid "Tornevall Networks DNSBL - FraudBLv2"
+msgstr ""
+
 #: admin.php:125
 msgid "What is this?"
 msgstr "Vad är detta?"
@@ -218,3 +213,94 @@ msgid ""
 msgstr ""
 "Varning: Curl har avaktiverats i din plattform, så detta pluginet kommer "
 "inte att fungera ordentligt."
+
+#: tornevall-wp-dnsbl.php:63
+msgid "Tornevall DNSBL"
+msgstr ""
+
+#~ msgid "You can read more about this at "
+#~ msgstr "Du kan läsa mer om det här på"
+
+#~ msgid ""
+#~ "Usage of this service is free. You however need an API key to be able to "
+#~ "register ip addresses in the system."
+#~ msgstr ""
+#~ "Användning av den här tjänsten är kostnadsfri. Men för att kunna "
+#~ "registrera ip-adresser i systemet krävs det en API-nyckel. Den kan du "
+#~ "skaffa på"
+
+#~ msgid ""
+#~ "In short, you could say that if you run a payment service provider that "
+#~ "supports fraud detection, you could share data with other websites, to "
+#~ "temporarily disable payments made from ip-addresses that gets positive "
+#~ "hits during a payment. To keep high privacy profile, no personal customer "
+#~ "data is collected or stored anywhere - the only data we actually need, is "
+#~ "an ip address, during the registration."
+#~ msgstr ""
+#~ "I korthet kan man säga att, om du använder en betalservice som stödjer "
+#~ "bedrägerikontroller, så kan data delas med andra webbplatser för att "
+#~ "tillfälligt stoppa köp gjorda från ip-adresser som fått positiva träffar "
+#~ "under ett köp. För att bevara hög sekretess, delas eller lagras inga "
+#~ "personliga kunddata någonstans - den enda datan vi behöver, är ip-"
+#~ "adressen under själva svartlistningen."
+
+#~ msgid "Database version"
+#~ msgstr "Databasversion"
+
+#~ msgid "Handled hosts the last 24 hours"
+#~ msgstr "Antal hanterade adresser de senaste 24 timmarna"
+
+#~ msgid "Update timestamps on cached entries"
+#~ msgstr "Uppdatera tidsstämplar på poster som ligger i cache"
+
+#~ msgid "delayed expires"
+#~ msgstr "fördröjd utgång"
+
+#~ msgid "Address that has been marked as abusive host (spam, etc)"
+#~ msgstr "Adressen har markerats som missbrukande (spam, m.m.)"
+
+#~ msgid "DNSBL Documentation"
+#~ msgstr "DNSBL "
+
+#~ msgid "Project status for the major DNSBL project"
+#~ msgstr "Projektstatus för huvudprojektet DNSBL."
+
+#~ msgid "Checked proxy"
+#~ msgstr "Kontrollerad proxy"
+
+#~ msgid "Working proxy"
+#~ msgstr "Fungerande proxy"
+
+#~ msgid "Mailspam host"
+#~ msgstr "Mailspam-adress"
+
+#~ msgid "Proxies that has been tested but timed out"
+#~ msgstr "Proxys som har blivit testade, men som gjort timeout"
+
+#~ msgid "Proxies that has been tested but probably not works"
+#~ msgstr "Proxys som har blivit testade, men förmodligen inte fungerar längre"
+
+#~ msgid "Ip-adress that has been marked as abusive host (spam, etc)"
+#~ msgstr "IP-adress som har markerats som abuse (spam, med mera)"
+
+#~ msgid "Block access to whole page on detection (Redirecting to DNSBL-page)"
+#~ msgstr ""
+#~ "Blockera tillgång till  hela sidan när Proxy upptäcks (Ompekning till "
+#~ "DNSBL-sida)"
+
+#~ msgid "Tornevall Networks DNSBL Implementation"
+#~ msgstr "Tornevall Networks DNSBL Implementation"
+
+#~ msgid ""
+#~ "Implements functions related to Tornevall Networks DNS Blacklist. Adds "
+#~ "options to comment functions that will disable comments if an ip is "
+#~ "blacklisted etc"
+#~ msgstr ""
+#~ "Implementerar funktioner relaterade till Tornevall Networks DNS-"
+#~ "svartlista. Lägger till möjligheten att stänga av kommentarsfunktioner om "
+#~ "en IP-adress är svartlistad, med mera."
+
+#~ msgid ""
+#~ "Tornevall Networks is offering some ways to get information about the "
+#~ "ongoing projects. You can always go there for support, help and updates."
+#~ msgstr "Tornevall Networks erbjuder några sätt att "
