@@ -13,8 +13,8 @@ Tornevall Networks DNS Blacklist support for Wordpress
 
 Tornevall Networks DNS Blacklist support. Blocks comment functions or redirects visitors who is blacklisted to external site.
 
-[Project and plugin development](https://tracker.tornevall.net/projects/DNSBLWP/issues) - [Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
-
+[Project and plugin development](https://tracker.tornevall.net/projects/DNSBLWP/issues)
+[Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
 
 
 == Installation ==
