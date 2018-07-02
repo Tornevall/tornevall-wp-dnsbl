@@ -1,10 +1,10 @@
-=== Tornevall Networks DNSBL Implementation ===
+=== Tornevall Networks DNSBL and Fraud Blacklist implementation ===
 Contributors: Tornevall
-Donate link: https://auth.tornevall.net/
+Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
 Tested up to: 4.8.1
-Stable tag: 1.1.1
+Stable tag: 2.0.0
 License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -50,54 +50,11 @@ https://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
 
 == Changelog ==
 
-= 1.1.1 =
+= 2.0.0 =
 
- * DNSBLWP-17: Incorrect index on table alteration might still cause headers already sent (Final!)
- * Making sure that curl is really active before approving usage (showing notice if not available or disabled)
- * Database issues (causing background notices) fixed
- * Code reformatting
- * Moved location of the menus
- * Initialized parts for FraudBLv2
-
-= 1.1.0 =
-
- * DNSBLWP-16 - Activation failures
- * DNSBLWP-14 - Synch with current bitmask set
- * Resolver class update
-
-= 1.0.5 =
-
-* Found a html-tag that was not closed properly in the translation releae (which was 1.0.4)
-
-= 1.0.4 =
-
-* Added support for language Swedish (http://tracker.tornevall.net/browse/TSDWP-13)
-
-= 1.0.3 =
-
-* Issue tracker switched to JIRA (http://tracker.tornevall.net/projects/TSDWP)
-
-= 1.0.2 =
-
-* Tablename fixes
-
-= 1.0.1 =
-
-* Minimalistic statistics (http://tracker.tornevall.net/browse/TSDWP-7)
-* Update timestamps before expire (http://tracker.tornevall.net/browse/TSDWP-6)
-* Avoid using internal MySQL Calls (http://tracker.tornevall.net/browse/TSDWP-2)
-* Duplicate key-fixes (http://tracker.tornevall.net/browse/TSDWP-1)
-
-= 1.0.0 =
-
-* Plugin init (http://tracker.tornevall.net/browse/TSDWP-9, http://tracker.tornevall.net/projects/TSDWP/issues/TSDWP-5)
-* Admin control panel added
-* Detection of hosts on bitmask level
 
 
 == Upgrade Notice ==
-
-= 1.0.0 =
 
 Nothing to see here
 
