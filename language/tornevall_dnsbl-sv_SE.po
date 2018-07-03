@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2017-08-16 21:48+0200\n"
-"PO-Revision-Date: 2017-08-16 21:48+0200\n"
+"POT-Creation-Date: 2018-07-03 10:03+0200\n"
+"PO-Revision-Date: 2018-07-03 10:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -20,203 +20,252 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 
-#: admin.php:30 admin.php:120
+#: admin.php:6
+msgid "Tornevall DNSBL"
+msgstr "Tornevall DNSBL"
+
+#: admin.php:28
 msgid "You do not have sufficient permissions to access this page."
 msgstr "Du har inte tillräckliga behörigheter för att nå denna sidan"
 
-#: admin.php:43
-msgid "Tornevall Networks DNSBL Options"
-msgstr "Tornevall Networks DNSBL Inställningar"
-
-#: admin.php:45
-msgid "Information"
-msgstr "Information"
-
-#: admin.php:46
-msgid ""
-"Tornevall Networks is offering some ways for you, to get information about "
-"the ongoing projects. You can always go there for support, help and updates."
-msgstr ""
-"Tornevall Networks erbjuder några sätt, för att delge dig information om "
-"pågående projekt. Du kan alltid gå dit för att få support, hjälp och "
-"uppdateringar."
-
 #: admin.php:48
-msgid "Here are some links for you, that you may want to remember."
-msgstr "Här följer några länkar till dig, som du kanske vill komma ihåg."
+msgid "DNS Blacklist Configurator"
+msgstr "Konfigurera DNS-Svartlista"
+
+#: admin.php:50
+msgid "Plugin information and help"
+msgstr "Plugin-information och hjälp"
 
 #: admin.php:51
-msgid "DNSBL usage documentation"
-msgstr "Användardokumentation för DNSBL"
+msgid "About DNSBLv5"
+msgstr "Om DNSBLv5"
 
 #: admin.php:53
-msgid "Project status for this plugin"
-msgstr "Projektstatus för pluginet"
+msgid "DNSBLWP Issue tracker"
+msgstr "DNSBLWP Utvecklings-tracker"
 
 #: admin.php:55
-msgid "Primary site for the DNSBL with removal instructions, usage, etc"
+msgid "How to get delisted"
+msgstr "Hur man blir avlistad"
+
+#: admin.php:75
+msgid "Global delisting permission (can use as delisting service for visitors)"
 msgstr ""
-"Primär webbsida för DNSBL-plattformet med borttagningsinstruktioner, "
-"användning, med mera"
+"Globala avlistningsbehörigheter (kan användas som avlistnings-service för "
+"besökare)"
 
-#: admin.php:70
-msgid "Cache age"
-msgstr "Cachens ålder"
+#: admin.php:76
+msgid "Local delisting permission (server can delist self)"
+msgstr "Lokala avlistningsbehörigheter (server kan avlista sig själv)"
 
-#: admin.php:71
+#: admin.php:94
+msgid "Test API functionality"
+msgstr "Testa API-funktionalitet"
+
+#: admin.php:95
 msgid ""
-"Defines for how long one blacklisted ip should checked against cache instead "
-"of resolvers."
+"By entering an API id and key below, this function will validate that your "
+"key is correct."
 msgstr ""
-"Ställer hur länge en svartlistad IP-adress skall kontrolleras mot cache i "
-"stället för direkt mot DNS."
+"Genom att skriva in ett API-id och en nyckel nedan, kommer denna funktionen "
+"att validera att din nyckel är korrekt."
 
-#: admin.php:80
-msgid "Actions on"
-msgstr "Agera vid"
+#: admin.php:97
+msgid "Get your API key at"
+msgstr "Skaffa din API-nyckel via"
 
-#: admin.php:84
-msgid "Reported proxy (not confirmed, and might be false alarm)"
-msgstr "Rapported proxy (ej bekräftad, kan vara falskt alarm)"
+#: admin.php:101
+msgid "Application API ID/Name"
+msgstr "API ID/Namn för applikationen"
 
-#: admin.php:85
-msgid "Confirmed proxy (internally tested)"
-msgstr "Bekräftad proxy (internt testad)"
+#: admin.php:114
+msgid "Application API Key"
+msgstr "API-Nyckel för applikationen"
 
-#: admin.php:86
-msgid "FraudBL host (Reported as phishing/fraudmail)"
-msgstr "FraudBL-adress (Rapported som phising/bedrägeri)"
+#: admin.php:120
+msgid "Preferred API URL"
+msgstr "Föredragen URL för API"
 
-#: admin.php:87
-msgid "Host has been used to spam via e-mail"
-msgstr "Adressen har använts vid spam via e-post"
-
-#: admin.php:88
-msgid "Anonymous proxies / TOR Exit nodes"
-msgstr "Anonyma Proxys / TOR Exit-noder"
-
-#: admin.php:89
-msgid "Address that has been marked as abusive host (webspammers, etc)"
-msgstr "Adressen har markerats som missbrukande (webspammare, m.m.)"
-
-#: admin.php:90
-msgid "Anonymous hosts (where ip has another kinds of anonymous states)"
-msgstr "Anonyma adresser (där IP-adressen har en annan anonymitetsgrad)"
-
-#: admin.php:98
-msgid "Hide comment section on detection"
-msgstr "Göm kommentarsmöjligheter när en proxy upptäcks"
-
-#: admin.php:102
+#: admin.php:128
 msgid ""
-"Immediately block access to whole page on detection (Redirecting to DNSBL-"
-"page)"
+"Make sure that you really save your settings before trying to use them from "
+"this page"
 msgstr ""
-"Blockera omedelbart tillgång till hela sajten vid upptäckt (ompekning sker "
-"till DNSBL-sida)"
+"Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: admin.php:107
-msgid "Enable FraudBLv2 for Resurs Bank WooCommerce Plugin"
-msgstr "Aktivera FraudBLv2 för Resurs Bank WooCommerce Plugin"
-
-#: admin.php:124
-msgid "Tornevall Networks DNSBL - FraudBLv2"
-msgstr ""
-
-#: admin.php:125
-msgid "What is this?"
-msgstr "Vad är detta?"
-
-#: admin.php:127
+#: tornevall-wp-dnsbl.php:40
 msgid ""
-"FraudBLv2 is a blacklisting system used for eCommerce sites, to prevent "
-"fraud on a global level."
+"API data updated - If you have made any changes in this configuration, you "
+"should also save the settings."
 msgstr ""
-"FraudBLv2 är ett svartlistningssystem som används av ehandels-webbplatser, "
-"för att förebygga bedrägeri på en global nivå."
+"API-data uppdaterades - Om du har gjort några ändringar i den här "
+"konfigurationen bör du också spara inställningarna."
 
-#: admin.php:130
-msgid ""
-"In short, you could say that if you run a payment service provider that "
-"supports fraud detection, you could share data with other websites, to "
-"temporarily disable payments made from ip-addresses that gets positive hits "
-"during a payment. To keep high privacy profile, no personal customer data is "
-"shared nor stored anywhere - the only data we actually need, is an ip "
-"address, during the blacklisting process."
-msgstr ""
-"I korthet kan man säga att, om du använder en betalservice som stödjer "
-"bedrägerikontroller, så kan data delas med andra webbplatser för att "
-"tillfälligt stoppa köp gjorda från ip-adresser som fått positiva träffar "
-"under ett köp. För att bevara hög sekretess, delas eller lagras inga "
-"personliga kunddata någonstans - den enda datan vi behöver, är ip-adressen "
-"under själva svartlistningen."
+#~ msgid "Local delisting permission (can delist self)"
+#~ msgstr "Lokala avlistningsbehörigheter (kan avlista dig själv)"
 
-#: admin.php:132
-msgid ""
-"Data that comes from FraudBLv2 has unlike the regular DNS Blacklist service, "
-"significantly shorter life span since ip-address aging tend to have high "
-"speed during changes. Delisting from this service should therefore normally "
-"not be needed as they do expire automatically after a shorter time, unless "
-"the don't show up somewhere else during the blacklisting period."
-msgstr ""
-"Data som kommer från FraudBLv2 har till skillnad från den vanliga DNS-"
-"svartlistningstjänsten, betydligt kortare livslängd eftersom ip-adress "
-"tenderar att bytas oftare. Avlistning från tjänsten skall därför normalt "
-"sett inte behövas, eftersom de tas bort automatiskt efter en kort tid, "
-"såvida de inte dyker upp någon annanstans under svartlistningsperioden."
+#~ msgid "Can delist globally"
+#~ msgstr "Kan avlista"
 
-#: admin.php:134
-msgid "You can read more about this at"
-msgstr "Du kan läsa mer om det här på"
+#~ msgid "Now it is time to save your configuration..."
+#~ msgstr "Nu är det dags att spara inställningarna..."
 
-#: admin.php:136
-msgid ""
-"Usage of this service is free. You however need an API key to be able to "
-"register ip addresses in the system. You can register such key at"
-msgstr ""
-"Användning av den här tjänsten är kostnadsfri. Men för att kunna registrera "
-"ip-adresser i systemet krävs det en API-nyckel. Du kan skaffa en sån nyckel "
-"via"
+#~ msgid "Tornevall Networks DNSBL Options"
+#~ msgstr "Tornevall Networks DNSBL Inställningar"
 
-#: admin.php:140
-msgid "Configuration"
-msgstr "Konfiguration"
+#~ msgid "Information"
+#~ msgstr "Information"
 
-#: admin.php:141
-msgid "API Key"
-msgstr "API-nyckel"
+#~ msgid ""
+#~ "Tornevall Networks is offering some ways for you, to get information "
+#~ "about the ongoing projects. You can always go there for support, help and "
+#~ "updates."
+#~ msgstr ""
+#~ "Tornevall Networks erbjuder några sätt, för att delge dig information om "
+#~ "pågående projekt. Du kan alltid gå dit för att få support, hjälp och "
+#~ "uppdateringar."
 
-#: admin.php:142
-msgid "Minimum lifetime cycle"
-msgstr "Minsta livslängd"
+#~ msgid "Here are some links for you, that you may want to remember."
+#~ msgstr "Här följer några länkar till dig, som du kanske vill komma ihåg."
 
-#: includes/tornevall_dnsbl_functions.php:247
-msgid "Requested to show dnsbl response instead of showing site."
-msgstr "Du har efterfrågat att få se svaret istället för webplatsen."
+#~ msgid "DNSBL usage documentation"
+#~ msgstr "Användardokumentation för DNSBL"
 
-#: includes/tornevall_dnsbl_functions.php:248
-msgid "Resolved address is: "
-msgstr "Namnupplöst adress är: "
+#~ msgid "Project status for this plugin"
+#~ msgstr "Projektstatus för pluginet"
 
-#: includes/tornevall_dnsbl_functions.php:249
-msgid "Response is: "
-msgstr "Svaret är"
+#~ msgid "Primary site for the DNSBL with removal instructions, usage, etc"
+#~ msgstr ""
+#~ "Primär webbsida för DNSBL-plattformet med borttagningsinstruktioner, "
+#~ "användning, med mera"
 
-#: includes/tornevall_dnsbl_functions.php:249
-msgid "Not set"
-msgstr "Finns ej"
+#~ msgid "Cache age"
+#~ msgstr "Cachens ålder"
 
-#: tornevall-wp-dnsbl.php:27
-msgid ""
-"Warning: Curl has been disabled on your platform, so this plugin will not "
-"function properly."
-msgstr ""
-"Varning: Curl har avaktiverats i din plattform, så detta pluginet kommer "
-"inte att fungera ordentligt."
+#~ msgid ""
+#~ "Defines for how long one blacklisted ip should checked against cache "
+#~ "instead of resolvers."
+#~ msgstr ""
+#~ "Ställer hur länge en svartlistad IP-adress skall kontrolleras mot cache i "
+#~ "stället för direkt mot DNS."
 
-#: tornevall-wp-dnsbl.php:63
-msgid "Tornevall DNSBL"
-msgstr ""
+#~ msgid "Actions on"
+#~ msgstr "Agera vid"
+
+#~ msgid "Reported proxy (not confirmed, and might be false alarm)"
+#~ msgstr "Rapported proxy (ej bekräftad, kan vara falskt alarm)"
+
+#~ msgid "Confirmed proxy (internally tested)"
+#~ msgstr "Bekräftad proxy (internt testad)"
+
+#~ msgid "FraudBL host (Reported as phishing/fraudmail)"
+#~ msgstr "FraudBL-adress (Rapported som phising/bedrägeri)"
+
+#~ msgid "Host has been used to spam via e-mail"
+#~ msgstr "Adressen har använts vid spam via e-post"
+
+#~ msgid "Anonymous proxies / TOR Exit nodes"
+#~ msgstr "Anonyma Proxys / TOR Exit-noder"
+
+#~ msgid "Address that has been marked as abusive host (webspammers, etc)"
+#~ msgstr "Adressen har markerats som missbrukande (webspammare, m.m.)"
+
+#~ msgid "Anonymous hosts (where ip has another kinds of anonymous states)"
+#~ msgstr "Anonyma adresser (där IP-adressen har en annan anonymitetsgrad)"
+
+#~ msgid "Hide comment section on detection"
+#~ msgstr "Göm kommentarsmöjligheter när en proxy upptäcks"
+
+#~ msgid ""
+#~ "Immediately block access to whole page on detection (Redirecting to DNSBL-"
+#~ "page)"
+#~ msgstr ""
+#~ "Blockera omedelbart tillgång till hela sajten vid upptäckt (ompekning "
+#~ "sker till DNSBL-sida)"
+
+#~ msgid "Enable FraudBLv2 for Resurs Bank WooCommerce Plugin"
+#~ msgstr "Aktivera FraudBLv2 för Resurs Bank WooCommerce Plugin"
+
+#~ msgid "Tornevall Networks DNSBL - FraudBLv2"
+#~ msgstr "Tornevall Networks DNSBL - FraudBLv2"
+
+#~ msgid "What is this?"
+#~ msgstr "Vad är detta?"
+
+#~ msgid ""
+#~ "FraudBLv2 is a blacklisting system used for eCommerce sites, to prevent "
+#~ "fraud on a global level."
+#~ msgstr ""
+#~ "FraudBLv2 är ett svartlistningssystem som används av ehandels-"
+#~ "webbplatser, för att förebygga bedrägeri på en global nivå."
+
+#~ msgid ""
+#~ "In short, you could say that if you run a payment service provider that "
+#~ "supports fraud detection, you could share data with other websites, to "
+#~ "temporarily disable payments made from ip-addresses that gets positive "
+#~ "hits during a payment. To keep high privacy profile, no personal customer "
+#~ "data is shared nor stored anywhere - the only data we actually need, is "
+#~ "an ip address, during the blacklisting process."
+#~ msgstr ""
+#~ "I korthet kan man säga att, om du använder en betalservice som stödjer "
+#~ "bedrägerikontroller, så kan data delas med andra webbplatser för att "
+#~ "tillfälligt stoppa köp gjorda från ip-adresser som fått positiva träffar "
+#~ "under ett köp. För att bevara hög sekretess, delas eller lagras inga "
+#~ "personliga kunddata någonstans - den enda datan vi behöver, är ip-"
+#~ "adressen under själva svartlistningen."
+
+#~ msgid ""
+#~ "Data that comes from FraudBLv2 has unlike the regular DNS Blacklist "
+#~ "service, significantly shorter life span since ip-address aging tend to "
+#~ "have high speed during changes. Delisting from this service should "
+#~ "therefore normally not be needed as they do expire automatically after a "
+#~ "shorter time, unless the don't show up somewhere else during the "
+#~ "blacklisting period."
+#~ msgstr ""
+#~ "Data som kommer från FraudBLv2 har till skillnad från den vanliga DNS-"
+#~ "svartlistningstjänsten, betydligt kortare livslängd eftersom ip-adress "
+#~ "tenderar att bytas oftare. Avlistning från tjänsten skall därför normalt "
+#~ "sett inte behövas, eftersom de tas bort automatiskt efter en kort tid, "
+#~ "såvida de inte dyker upp någon annanstans under svartlistningsperioden."
+
+#~ msgid "You can read more about this at"
+#~ msgstr "Du kan läsa mer om det här på"
+
+#~ msgid ""
+#~ "Usage of this service is free. You however need an API key to be able to "
+#~ "register ip addresses in the system. You can register such key at"
+#~ msgstr ""
+#~ "Användning av den här tjänsten är kostnadsfri. Men för att kunna "
+#~ "registrera ip-adresser i systemet krävs det en API-nyckel. Du kan skaffa "
+#~ "en sån nyckel via"
+
+#~ msgid "Configuration"
+#~ msgstr "Konfiguration"
+
+#~ msgid "API Key"
+#~ msgstr "API-nyckel"
+
+#~ msgid "Minimum lifetime cycle"
+#~ msgstr "Minsta livslängd"
+
+#~ msgid "Requested to show dnsbl response instead of showing site."
+#~ msgstr "Du har efterfrågat att få se svaret istället för webplatsen."
+
+#~ msgid "Resolved address is: "
+#~ msgstr "Namnupplöst adress är: "
+
+#~ msgid "Response is: "
+#~ msgstr "Svaret är"
+
+#~ msgid "Not set"
+#~ msgstr "Finns ej"
+
+#~ msgid ""
+#~ "Warning: Curl has been disabled on your platform, so this plugin will not "
+#~ "function properly."
+#~ msgstr ""
+#~ "Varning: Curl har avaktiverats i din plattform, så detta pluginet kommer "
+#~ "inte att fungera ordentligt."
 
 #~ msgid "You can read more about this at "
 #~ msgstr "Du kan läsa mer om det här på"
