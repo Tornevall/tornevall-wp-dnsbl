@@ -99,6 +99,10 @@ function tornevall_dnsbl_api()
     if ($request == "test" && $verb == "key") {
         $dnsblClientData = serialize($response['response']->keyResponse->appClientData);
         update_option('tornevall_dnsbl_clientdata', $dnsblClientData);
+        $flagControl = torneApi("dnsbl", "getFlags");
+        if (isset($flagControl->getFlagsResponse)) {
+            update_option('tornevall_dnsbl_current_flags', (array)$flagControl->getFlagsResponse->structure);
+        }
     }
 
     header('Content-Type: application/json');

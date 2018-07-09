@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-03 10:03+0200\n"
-"PO-Revision-Date: 2018-07-03 10:05+0200\n"
+"POT-Creation-Date: 2018-07-09 16:54+0200\n"
+"PO-Revision-Date: 2018-07-09 16:55+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -48,21 +48,111 @@ msgstr "DNSBLWP Utvecklings-tracker"
 msgid "How to get delisted"
 msgstr "Hur man blir avlistad"
 
-#: admin.php:75
+#: admin.php:73
 msgid "Global delisting permission (can use as delisting service for visitors)"
 msgstr ""
 "Globala avlistningsbehörigheter (kan användas som avlistnings-service för "
 "besökare)"
 
-#: admin.php:76
+#: admin.php:75
 msgid "Local delisting permission (server can delist self)"
 msgstr "Lokala avlistningsbehörigheter (server kan avlista sig själv)"
 
-#: admin.php:94
+#: admin.php:76
+msgid ""
+"Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and "
+"bl.fraudbl.org)"
+msgstr ""
+"Standardförmåga att uppdatera data i DNSBL (dnsbl.tornevall.org och bl."
+"fraudbl.org)"
+
+#: admin.php:78
+msgid ""
+"Extended ability to handle fraudbl-commerce (this is not the regular bl."
+"fraudbl.org resolver)"
+msgstr ""
+"Utökad förmåga att hantera fraudbl-commerce (detta är inte den vanliga bl."
+"fraudbl.org namnförfrågningstjänsten)"
+
+#: admin.php:80
+msgid ""
+"Special ability to purge hosts instead of marking them deleted in the "
+"database"
+msgstr ""
+"Specialegenskap för att totalradera adresser i stället för att enbart "
+"markera dem som raderade i database."
+
+#: admin.php:82
+msgid ""
+"The usage of CIDR-blocks are normally not permitted by the DNSBL API, in "
+"more functions than listing them. This permission also opens up for usage in "
+"DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding "
+"data with CIDR and different flags is however still a problem."
+msgstr ""
+"Anvädningen av CIDR-block får normalt sett inte göras från DNSBL-APIet, i "
+"fler funktioner än listningsdelen. Denna behörighet öppnar även upp för att "
+"använda dem i radering/uppdatering - DELETE/UPDATE (för CIDR-block-"
+"raderingar kommer detta hjälpa till en hel del). Lägga till data med CIDR "
+"och olika flaggor är dock ett fortsatt problem."
+
+#: admin.php:84
+msgid ""
+"When sending new or updated data to DNSBL, clients can only add more flags "
+"to the host. This feature makes it possible to overwrite old flags"
+msgstr ""
+"När data uppdateras i DNSBL, kan klienter bara lägga till fler flaggor till "
+"adressen. Denna egenskap gör att man också kan skriva över gamla flaggor."
+
+#: admin.php:124
+msgid "Plugin behaviour"
+msgstr "Pluginets beteende"
+
+#: admin.php:130
+msgid "Trigger on"
+msgstr "Detektera på"
+
+#: admin.php:136
+msgid "See full description on what the flags mean, here"
+msgstr "Se fulla beskrivningar på vad flaggorna innebär, här"
+
+#: admin.php:139
+msgid "To get a updated list of flags, you should consider using the API"
+msgstr ""
+"För att få en uppdaterad lista på flaggor, bör du överväga att använda APIet"
+
+#: admin.php:145
+msgid "Protect this site by ..."
+msgstr "Skydda denna sajt genom att ..."
+
+#: admin.php:151
+msgid "hiding the comment section when a potential spammer arrives."
+msgstr "att gömma kommentarsfälten när en potentiell spammare anländer."
+
+#: admin.php:156
+msgid ""
+"immediately block access to the whole page by redirecting (does not affect "
+"logged in admins)"
+msgstr ""
+"omedelbart blockera åtkomst till hela sidan (påverkar inte inloggade admins)"
+
+#: admin.php:164
+msgid "API"
+msgstr "API"
+
+#: admin.php:166
+msgid "The plugin is fully functional even if the API is not in use"
+msgstr "Pluginet är fullt funktionellt även om APIet inte används"
+
+#: admin.php:172
 msgid "Test API functionality"
 msgstr "Testa API-funktionalitet"
 
-#: admin.php:95
+#: admin.php:175
+msgid "Update above flag list (no credentials required)"
+msgstr ""
+"Uppdatera ovanstående lista med flaggor (inga inloggningsbehörigheter krävs)"
+
+#: admin.php:177
 msgid ""
 "By entering an API id and key below, this function will validate that your "
 "key is correct."
@@ -70,23 +160,27 @@ msgstr ""
 "Genom att skriva in ett API-id och en nyckel nedan, kommer denna funktionen "
 "att validera att din nyckel är korrekt."
 
-#: admin.php:97
+#: admin.php:181
 msgid "Get your API key at"
 msgstr "Skaffa din API-nyckel via"
 
-#: admin.php:101
+#: admin.php:189
 msgid "Application API ID/Name"
 msgstr "API ID/Namn för applikationen"
 
-#: admin.php:114
+#: admin.php:201
+msgid "Click here to view available permissions"
+msgstr "Klicka här för att se tillgängliga behörigheter"
+
+#: admin.php:215
 msgid "Application API Key"
 msgstr "API-Nyckel för applikationen"
 
-#: admin.php:120
+#: admin.php:223
 msgid "Preferred API URL"
 msgstr "Föredragen URL för API"
 
-#: admin.php:128
+#: admin.php:231
 msgid ""
 "Make sure that you really save your settings before trying to use them from "
 "this page"
@@ -100,6 +194,32 @@ msgid ""
 msgstr ""
 "API-data uppdaterades - Om du har gjort några ändringar i den här "
 "konfigurationen bör du också spara inställningarna."
+
+#~ msgid "immediately block access to the whole page by redirecting"
+#~ msgstr "omedelbart blockera åtkomst till hela sidan genom ompekning"
+
+#~ msgid "immediately block access to the whole page"
+#~ msgstr "omedelbart blockera åtkomst till hela sidan"
+
+#~ msgid ""
+#~ "immediately block access to whole page on detection (Redirecting to DNSBL-"
+#~ "page)."
+#~ msgstr "omedelbart blockera åtkomst till hela sidan"
+
+#~ msgid ""
+#~ "The usage of CIDR-blocks are normally not permitted by the DNSBL API, in "
+#~ "more functions than listing them. This permission also opens up for usage "
+#~ "in DELETE/UPDATE cases (in our local e-mail requests where support "
+#~ "sometimes cover CIDR-block removals, this would help a lot). However, "
+#~ "adding data with CIDR and different flags might be a problem (this "
+#~ "permission does not exist in the API yet)"
+#~ msgstr ""
+#~ "Anvädningen av CIDR-block får normalt sett inte göras från DNSBL-APIet, i "
+#~ "fler funktioner än listningsdelen. Denna behörighet öppnar även upp för "
+#~ "att använda dem i radering/uppdatering - DELETE/UPDATE (i supportens "
+#~ "inkorg inkom ibland förfrågningar om att täcka CIDR-block, så detta "
+#~ "hjälper troligtvis en hel del). Lägga till data med CIDR och olika "
+#~ "flaggor är dock ett fortsatt problem."
 
 #~ msgid "Local delisting permission (can delist self)"
 #~ msgstr "Lokala avlistningsbehörigheter (kan avlista dig själv)"
