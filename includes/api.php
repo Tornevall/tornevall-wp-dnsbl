@@ -6,6 +6,7 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
         throw new \Exception("Need method name", 404);
     }
 
+
     $prefApiUrl = get_option('tornevall_dnsbl_preferred_api_url');
     if (empty($prefApiUrl)) {
         $prefApiUrl = "https://api.tornevall.net/3.0/";
@@ -65,6 +66,10 @@ function tornevall_dnsbl_api()
         $nId = 'tornevall_dnsbl_a';
     }
     $verified = wp_verify_nonce($n, $nId);
+
+    if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
+        $verified = true;
+    }
 
     $response = array(
         'timestamp'   => time(),
