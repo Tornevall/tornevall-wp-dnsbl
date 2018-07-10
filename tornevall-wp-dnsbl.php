@@ -19,16 +19,47 @@ require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/bits.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/helpers.php');
-require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/dnsbl.php');
 
 load_plugin_textdomain('tornevall_dnsbl', false, dirname(plugin_basename(__FILE__)) . '/language');
 
+
+$dnsblPermissionArray = array();
+$dnsblClientData      = @unserialize(get_option('tornevall_dnsbl_clientdata'));
+$permissions          = array(
+    'global_delist'   => __('Global delisting permission (can use as delisting service for visitors)',
+        'tornevall_dnsbl'),
+    'local_delist'    => __('Local delisting permission (server can delist self)', 'tornevall_dnsbl'),
+    'dnsbl_update'    => __('Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and bl.fraudbl.org)',
+        'tornevall_dnsbl'),
+    'fraudbl_update'  => __('Extended ability to handle fraudbl-commerce (this is not the regular bl.fraudbl.org resolver)',
+        'tornevall_dnsbl'),
+    'can_purge'       => __('Special ability to purge hosts instead of marking them deleted in the database',
+        'tornevall_dnsbl'),
+    'allow_cidr'      => __('The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
+        'tornevall_dnsbl'),
+    'overwrite_flags' => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
+        'tornevall_dnsbl'),
+);
+$tornevallDnsblFlags = array();
+if (is_object($dnsblClientData)) {
+    if (isset($dnsblClientData->API_EXTENDED_PERMISSIONS)) {
+        foreach ($dnsblClientData->API_EXTENDED_PERMISSIONS as $index => $eData) {
+            $permission             = $eData->permission;
+            $tornevallDnsblFlags[]  = $eData->permission;
+            $dnsblPermissionArray[] = $permissions[$permission];
+        }
+    }
+}
+
+
 function tornevall_dnsbl_enqueue()
 {
-    $nId = 'tornevall_dnsbl_n';
+    global $dnsblNonce;
+    $dnsblNonceId = 'tornevall_dnsbl_n';
     if (is_admin()) {
-        $nId = 'tornevall_dnsbl_a';
+        $dnsblNonceId = 'tornevall_dnsbl_a';
     }
+    $dnsblNonce = wp_create_nonce($dnsblNonceId);
 
     $tapi_spinner = plugin_dir_url(__FILE__) . "images/spinner-1s-32px.gif";
 
@@ -36,7 +67,7 @@ function tornevall_dnsbl_enqueue()
     $vars     = array(
         'ajax_url'         => $adminUrl,
         'spinner'          => $tapi_spinner,
-        'dnsbln'           => wp_create_nonce($nId),
+        'dnsbln'           => wp_create_nonce($dnsblNonce),
         'saveConfigNotice' => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall_dnsbl'),
     );
@@ -59,3 +90,6 @@ add_action('admin_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_ajax_tornednsbl', 'tornevall_dnsbl_api');
 add_action('wp_ajax_nopriv_tornednsbl', 'tornevall_dnsbl_api');
+add_filter('the_content', 'tornevall_dnsbl_content_handler');
+add_filter( 'comments_open', 'dnsbl_disable_comments', 1, 2 );
+

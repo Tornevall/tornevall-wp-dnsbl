@@ -1,5 +1,20 @@
 <?php
 
+$pagelist             = get_pages();
+$currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
+$delistPageOption     = array();
+if (is_array($pagelist)) {
+    $delistPageOption[] = '<option value="">None</option>';
+    foreach ($pagelist as $pageObject) {
+        $selectedPage = '';
+        if ($pageObject->ID == $currentDelistingPage) {
+            $selectedPage = 'selected=selected';
+        }
+        $delistPageOption[] = '<option value="' . $pageObject->ID . '" ' . $selectedPage . '>' . $pageObject->post_title . '</option>';
+    }
+}
+
+
 function tornevall_wp_dnsbl_admin()
 {
     add_action('admin_init', 'register_dnsbl_settings');
@@ -13,7 +28,9 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_filter_types');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_nocomment');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blockfull');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_delisting_page');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_update_timestamp');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_form_noajax');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -27,7 +44,7 @@ function tornevall_dnsbl_options()
     if ( ! current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
-    global $wpdb;
+    global $wpdb, $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
 
     $dnsblCounter     = 0;
     $blockHistoryTime = time() - 86400;
@@ -66,33 +83,6 @@ function tornevall_dnsbl_options()
             'left'  => '250px',
             'right' => '550px',
         );
-
-        $dnsblPermissionArray = array();
-        $dnsblClientData      = @unserialize(get_option('tornevall_dnsbl_clientdata'));
-        $permissions          = array(
-            'global_delist'   => __('Global delisting permission (can use as delisting service for visitors)',
-                'tornevall_dnsbl'),
-            'local_delist'    => __('Local delisting permission (server can delist self)', 'tornevall_dnsbl'),
-            'dnsbl_update'    => __('Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and bl.fraudbl.org)',
-                'tornevall_dnsbl'),
-            'fraudbl_update'  => __('Extended ability to handle fraudbl-commerce (this is not the regular bl.fraudbl.org resolver)',
-                'tornevall_dnsbl'),
-            'can_purge'       => __('Special ability to purge hosts instead of marking them deleted in the database',
-                'tornevall_dnsbl'),
-            'allow_cidr'      => __('The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
-                'tornevall_dnsbl'),
-            'overwrite_flags' => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
-                'tornevall_dnsbl'),
-        );
-
-        if (is_object($dnsblClientData)) {
-            if (isset($dnsblClientData->API_EXTENDED_PERMISSIONS)) {
-                foreach ($dnsblClientData->API_EXTENDED_PERMISSIONS as $index => $eData) {
-                    $permission             = $eData->permission;
-                    $dnsblPermissionArray[] = $permissions[$permission];
-                }
-            }
-        }
 
         $flagListSelector = array();
         $currentFlags     = get_option('tornevall_dnsbl_current_flags');
@@ -158,6 +148,57 @@ function tornevall_dnsbl_options()
                         <br>
                     </td>
                 </tr>
+
+                <?php
+
+                if (in_array('global_delist', $tornevallDnsblFlags)) {
+                    ?>
+
+                    <tr style="border-top:1px dotted gray;">
+                        <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;border-top:1px dotted gray;">
+                            <?php echo __('Delisting page', 'tornevall_dnsbl'); ?>
+                        </td>
+                        <td width="<?php echo $td['right']; ?>" valign="top" style="border-top:1px dotted gray;">
+                            <select name="tornevall_dnsbl_delisting_page"><?php echo(is_array($delistPageOption) ? implode("\n",
+                                    $delistPageOption) : ''); ?></select> <br>
+                            <i>
+                                <?php
+                                echo __('The API key you are using indicates that this plugin supports global delistings. This means that your site can be used as a delisting service.',
+                                        'tornevall_dnsbl') . " ";
+                                echo __('This option allows you to set up a page where the search-and-delist form should be shown.',
+                                        'tornevall_dnsbl') . " ";
+                                echo __('If you can\'t find any comfortable match, you can create a new under pages editor. You can use the shortcode [dnsbl_removal_form] if you want to customize the page.',
+                                        'tornevall_dnsbl') . " ";
+                                echo __('If no shortcode is found, the form will be appended to the page.',
+                                        'tornevall_dnsbl') . " ";
+                                echo __('There is a plain view accessible, in case the standard AJAX form does not work. Use ?plain in the URL to reach it',
+                                        'tornevall_dnsbl') . " ";
+                                ?>
+                            </i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;">
+                            <?php echo __('Show delisting form in non-responsive mode', 'tornevall_dnsbl'); ?>
+                        </td>
+                        <td width="<?php echo $td['right']; ?>" valign="top">
+                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_form_noajax") ? "checked" : ""); ?>
+                                   value="1"
+                                   name="tornevall_dnsbl_form_noajax"> <?php echo __("Check this box to use prioritize the non-responsive form over the standard delisting form",
+                                "tornevall_dnsbl"); ?>
+
+                        </td>
+                    </tr>
+
+                    </tr>
+
+
+                    <?php
+                }
+
+                ?>
+
             </table>
 
             <div style="font-weight: bold;font-size: 20px !important;margin-top:5px;margin-bottom:5px;"
@@ -239,4 +280,5 @@ function tornevall_dnsbl_options()
 
 
     <?php
+
 }
