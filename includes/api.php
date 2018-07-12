@@ -69,6 +69,10 @@ function tornevall_dnsbl_api()
 
     if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
         $verified = true;
+        if ( ! preg_match("/\//", trim($postdata['ip']))) {
+            $response = dnsbl_resolve_addr($postdata['ip']);
+            dnsbl_display_response($response);
+        }
     }
 
     $response = array(
@@ -109,7 +113,11 @@ function tornevall_dnsbl_api()
             update_option('tornevall_dnsbl_current_flags', (array)$flagControl->getFlagsResponse->structure);
         }
     }
+    dnsbl_display_response($response);
+}
 
+function dnsbl_display_response($response)
+{
     header('Content-Type: application/json');
     echo json_encode($response);
     wp_die();

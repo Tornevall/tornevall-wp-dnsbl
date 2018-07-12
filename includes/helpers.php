@@ -59,13 +59,13 @@ function tornevall_wp_dnsbl_uninstall_db()
 
     $dnsbl_db_tables = array('dnsblstats');
     foreach ($dnsbl_db_tables as $tableName) {
-        $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . $tableName);
+        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $tableName);
     }
 }
 
 function tornevall_dnsbl_content_handler()
 {
-    global $post, $dnsblNonce, $tornevallDnsblFlags;
+    global $post, $dnsblNonce, $tornevallDnsblFlags, $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
 
     if ( ! in_array('global_delist', $tornevallDnsblFlags)) {
         return;
@@ -90,9 +90,6 @@ function tornevall_dnsbl_content_handler()
     if (isset($_REQUEST['findIpAddr'])) {
         $requestingAddress = $_REQUEST['findIpAddr'];
     }
-
-    $MODULE_NET = new \Tornevall_WP_DNSBL\MODULE_NETWORK();
-    $ipType     = $MODULE_NET->getArpaFromAddr($requestingAddress);
 
     $removalForm = '
     <form ' . $formAction . ' method="post">
@@ -119,13 +116,202 @@ function tornevall_dnsbl_content_handler()
     return $post->post_content;
 }
 
-function dnsbl_disable_comments()
+function dnsbl_blacklist_disable_comments()
 {
-    global $post;
+    global $post, $dnsbl_blacklist_control_status, $dnsbl_blacklist_status;
+
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
+
+    // Reaching here without a proper state, renders a recheck
+    if ($dnsbl_blacklist_control_status != "checked") {
+        $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR']);
+    }
 
     // Set the plugin free on delisting page
     if ($post->ID == $currentDelistingPage) {
+        return true;
+    }
+
+    // Block on blacklist
+    if ($dnsbl_blacklist_status) {
+
+        if (get_option("tornevall_dnsbl_blockfull")) {
+
+            $defaultRedirectUrl = 'https://dnsbl.tornevall.org/removal?redirected';
+            $redirectUrl        = get_option('tornevall_dnsbl_blocked_redirecturl');
+            if (empty($redirectUrl)) {
+                $redirectUrl = $defaultRedirectUrl;
+            }
+
+            header("Location: " . $redirectUrl, 0, 301);
+            die();
+
+        }
+
+        if ( ! get_option('tornevall_dnsbl_nocomment')) {
+            return true;
+        }
+
+        echo __('Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist',
+            'tornevall_dnsbl');
+
+        return false;
+    }
+
+    return true;
+}
+
+function dnsbl_resolve_addr($addr)
+{
+    $TESTNET       = new \Tornevall_WP_DNSBL\MODULE_NETWORK();
+    $arpaName      = $TESTNET->getArpaFromAddr($addr);
+    $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
+    $currentFlags  = get_option('tornevall_dnsbl_current_flags');
+
+    $newArray = array();
+    if (is_array($currentFlags) && count($currentFlags)) {
+        $BIT = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+        foreach ($resolverNames as $rName) {
+            $listed      = false;
+            $resolveHost = $arpaName . "." . $rName;
+            $resultHost  = @gethostbyname($resolveHost);
+            if ( ! empty($resultHost) && $resultHost != $resolveHost) {
+                $resultEx = explode(".", $resultHost);
+                if (isset($resultEx[0]) && isset($resultEx[3]) && $resultEx[0] == "127") {
+                    $listed    = true;
+                    $preResult = $BIT->getBitArray($resultEx[3]);
+                    $typeBit   = $resultEx[3];
+                    $constants = array();
+                    foreach ($preResult as $preValue) {
+                        if ( ! in_array($preValue, $constants)) {
+                            $constants[] = $preValue;
+                        }
+                    }
+                }
+            }
+        }
+        $newArray[] = array(
+            'ip'        => $addr,
+            'constants' => $constants,
+            'typebit'   => $typeBit,
+            'deleted'   => (! empty($listed) ? '0000-00-00 00:00:00' : null),
+        );
+    }
+
+    // Mirroring APIv3 response
+    $returnThis = array(
+        'response' => array(
+            'requestResponse' => $newArray,
+            'requestType'     => 'DNS'
+
+        )
+    );
+    if ( ! count($newArray)) {
+        $returnThis['errorcode']   = 404;
+        $returnThis['errorstring'] = 'Nothing found as listed';
+    } else {
+        $returnThis['errorcode']   = null;
+        $returnThis['errorstring'] = null;
+    }
+
+    return $returnThis;
+}
+
+function dnsbl_check_blacklist($addr)
+{
+    $currentFlags = get_option('tornevall_dnsbl_current_flags');
+    $savedFlags   = get_option("tornevall_dnsbl_filter_types");
+    $BIT          = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+
+    $bitMaskResponse        = dnsbl_check_blacklist_cache($addr);
+    $isListedByRequirements = false;
+    if (intval($bitMaskResponse)) {
+        $currentBitArray = $BIT->getBitArray($bitMaskResponse);
+        foreach ($currentBitArray as $currentBitName) {
+            if (in_array($currentBitName, $savedFlags)) {
+                $isListedByRequirements = true;
+                break;
+            }
+        }
+    }
+
+    // No checking in admin
+    if (is_admin() || current_user_can('administrator')) {
+        if ($isListedByRequirements) {
+            add_action('admin_notices', 'dnsbl_is_protected_user');
+        }
+
         return;
     }
+
+    return $isListedByRequirements;
 }
+
+function dnsbl_is_protected_user()
+{
+    $showDnsblWarning = false;
+    if (isset($_REQUEST['page'])) {
+        if ($_REQUEST['page'] == 'tornevallDnsblMenu') {
+            $showDnsblWarning = true;
+        }
+    } else {
+        $showDnsblWarning = true;
+    }
+
+    if ($showDnsblWarning == true) {
+
+        ?>
+        <div class="notice notice-error"
+             style="font-weight: bold !important; background: #ffeeee; border:1px solid #990000; text-align: center;">
+            <p><?php echo __('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
+                        'tornevall_dnsbl') . ' <a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
+                        'tornevall_dnsbl') . '</a>'; ?></p>
+        </div>
+        <?php
+    }
+}
+
+function dnsbl_check_blacklist_cache($addr)
+{
+    global $wpdb;
+    $cacheAge = get_option('tornevall_dnsbl_cache_age');
+    if (intval($cacheAge) < 900) {
+        $cacheAge = 900;
+    }
+
+    $tableCache = $wpdb->prefix . 'dnsblcache';
+
+    $test_ip        = $wpdb->prepare("SELECT * FROM {$tableCache} WHERE ipAddr = %s", array($addr));
+    $testIpResponse = $wpdb->get_results($test_ip);
+
+    if (isset($testIpResponse[0])) {
+        $testIpResponseObject = $testIpResponse[0];
+    }
+
+    if ( ! isset($testIpResponseObject->ipAddr)) {
+        $result         = dnsbl_resolve_addr($addr);
+        $internalResult = array_pop($result['response']['requestResponse']);
+
+        if (isset($internalResult['ip'])) {
+            $wpdb->query($wpdb->prepare("INSERT INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
+                array($addr, $internalResult['typebit'], time())));
+        }
+
+        return $internalResult['typebit'];
+    } else {
+
+        $lastRes = time() - intval($testIpResponseObject->lastResolve);
+        // When time is up, update with new data
+        if ($lastRes >= $cacheAge) {
+            $result         = dnsbl_resolve_addr($addr);
+            $internalResult = array_pop($result['response']['requestResponse']);
+            $wpdb->query($wpdb->prepare("UPDATE {$tableCache} set lastResponse = %d, lastResolve = %d WHERE ipAddr = %s",
+                array($internalResult['typebit'], time(), $addr)));
+
+            return $internalResult['typebit'];
+        }
+
+        return $testIpResponseObject->lastResponse;
+    }
+}
+

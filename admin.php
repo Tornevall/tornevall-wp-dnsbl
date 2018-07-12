@@ -30,7 +30,9 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blockfull');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_delisting_page');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_update_timestamp');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_resolver_hosts');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_form_noajax');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -44,14 +46,18 @@ function tornevall_dnsbl_options()
     if ( ! current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
-    global $wpdb, $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
+    global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
 
-    $dnsblCounter     = 0;
-    $blockHistoryTime = time() - 86400;
 
-    $statsInfo = $wpdb->get_results("SELECT COUNT(*) AS count FROM " . ($wpdb->prefix . "dnsblstats") . " WHERE resolvetime > '" . $blockHistoryTime . "'");
-    if (isset($statsInfo[0]->count)) {
-        $dnsblCounter = $statsInfo[0]->count;
+    $cacheAgeTest = get_option('tornevall_dnsbl_cache_age');
+    if (empty($cacheAgeTest)) {
+        update_option('tornevall_dnsbl_cache_age', 900);
+    }
+
+    $redirectUrl = get_option('tornevall_dnsbl_blocked_redirecturl');
+    if (empty($redirectUrl)) {
+        $redirectUrl = 'https://dnsbl.tornevall.org/removal?redirected';
+        update_option('tornevall_dnsbl_blocked_redirecturl', $redirectUrl);
     }
 
     $authUrl    = "https://auth.tornevall.net";
@@ -98,6 +104,15 @@ function tornevall_dnsbl_options()
             update_option('tornevall_dnsbl_filter_types', $savedFlags);
         }
 
+        $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
+        if ( ! is_array($resolverNames) || (is_array($resolverNames) && ! count($resolverNames))) {
+            $resolverNames = array(
+                'dnsbl.tornevall.org',
+                'bl.fraudbl.org'
+            );
+            update_option('tornevall_dnsbl_resolver_hosts', implode(",", array_map("trim", $resolverNames)));
+        }
+
         if (empty($currentFlags) || ! is_array($currentFlags)) {
             // Flag list updated 180609
             $currentFlags = unserialize('a:9:{s:31:"FREE_SLOT_1_PREVIOUSLY_REPORTED";s:1:"1";s:12:"IP_CONFIRMED";s:1:"2";s:11:"IP_PHISHING";s:1:"4";s:35:"FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT";s:1:"8";s:18:"IP_MAILSERVER_SPAM";s:2:"16";s:14:"IP_SECOND_EXIT";s:2:"32";s:16:"IP_ABUSE_NO_SMTP";s:2:"64";s:12:"IP_ANONYMOUS";s:3:"128";s:7:"BIT_256";s:3:"256";}');
@@ -130,6 +145,30 @@ function tornevall_dnsbl_options()
                             'tornevall_dnsbl'); ?>
                     </td>
                 </tr>
+
+                <tr>
+                    <td>
+                        <b><?php echo __("Cache age", "tornevall_dnsbl"); ?></b><br>
+                        <i><?php echo __("Define for how long a blacklisted ip should be stored in local memory, defined in seconds (minimum allowed value is 900 sec=15 minutes)",
+                                "tornevall_dnsbl"); ?></i>
+                    </td>
+                    <td>
+                        <input type="text" name="tornevall_dnsbl_cache_age"
+                               value="<?php echo esc_attr(get_option('tornevall_dnsbl_cache_age') ? get_option('tornevall_dnsbl_cache_age') : 900); ?>">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="<?php echo $td['left']; ?>" valign="top"
+                        style="font-weight: bold;"><?php echo __('Preferred resolver hosts (comma separated)',
+                                'tornevall_dnsbl') . " ..."; ?>
+                    </td>
+                    <td width="<?php echo $td['right']; ?>" valign="top">
+                        <input type="text" size="32" value="<?php echo implode(",", $resolverNames); ?>"
+                               name="tornevall_dnsbl_resolver_hosts">
+                    </td>
+                </tr>
+
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
                         style="font-weight: bold;"><?php echo __('Protect this site by ...',
@@ -145,7 +184,10 @@ function tornevall_dnsbl_options()
                                value="1"
                                name="tornevall_dnsbl_blockfull"> <?php echo "... " . __("immediately block access to the whole page by redirecting (does not affect logged in admins)",
                                 "tornevall_dnsbl"); ?>
-                        <br>
+                        <br><br>
+                        <i><b><?php echo __('Redirect to this URL when blocked', 'tornevall_dnsbl') ?>:</b></i><br>
+                        <input type="text" value="<?php echo $redirectUrl ?>"
+                               name="tornevall_dnsbl_blocked_redirecturl" size="32">
                     </td>
                 </tr>
 
@@ -155,7 +197,8 @@ function tornevall_dnsbl_options()
                     ?>
 
                     <tr style="border-top:1px dotted gray;">
-                        <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;border-top:1px dotted gray;">
+                        <td width="<?php echo $td['left']; ?>" valign="top"
+                            style="font-weight: bold;border-top:1px dotted gray;">
                             <?php echo __('Delisting page', 'tornevall_dnsbl'); ?>
                         </td>
                         <td width="<?php echo $td['right']; ?>" valign="top" style="border-top:1px dotted gray;">

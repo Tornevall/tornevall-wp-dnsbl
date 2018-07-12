@@ -15,6 +15,13 @@ define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TORNEVALL_DNSBL_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 
+
+// deleted
+//$_SERVER['REMOTE_ADDR'] = "194.9.167.205";
+
+// torexit not deleted
+//$_SERVER['REMOTE_ADDR'] = "103.250.73.13";
+
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/bits.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
@@ -22,6 +29,8 @@ require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/helpers.php');
 
 load_plugin_textdomain('tornevall_dnsbl', false, dirname(plugin_basename(__FILE__)) . '/language');
 
+$dnsbl_blacklist_status         = false;
+$dnsbl_blacklist_control_status = "unchecked";
 
 $dnsblPermissionArray = array();
 $dnsblClientData      = @unserialize(get_option('tornevall_dnsbl_clientdata'));
@@ -40,7 +49,7 @@ $permissions          = array(
     'overwrite_flags' => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
         'tornevall_dnsbl'),
 );
-$tornevallDnsblFlags = array();
+$tornevallDnsblFlags  = array();
 if (is_object($dnsblClientData)) {
     if (isset($dnsblClientData->API_EXTENDED_PERMISSIONS)) {
         foreach ($dnsblClientData->API_EXTENDED_PERMISSIONS as $index => $eData) {
@@ -59,8 +68,7 @@ function tornevall_dnsbl_enqueue()
     if (is_admin()) {
         $dnsblNonceId = 'tornevall_dnsbl_a';
     }
-    $dnsblNonce = wp_create_nonce($dnsblNonceId);
-
+    $dnsblNonce   = wp_create_nonce($dnsblNonceId);
     $tapi_spinner = plugin_dir_url(__FILE__) . "images/spinner-1s-32px.gif";
 
     $adminUrl = admin_url('admin-ajax.php');
@@ -85,11 +93,18 @@ if (is_admin()) {
     register_uninstall_hook(__FILE__, 'tornevall_wp_dnsbl_uninstall_db');
 }
 
+function tornevall_dnsbl_checkpoint()
+{
+    global $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
+    $dnsbl_blacklist_status         = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR']);
+    $dnsbl_blacklist_control_status = "checked";
+}
 
 add_action('admin_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_ajax_tornednsbl', 'tornevall_dnsbl_api');
 add_action('wp_ajax_nopriv_tornednsbl', 'tornevall_dnsbl_api');
+add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
-add_filter( 'comments_open', 'dnsbl_disable_comments', 1, 2 );
+add_filter('comments_open', 'dnsbl_blacklist_disable_comments');
 

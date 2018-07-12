@@ -77,14 +77,14 @@ function tFindDnsblAddr() {
                         var constants = requestResponse[requestIndex]["constants"].join("<br>");
                         var delDateTime = requestResponse[requestIndex]["deleted"];
                         var isActive = "";
-                        if (delDateTime == "0000-00-00 00:00:00") {
+                        if (delDateTime == "0000-00-00 00:00:00" || null == delDateTime) {
                             isActive = "Listed";
                             isActiveColor = "#990000";
                         } else {
                             isActive = "Removed " + delDateTime;
                             isActiveColor = "#009900";
                         }
-                        listedResponse += '<div style="cursor: pointer;font-weight:bold;color:'+isActiveColor+'" title="'+constants+'" onclick="$T_DNSBL(\'#dnsbl_ip_flags_'+requestIndex+'\').show()">' + ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_'+requestIndex+'" style="display: none;color:#000000 !important;">'+constants+'</div></div>';
+                        listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '" onclick="$T_DNSBL(\'#dnsbl_ip_flags_' + requestIndex + '\').show()">' + ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_' + requestIndex + '" style="display: none;color:#000000 !important;">' + constants + '</div></div>';
                     }
 
                     $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px; color:#990000;border:1px solid #FF0000;background: #FFFFE0">' + listedResponse + '</div>');
