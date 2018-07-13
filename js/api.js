@@ -64,6 +64,10 @@ function runApiTest(requestFunction) {
 function tFindDnsblAddr() {
     $T_DNSBL('#delistingTestStatus').html('<img src="' + tornevall_dnsbl_vars.spinner + '">');
     $T_DNSBL('#delistingTestStatus').show();
+    if ($T_DNSBL('#findIpAddr').val()=="") {
+        $T_DNSBL('#delistingTestStatus').html('Empty is not a value');
+        return;
+    }
     torneDnsblApi("dnsbl", function (a) {
             if (typeof a["errorcode"] != "undefined" && a["errorcode"] >= 400) {
                 $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px;color:#990000;border:1px solid #FF0000;background: #F0B0B0">' + a["errorstring"] + '</div>');
@@ -72,22 +76,35 @@ function tFindDnsblAddr() {
 
                     var listedResponse = "";
                     var requestResponse = a["response"]["requestResponse"];
+                    var typebit = null;
+                    var ipAddr = null;
+                    var delistTestBorder;
                     for (requestIndex = 0; requestIndex < requestResponse.length; requestIndex++) {
-                        var ipAddr = requestResponse[requestIndex]["ip"];
-                        var constants = requestResponse[requestIndex]["constants"].join("<br>");
-                        var delDateTime = requestResponse[requestIndex]["deleted"];
-                        var isActive = "";
-                        if (delDateTime == "0000-00-00 00:00:00" || null == delDateTime) {
-                            isActive = "Listed";
-                            isActiveColor = "#990000";
+                        ipAddr = requestResponse[requestIndex]["ip"];
+                        typebit = requestResponse[requestIndex]["typebit"];
+
+                        if (null != typebit) {
+                            var constants = requestResponse[requestIndex]["constants"].join("<br>");
+                            var delDateTime = requestResponse[requestIndex]["deleted"];
+                            var isActive = "";
+                            if (delDateTime == "0000-00-00 00:00:00" || null == delDateTime) {
+                                isActive = "Blacklisted";
+                                isActiveColor = "#990000";
+                                delistTestBorder = "#990000";
+                            } else {
+                                isActive = "Removed " + delDateTime;
+                                isActiveColor = "#009900";
+                                delistTestBorder = "#009900";
+                            }
+                            listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '" onclick="$T_DNSBL(\'#dnsbl_ip_flags_' + requestIndex + '\').show()">' + ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_' + requestIndex + '" style="display: none;color:#000000 !important;">' + constants + '</div></div>';
                         } else {
-                            isActive = "Removed " + delDateTime;
-                            isActiveColor = "#009900";
+                            isActiveColor = '#009999';
+                            delistTestBorder = "#009999";
+                            listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '">' + ipAddr + ': No blacklisted/div>';
                         }
-                        listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '" onclick="$T_DNSBL(\'#dnsbl_ip_flags_' + requestIndex + '\').show()">' + ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_' + requestIndex + '" style="display: none;color:#000000 !important;">' + constants + '</div></div>';
                     }
 
-                    $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px; color:#990000;border:1px solid #FF0000;background: #FFFFE0">' + listedResponse + '</div>');
+                    $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px; color:#990000;border:1px solid '+delistTestBorder+';background: #FFFFE0">' + listedResponse + '</div>');
 
                 }
             }

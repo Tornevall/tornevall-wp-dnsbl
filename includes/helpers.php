@@ -87,8 +87,47 @@ function tornevall_dnsbl_content_handler()
 
     $requestingAddress = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "");
 
+    $delistingDataPlain     = null;
+    $constants              = null;
+    $delistingStatusDisplay = 'none';
     if (isset($_REQUEST['findIpAddr'])) {
         $requestingAddress = $_REQUEST['findIpAddr'];
+
+        $noAddr = false;
+        if ( ! filter_var($requestingAddress, FILTER_VALIDATE_IP)) {
+            $noAddr = true;
+        }
+
+        if (preg_match_all("/\//", $requestingAddress) || $noAddr) {
+            $fontColor = "#990099";
+            if (empty($requestingAddress)) {
+                $blacklistInfo = __('Address must not be empty', 'tornevall_dnsbl');
+            } elseif ($noAddr && ! preg_match("/\//", $requestingAddress)) {
+                $blacklistInfo = __('Invalid address format', 'tornevall_dnsbl');
+            } else {
+                $blacklistInfo = __('Address format is not allowed in this mode', 'tornevall_dnsbl');
+            }
+            $borderFormat = "border: 1px solid #000099;padding: 5px;background:#FFEEFF";
+        } else {
+            $isListed  = dnsbl_check_blacklist($requestingAddress, true);
+            $constants = null;
+            if ($isListed) {
+                $currentFlags  = get_option('tornevall_dnsbl_current_flags');
+                $BIT           = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+                $constants     = implode("<br>", $BIT->getBitArray($isListed));
+                $blacklistInfo = $requestingAddress . ": " . __('Blacklisted', 'tornevall_dnsbl');
+                $borderFormat  = "border: 1px solid #990000;padding: 5px;background:#FFEEFF";
+                $fontColor     = "#990000";
+            } else {
+                $fontColor     = "#009900";
+                $borderFormat  = "border: 1px solid #009900; padding: 5px;";
+                $blacklistInfo = $requestingAddress . ": " . __('Not blacklisted', 'tornevall_dnsbl');
+            }
+        }
+
+
+        $delistingStatusDisplay = "";
+        $delistingDataPlain     = '<div style="cursor: pointer;font-weight:bold;' . $borderFormat . ';color:' . $fontColor . '" title="' . $constants . '" onclick="$T_DNSBL(\'#dnsbl_ip_flags\').show()">' . $blacklistInfo . '<div id="dnsbl_ip_flags" style="display: none;color:#000000 !important;">' . $constants . '</div></div>';
     }
 
     $removalForm = '
@@ -98,7 +137,9 @@ function tornevall_dnsbl_content_handler()
     <button type="' . ($isAjax ? 'button' : 'submit') . '" ' . $buttonAction . '>' . __('IP address control',
             'tornevall_dnsbl') . '</button><br>
             <br>
-    <div id="delistingTestStatus" style="display: none;"></div>
+    <div id="delistingTestStatus" style="display: ' . $delistingStatusDisplay . ';">
+    ' . $delistingDataPlain . '
+    </div>
     </form>
     <br>
     ';
@@ -217,7 +258,13 @@ function dnsbl_resolve_addr($addr)
     return $returnThis;
 }
 
-function dnsbl_check_blacklist($addr)
+/**
+ * @param      $addr
+ * @param bool $getIsListed
+ *
+ * @return bool|void
+ */
+function dnsbl_check_blacklist($addr, $getIsListed = false)
 {
     $currentFlags = get_option('tornevall_dnsbl_current_flags');
     $savedFlags   = get_option("tornevall_dnsbl_filter_types");
@@ -226,6 +273,9 @@ function dnsbl_check_blacklist($addr)
     $bitMaskResponse        = dnsbl_check_blacklist_cache($addr);
     $isListedByRequirements = false;
     if (intval($bitMaskResponse)) {
+        if ($getIsListed) {
+            return $bitMaskResponse;
+        }
         $currentBitArray = $BIT->getBitArray($bitMaskResponse);
         foreach ($currentBitArray as $currentBitName) {
             if (in_array($currentBitName, $savedFlags)) {

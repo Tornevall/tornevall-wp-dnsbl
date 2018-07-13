@@ -54,7 +54,7 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
     return null;
 }
 
-function tornevall_dnsbl_api()
+function tornevall_dnsbl_api($c_postdata = null, $c_request = null, $c_verb = null)
 {
     $postdata = isset($_REQUEST['postdata']) ? $_REQUEST['postdata'] : array();
     $request  = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
@@ -67,11 +67,17 @@ function tornevall_dnsbl_api()
     }
     $verified = wp_verify_nonce($n, $nId);
 
-    if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
-        $verified = true;
-        if ( ! preg_match("/\//", trim($postdata['ip']))) {
-            $response = dnsbl_resolve_addr($postdata['ip']);
-            dnsbl_display_response($response);
+    if ( ! is_null($c_postdata)) {
+        $postdata = $c_postdata;
+        $request  = $c_request;
+        $verb     = $c_verb;
+    } else {
+        if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
+            $verified = true;
+            if ( ! preg_match("/\//", trim($postdata['ip']))) {
+                $response = dnsbl_resolve_addr($postdata['ip']);
+                dnsbl_display_response($response);
+            }
         }
     }
 
