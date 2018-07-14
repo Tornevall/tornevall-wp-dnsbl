@@ -15,13 +15,6 @@ define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TORNEVALL_DNSBL_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 
-
-// deleted
-//$_SERVER['REMOTE_ADDR'] = "194.9.167.205";
-
-// torexit not deleted
-//$_SERVER['REMOTE_ADDR'] = "103.250.73.13";
-
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/bits.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
@@ -59,7 +52,6 @@ if (is_object($dnsblClientData)) {
         }
     }
 }
-
 
 function tornevall_dnsbl_enqueue()
 {
