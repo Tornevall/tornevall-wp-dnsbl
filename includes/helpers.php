@@ -63,9 +63,16 @@ function tornevall_wp_dnsbl_uninstall_db()
     }
 }
 
+/**
+ * Removal interface
+ *
+ * @return string
+ * @throws Exception
+ * @todo Move this into class controller
+ */
 function tornevall_dnsbl_content_handler()
 {
-    global $post, $dnsblNonce, $tornevallDnsblFlags, $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
+    global $post, $dnsblNonce, $tornevallDnsblFlags;
 
     if ( ! in_array('global_delist', $tornevallDnsblFlags)) {
         return;
@@ -90,6 +97,59 @@ function tornevall_dnsbl_content_handler()
     $delistingDataPlain     = null;
     $constants              = null;
     $delistingStatusDisplay = 'none';
+
+    $showDeleteForm        = null;
+    $deleteAddr            = isset($_REQUEST['deleteAddr']) ? $_REQUEST['deleteAddr'] : null;
+    $alreadyDeletedControl = false;
+    $removalController     = null;
+    if ( ! is_null($deleteAddr)) {
+        $getCaptcha = torneApi("captcha");
+        if (isset($getCaptcha->captchaResponse)) {
+            $captchaRequest = $getCaptcha->captchaResponse;
+            $imageUrl       = $captchaRequest->imageUrl;
+            $imageHash      = $captchaRequest->imageHash;
+            $showDeleteForm = '<br><img src="' . $imageUrl . '"><br>
+            <span style="color:#000000;">' . __('What does the image say?', 'tornevall_dnsbl') . '
+                <input type="text" name="captchaString" value="">
+                <input type="hidden" name="captchaHash" value="' . $imageHash . '">
+            </span><br>
+            <input type="submit" name="submitDelistingRequest">
+            ';
+        }
+        $removalController = torneApi('dnsbl', '', array("ip" => $deleteAddr));
+        if (isset($removalController->dnsblResponse)) {
+            $removalController = $removalController->dnsblResponse;
+        }
+        if (is_array($removalController) && count($removalController) == 1) {
+            $removalController = array_pop($removalController);
+            if (isset($removalController->deleted)) {
+                if ($removalController->deleted != "0000-00-00 00:00:00") {
+                    $alreadyDeletedControl = true;
+                }
+            }
+        }
+    }
+
+    $deleteRequestResponse = null;
+    if (isset($_REQUEST['submitDelistingRequest']) && isset($_REQUEST['captchaString']) && ! empty($_REQUEST['captchaString'])) {
+        // User input
+        $cString = isset($_REQUEST['captchaString']) ? $_REQUEST['captchaString'] : null;
+        $cHash   = isset($_REQUEST['captchaHash']) ? $_REQUEST['captchaHash'] : null;
+
+        $showDeleteForm = null;
+        $testCaptcha    = torneApi('captcha', 'testCaptcha', array('hash' => $cHash, 'response' => $cString));
+        if ( ! is_null($deleteAddr) && isset($testCaptcha->testCaptchaResponse) && (bool)$testCaptcha->testCaptchaResponse === true) {
+
+            $deleteRequest = torneApi("dnsbl", "", array('ip' => $deleteAddr), true, 'DELETE');
+            $success       = isset($deleteRequest->success) ? $deleteRequest->success : false;
+            $faultString   = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __('Unknown API error',
+                'tornevall_dnsbl');
+
+            $deleteRequestResponse = $success ? __('Delisted successfully',
+                'tornevall_dnsbl') : __('Delist request failed: ' . $faultString);
+        }
+    }
+
     if (isset($_REQUEST['findIpAddr'])) {
         $requestingAddress = $_REQUEST['findIpAddr'];
 
@@ -98,7 +158,7 @@ function tornevall_dnsbl_content_handler()
             $noAddr = true;
         }
 
-        if (preg_match_all("/\//", $requestingAddress) || $noAddr) {
+        if ((preg_match_all("/\//", $requestingAddress) || $noAddr) && ! $alreadyDeletedControl) {
             $fontColor = "#990099";
             if (empty($requestingAddress)) {
                 $blacklistInfo = __('Address must not be empty', 'tornevall_dnsbl');
@@ -110,8 +170,8 @@ function tornevall_dnsbl_content_handler()
             $borderFormat = "border: 1px solid #000099;padding: 5px;background:#FFEEFF";
         } else {
             $isListed  = dnsbl_check_blacklist($requestingAddress, true);
-            $constants = null;
-            if ($isListed) {
+            $constants = 'Not available';
+            if ($isListed && ! $alreadyDeletedControl) {
                 $currentFlags  = get_option('tornevall_dnsbl_current_flags');
                 $BIT           = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
                 $constants     = implode("<br>", $BIT->getBitArray($isListed));
@@ -122,12 +182,34 @@ function tornevall_dnsbl_content_handler()
                 $fontColor     = "#009900";
                 $borderFormat  = "border: 1px solid #009900; padding: 5px;";
                 $blacklistInfo = $requestingAddress . ": " . __('Not blacklisted', 'tornevall_dnsbl');
+                if ($alreadyDeletedControl) {
+                    $blacklistInfo = $requestingAddress . ": " . __('Address was delisted',
+                            'tornevall_dnsbl') . " " . $removalController->deleted . " " . __('but servers are not synchronized yet',
+                            'tornevall_dnsbl');
+                }
+                $showDeleteForm = null;
             }
         }
 
-
         $delistingStatusDisplay = "";
-        $delistingDataPlain     = '<div style="cursor: pointer;font-weight:bold;' . $borderFormat . ';color:' . $fontColor . '" title="' . $constants . '" onclick="$T_DNSBL(\'#dnsbl_ip_flags\').show()">' . $blacklistInfo . '<div id="dnsbl_ip_flags" style="display: none;color:#000000 !important;">' . $constants . '</div></div>';
+        $tapi_delete            = plugin_dir_url(__FILE__) . "../images/d.png";
+        $tapi_q                 = plugin_dir_url(__FILE__) . "../images/q.png";
+
+        $delistingDataPlain = '
+            <div style="font-weight:bold;' . $borderFormat . ';color:' . $fontColor . ';vertical-align:middle;" title="' . $constants . '">
+            <span onclick="$T_DNSBL(\'#dnsbl_ip_flags\').show()" style="cursor: pointer;"><img style="vertical-align: middle;" src="' . $tapi_q . '"></span>
+                <form method="post">
+            <span>
+                    <input type="image" name="deleteIp" style="vertical-align: middle;" src="' . $tapi_delete . '">
+                    <input type="hidden" name="deleteAddr" value="' . $requestingAddress . '">
+            </span>' .
+                              $blacklistInfo . '
+                    ' . $showDeleteForm . '
+                </form>
+                <div id="dnsbl_ip_flags" style="display: none;color:#000000 !important;">' . $constants . '</div>
+            </div>
+            <div style="font-weight: bold;">' . $deleteRequestResponse . '</div>
+        ';
     }
 
     $removalForm = '
@@ -157,6 +239,10 @@ function tornevall_dnsbl_content_handler()
     return $post->post_content;
 }
 
+/**
+ * Disable comments on blacklist
+ * @return bool
+ */
 function dnsbl_blacklist_disable_comments()
 {
     global $post, $dnsbl_blacklist_control_status, $dnsbl_blacklist_status;
@@ -202,6 +288,14 @@ function dnsbl_blacklist_disable_comments()
     return true;
 }
 
+/**
+ * DNS before API resolver
+ *
+ * @param $addr
+ *
+ * @return array
+ * @todo Move this into class controller
+ */
 function dnsbl_resolve_addr($addr)
 {
     $TESTNET       = new \Tornevall_WP_DNSBL\MODULE_NETWORK();
@@ -263,6 +357,7 @@ function dnsbl_resolve_addr($addr)
  * @param bool $getIsListed
  *
  * @return bool|void
+ * @todo Move this into class controller
  */
 function dnsbl_check_blacklist($addr, $getIsListed = false)
 {
@@ -297,6 +392,9 @@ function dnsbl_check_blacklist($addr, $getIsListed = false)
     return $isListedByRequirements;
 }
 
+/**
+ * If host is blacklisted but user is admin
+ */
 function dnsbl_is_protected_user()
 {
     $showDnsblWarning = false;
@@ -321,6 +419,14 @@ function dnsbl_is_protected_user()
     }
 }
 
+/**
+ * DNSBL cache controller - Prioritize cache before DNS and API
+ *
+ * @param $addr
+ *
+ * @return mixed
+ * @todo Move this into class controller
+ */
 function dnsbl_check_blacklist_cache($addr)
 {
     global $wpdb;

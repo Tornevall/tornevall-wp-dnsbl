@@ -33,6 +33,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_resolver_hosts');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_form_noajax');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_prefer_api');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -171,7 +172,7 @@ function tornevall_dnsbl_options()
 
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Protect this site by ...',
+                        style="font-weight: bold;"><?php echo __('Protect this site by',
                                 'tornevall_dnsbl') . " ..."; ?>
                     </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
@@ -190,7 +191,6 @@ function tornevall_dnsbl_options()
                                name="tornevall_dnsbl_blocked_redirecturl" size="32">
                     </td>
                 </tr>
-
                 <?php
 
                 if (in_array('global_delist', $tornevallDnsblFlags)) {
@@ -309,6 +309,21 @@ function tornevall_dnsbl_options()
                         <input type="text" name="tornevall_dnsbl_preferred_api_url" value="<?php echo $prefApiUrl; ?>">
                     </td>
                 </tr>
+
+                <tr>
+                    <td width="<?php echo $td['left']; ?>" valign="top"
+                        style="font-weight: bold;"><?php echo __('API MODE', 'tornevall_dnsbl'); ?>
+                    </td>
+                    <td width="<?php echo $td['right']; ?>" valign="top">
+                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_prefer_api") ? "checked" : ""); ?>
+                               value="1"
+                               name="tornevall_dnsbl_prefer_api"> <?php echo __('Always use API instead of DNS lookups when possible (limited requests)',
+                            'tornevall_dnsbl'); ?><br>
+                        <i><?php echo __('This mode is incompatible with the plain form mode',
+                                'tornevall_dnsbl'); ?></i>
+                    </td>
+                </tr>
+
             </table>
 
             <br>

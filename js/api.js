@@ -64,7 +64,7 @@ function runApiTest(requestFunction) {
 function tFindDnsblAddr() {
     $T_DNSBL('#delistingTestStatus').html('<img src="' + tornevall_dnsbl_vars.spinner + '">');
     $T_DNSBL('#delistingTestStatus').show();
-    if ($T_DNSBL('#findIpAddr').val()=="") {
+    if ($T_DNSBL('#findIpAddr').val() == "") {
         $T_DNSBL('#delistingTestStatus').html('Empty is not a value');
         return;
     }
@@ -85,6 +85,7 @@ function tFindDnsblAddr() {
 
                         if (null != typebit) {
                             var constants = requestResponse[requestIndex]["constants"].join("<br>");
+                            var constantsTitle = requestResponse[requestIndex]["constants"].join("\n");
                             var delDateTime = requestResponse[requestIndex]["deleted"];
                             var isActive = "";
                             if (delDateTime == "0000-00-00 00:00:00" || null == delDateTime) {
@@ -96,15 +97,18 @@ function tFindDnsblAddr() {
                                 isActiveColor = "#009900";
                                 delistTestBorder = "#009900";
                             }
-                            listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '" onclick="$T_DNSBL(\'#dnsbl_ip_flags_' + requestIndex + '\').show()">' + ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_' + requestIndex + '" style="display: none;color:#000000 !important;">' + constants + '</div></div>';
+                            listedResponse += '<div style="font-weight:bold;color:' + isActiveColor + '" title="' + constantsTitle + '">';
+                            listedResponse += '<span onclick="$T_DNSBL(\'#dnsbl_ip_flags_' + requestIndex + '\').show()"><img style="vertical-align: middle;" src="' + tornevall_dnsbl_vars.q + '"></span>';
+                            listedResponse += ipAddr + ": " + isActive + '<div id="dnsbl_ip_flags_' + requestIndex + '" style="display: none;color:#000000 !important;">' + constants + '</div>';
+                            listedResponse += '</div>';
                         } else {
                             isActiveColor = '#009999';
                             delistTestBorder = "#009999";
-                            listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '">' + ipAddr + ': No blacklisted/div>';
+                            listedResponse += '<div style="cursor: pointer;font-weight:bold;color:' + isActiveColor + '" title="' + constants + '">' + ipAddr + ': Not blacklisted</div>';
                         }
                     }
 
-                    $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px; color:#990000;border:1px solid '+delistTestBorder+';background: #FFFFE0">' + listedResponse + '</div>');
+                    $T_DNSBL('#delistingTestStatus').html('<div style="margin-top: 3px;padding:5px; color:#990000;border:1px solid ' + delistTestBorder + ';background: #FFFFE0">' + listedResponse + '</div>');
 
                 }
             }

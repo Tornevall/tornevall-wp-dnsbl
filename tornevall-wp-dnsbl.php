@@ -70,11 +70,15 @@ function tornevall_dnsbl_enqueue()
     }
     $dnsblNonce   = wp_create_nonce($dnsblNonceId);
     $tapi_spinner = plugin_dir_url(__FILE__) . "images/spinner-1s-32px.gif";
+    $tapi_delete  = plugin_dir_url(__FILE__) . "images/d.png";
+    $tapi_q       = plugin_dir_url(__FILE__) . "images/q.png";
 
     $adminUrl = admin_url('admin-ajax.php');
     $vars     = array(
         'ajax_url'         => $adminUrl,
         'spinner'          => $tapi_spinner,
+        'delete'           => $tapi_delete,
+        'q'                => $tapi_q,
         'dnsbln'           => wp_create_nonce($dnsblNonce),
         'saveConfigNotice' => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall_dnsbl'),
@@ -107,4 +111,3 @@ add_action('wp_ajax_nopriv_tornednsbl', 'tornevall_dnsbl_api');
 add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
 add_filter('comments_open', 'dnsbl_blacklist_disable_comments');
-

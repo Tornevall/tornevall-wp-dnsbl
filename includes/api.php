@@ -1,11 +1,10 @@
 <?php
 
-function torneApi($method = null, $verb = null, $postdata = array(), $objectify = true)
+function torneApi($method = null, $verb = null, $postdata = array(), $objectify = true, $postMethod = null)
 {
     if (empty($method)) {
         throw new \Exception("Need method name", 404);
     }
-
 
     $prefApiUrl = get_option('tornevall_dnsbl_preferred_api_url');
     if (empty($prefApiUrl)) {
@@ -14,8 +13,8 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
 
     $apiUrl = $prefApiUrl . $method . "/" . $verb;
 
-    $appId  = get_option('tornevall_api_dnsbl_id');
-    $appKey = get_option('tornevall_api_dnsbl_key');
+    $appId  = get_option('tornevall_dnsbl_api_id');
+    $appKey = get_option('tornevall_dnsbl_api_key');
     $curId  = get_current_user_id();
 
     if ($appId) {
@@ -28,8 +27,27 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
         $postdata['identifiedPortalUserId'] = $curId;
     }
 
-    /** @var header $response */
-    $response            = wp_remote_post($apiUrl, array('body' => $postdata));
+    if (strtolower($postMethod) == "delete") {
+        // Deletion is made easier with json as post parameters does not seem to reach the whole way properly
+        /** @var header $response */
+        $response = wp_remote_request($apiUrl, array(
+            'body'    => @json_encode($postdata),
+            'method'  => 'DELETE',
+            'headers' => array(
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($appId . ":" . $appKey),
+            )
+        ));
+
+    } else {
+
+        /** @var header $response */
+        $response = wp_remote_post($apiUrl, array(
+            'body'    => $postdata,
+            'headers' => array('Authorization' => 'Basic ' . base64_encode($appId . ":" . $appKey))
+        ));
+    }
+
     $objectifiedResponse = @json_decode($response['body']);
 
     if (isset($response['body'])) {
@@ -54,7 +72,12 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
     return null;
 }
 
-function tornevall_dnsbl_api($c_postdata = null, $c_request = null, $c_verb = null)
+/**
+ * Formerly used like ... $c_postdata = null, $c_request = null, $c_verb = null
+ *
+ * @throws Exception
+ */
+function tornevall_dnsbl_api()
 {
     $postdata = isset($_REQUEST['postdata']) ? $_REQUEST['postdata'] : array();
     $request  = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
@@ -67,14 +90,10 @@ function tornevall_dnsbl_api($c_postdata = null, $c_request = null, $c_verb = nu
     }
     $verified = wp_verify_nonce($n, $nId);
 
-    if ( ! is_null($c_postdata)) {
-        $postdata = $c_postdata;
-        $request  = $c_request;
-        $verb     = $c_verb;
-    } else {
-        if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
-            $verified = true;
-            if ( ! preg_match("/\//", trim($postdata['ip']))) {
+    if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
+        $verified = true;
+        if ( ! preg_match("/\//", trim($postdata['ip']))) {
+            if ( ! get_option('tornevall_dnsbl_prefer_api')) {
                 $response = dnsbl_resolve_addr($postdata['ip']);
                 dnsbl_display_response($response);
             }
