@@ -220,7 +220,7 @@ function tornevall_dnsbl_content_handler($content)
     $removalForm = '
     <form ' . $formAction . ' method="post">
     ' . $hiddenParameters . '
-    <input type="text" size="50" maxlength="50" value="' . $requestingAddress . '" id="findIpAddr" name="findIpAddr"><br>
+    <input type="text" size="50" maxlength="50" value="' . $requestingAddress . '" id="findIpAddr" name="findIpAddr" onkeyup="findIpAddrPress(event)"><br>
     <button type="' . ($isAjax ? 'button' : 'submit') . '" ' . $buttonAction . '>' . __('IP address control',
             'tornevall_dnsbl') . '</button><br>
             <br>
