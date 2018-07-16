@@ -2,3 +2,5 @@
 .idea
 includes/klarna.php
 includes/resursbank.php
+node_modules
+package-lock.json
