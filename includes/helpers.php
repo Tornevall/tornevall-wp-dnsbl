@@ -195,6 +195,7 @@ function tornevall_dnsbl_content_handler()
         $tapi_delete            = plugin_dir_url(__FILE__) . "../images/d.png";
         $tapi_q                 = plugin_dir_url(__FILE__) . "../images/q.png";
 
+        // TODO: nonces missing
         $delistingDataPlain = '
             <div style="font-weight:bold;' . $borderFormat . ';color:' . $fontColor . ';vertical-align:middle;" title="' . $constants . '">
             <span onclick="$T_DNSBL(\'#dnsbl_ip_flags\').show()" style="cursor: pointer;"><img style="vertical-align: middle;" src="' . $tapi_q . '"></span>

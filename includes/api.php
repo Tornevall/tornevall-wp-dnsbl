@@ -83,10 +83,13 @@ function tornevall_dnsbl_api()
     $request  = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
     $verb     = isset($postdata['verb']) ? $postdata['verb'] : null;
     $n        = isset($_REQUEST['n']) ? $_REQUEST['n'] : null;
+    $m        = isset($_REQUEST['method']) ? $_REQUEST['method'] : null;
 
     $nId = 'tornevall_dnsbl_n';
-    if (is_admin()) {
-        $nId = 'tornevall_dnsbl_a';
+    if ( ! defined('TORNEVALL_DNSBL_NONCE_EQUALITY')) {
+        if (is_admin()) {
+            $nId = 'tornevall_dnsbl_a';
+        }
     }
     $verified = wp_verify_nonce($n, $nId);
 
@@ -112,22 +115,22 @@ function tornevall_dnsbl_api()
     if ( ! $verified) {
         $response['errorstring'] = "Invalid API call";
         $response['errorcode']   = 403;
-    }
+    } else {
+        try {
+            $getResponse = @json_decode(torneApi($request, $verb, $postdata, false, $m));
 
-    try {
-        $getResponse = @json_decode(torneApi($request, $verb, $postdata, false));
+            if (isset($getResponse->response)) {
+                $response['response'] = $getResponse->response;
+            }
+            if (isset($getResponse->code) && $getResponse->code >= 400) {
+                $response['errorstring'] = $getResponse->faultstring;
+                $response['errorcode']   = $getResponse->code;
+            }
 
-        if (isset($getResponse->response)) {
-            $response['response'] = $getResponse->response;
+        } catch (\Exception $e) {
+            $response['errorstring'] = $e->getMessage();
+            $response['errorcode']   = $e->getCode();
         }
-        if (isset($getResponse->code) && $getResponse->code >= 400) {
-            $response['errorstring'] = $getResponse->faultstring;
-            $response['errorcode']   = $getResponse->code;
-        }
-
-    } catch (\Exception $e) {
-        $response['errorstring'] = $e->getMessage();
-        $response['errorcode']   = $e->getCode();
     }
 
     if ($request == "test" && $verb == "key") {

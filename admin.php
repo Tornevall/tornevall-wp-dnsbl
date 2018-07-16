@@ -34,6 +34,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_form_noajax');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_prefer_api');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_getlisted_resolver');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -321,6 +322,19 @@ function tornevall_dnsbl_options()
                             'tornevall_dnsbl'); ?><br>
                         <i><?php echo __('This mode is incompatible with the plain form mode',
                                 'tornevall_dnsbl'); ?></i>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="<?php echo $td['left']; ?>" valign="top"
+                        style="font-weight: bold;"><?php echo __('Request remotely resolved hosts',
+                            'tornevall_dnsbl'); ?>
+                    </td>
+                    <td width="<?php echo $td['right']; ?>" valign="top">
+                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_getlisted_resolver") ? "checked" : ""); ?>
+                               value="1"
+                               name="tornevall_dnsbl_getlisted_resolver"> <?php echo __('Include (if any) the ip address resolved hostname in the request',
+                            'tornevall_dnsbl'); ?>
                     </td>
                 </tr>
 
