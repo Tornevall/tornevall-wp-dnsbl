@@ -14,6 +14,7 @@
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TORNEVALL_DNSBL_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
+define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/bits.php');
@@ -57,26 +58,44 @@ function tornevall_dnsbl_enqueue()
 {
     global $dnsblNonce;
     $dnsblNonceId = 'tornevall_dnsbl_n';
-    if (is_admin()) {
-        $dnsblNonceId = 'tornevall_dnsbl_a';
+    if ( ! defined('TORNEVALL_DNSBL_NONCE_EQUALITY')) {
+        if (is_admin()) {
+            $dnsblNonceId = 'tornevall_dnsbl_a';
+        }
     }
     $dnsblNonce   = wp_create_nonce($dnsblNonceId);
     $tapi_spinner = plugin_dir_url(__FILE__) . "images/spinner-1s-32px.gif";
     $tapi_delete  = plugin_dir_url(__FILE__) . "images/d.png";
     $tapi_q       = plugin_dir_url(__FILE__) . "images/q.png";
 
+    //echo $dnsblNonceId . " => " . $dnsblNonce;
+    //die;
+
     $adminUrl = admin_url('admin-ajax.php');
     $vars     = array(
-        'ajax_url'         => $adminUrl,
-        'spinner'          => $tapi_spinner,
-        'delete'           => $tapi_delete,
-        'q'                => $tapi_q,
-        'dnsbln'           => wp_create_nonce($dnsblNonce),
-        'saveConfigNotice' => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
+        'ajax_url'                           => $adminUrl,
+        'spinner'                            => $tapi_spinner,
+        'd'                                  => $tapi_delete,
+        'q'                                  => $tapi_q,
+        'dnsbln'                             => $dnsblNonce,
+        'tr_blacklisted'                     => __('Blacklisted', 'tornevall_dnsbl'),
+        'tr_flags_updated'                   => __('Flags updated', 'tornevall_dnsbl'),
+        'tr_request_failure'                 => __('Request failure', 'tornevall_dnsbl'),
+        'tr_not_blacklisted'                 => __('Not blacklisted', 'tornevall_dnsbl'),
+        'tr_no_empty_value'                  => __('Value must not be empty', 'tornevall_dnsbl'),
+        'tr_removed'                         => __('Removed', 'tornevall_dnsbl'),
+        'tr_delist_success'                  => __('Delist successful', 'tornevall_dnsbl'),
+        'tr_captcha_image'                   => __('What does the image say (lowercase)?', 'tornevall_dnsbl'),
+        'tr_delist_extended'                 => __('Removal time has been extended to ', 'tornevall_dnsbl'),
+        'tr_delist_penalties'                => __('but with penalties due too high removal count in too short time.',
+            'tornevall_dnsbl'),
+        'tornevall_dnsbl_getlisted_resolver' => get_option('tornevall_dnsbl_getlisted_resolver'),
+        'saveConfigNotice'                   => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall_dnsbl'),
     );
 
-    wp_enqueue_script('tornevall_dnsbl_backend', plugin_dir_url(__FILE__) . 'js/api.js?t=' . time(), array('jquery'),
+    wp_enqueue_script('tornevall_dnsbl_backend', plugin_dir_url(__FILE__) . 'js/api.min.js?t=' . time(),
+        array('jquery'),
         TORNEVALL_DNSBL_VERSION);
     wp_localize_script('tornevall_dnsbl_backend', 'tornevall_dnsbl_vars', $vars);
 }
