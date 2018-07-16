@@ -70,19 +70,23 @@ function tornevall_wp_dnsbl_uninstall_db()
  * @throws Exception
  * @todo Move this into class controller
  */
-function tornevall_dnsbl_content_handler()
+function tornevall_dnsbl_content_handler($content)
 {
     global $post, $dnsblNonce, $tornevallDnsblFlags;
-
     if ( ! in_array('global_delist', $tornevallDnsblFlags)) {
         return;
     }
 
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
-    $hiddenParameters     = '<input type="hidden" name="dNonce" id="dNonce" value="' . $dnsblNonce . '">';
-    $isAjax               = true;
-    $buttonAction         = '';
-    $formAction           = '';
+
+    if ($post->ID != $currentDelistingPage) {
+        return $content;
+    }
+
+    $hiddenParameters = '<input type="hidden" name="dNonce" id="dNonce" value="' . $dnsblNonce . '">';
+    $isAjax           = true;
+    $buttonAction     = '';
+    $formAction       = '';
 
     if (isset($_REQUEST['plain']) || get_option('tornevall_dnsbl_form_noajax') == "1") {
         $isAjax           = false;
@@ -145,7 +149,7 @@ function tornevall_dnsbl_content_handler()
             $faultString   = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __('Unknown API error',
                 'tornevall_dnsbl');
 
-            $deleteRequestResponse = $success ? __('Delisted successfully',
+            $deleteRequestResponse = $success ? __('Delist successful',
                 'tornevall_dnsbl') : __('Delist request failed: ' . $faultString);
         }
     }
@@ -227,27 +231,23 @@ function tornevall_dnsbl_content_handler()
     <br>
     ';
 
-    if ($post->ID == $currentDelistingPage) {
-        if (preg_match("/\[dnsbl_removal_form\]/is", $post->post_content)) {
-            return preg_replace("/\[dnsbl_removal_form\]/", $removalForm, $post->post_content);
-        } else {
-            $usePostContent = $post->post_content . $removalForm;
-
-            return $usePostContent;
-        }
+    if (preg_match("/\[dnsbl_removal_form\]/is", $content)) {
+        $content = preg_replace("/\[dnsbl_removal_form\]/", $removalForm, $content);
+    } else {
+        $content .= $removalForm;
     }
 
-    return $post->post_content;
+    return $content;
 }
 
 /**
  * Disable comments on blacklist
+ *
  * @return bool
  */
 function dnsbl_blacklist_disable_comments()
 {
     global $post, $dnsbl_blacklist_control_status, $dnsbl_blacklist_status;
-
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
 
     // Reaching here without a proper state, renders a recheck

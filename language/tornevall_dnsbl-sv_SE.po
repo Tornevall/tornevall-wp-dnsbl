@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-17 00:14+0200\n"
-"PO-Revision-Date: 2018-07-17 00:21+0200\n"
+"POT-Creation-Date: 2018-07-17 01:41+0200\n"
+"PO-Revision-Date: 2018-07-17 01:41+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -234,51 +234,51 @@ msgid ""
 msgstr ""
 "Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: includes/helpers.php:112
+#: includes/helpers.php:116
 msgid "What does the image say?"
 msgstr "Vad står det i bilden?"
 
-#: includes/helpers.php:145
+#: includes/helpers.php:149
 msgid "Unknown API error"
 msgstr "Okänt API-fel"
 
-#: includes/helpers.php:148
-msgid "Delisted successfully"
-msgstr "Lyckades med avlistningen"
+#: includes/helpers.php:152 tornevall-wp-dnsbl.php:87
+msgid "Delist successful"
+msgstr "Avlistningen lyckades"
 
-#: includes/helpers.php:149
+#: includes/helpers.php:153
 msgid "Delist request failed: "
 msgstr "Förfrågan om avlistning misslyckades:"
 
-#: includes/helpers.php:164
+#: includes/helpers.php:168
 msgid "Address must not be empty"
 msgstr "Adressfältet får inte vara tomt"
 
-#: includes/helpers.php:166
+#: includes/helpers.php:170
 msgid "Invalid address format"
 msgstr "Felaktigt adressformat"
 
-#: includes/helpers.php:168
+#: includes/helpers.php:172
 msgid "Address format is not allowed in this mode"
 msgstr "Adressformateringen är inte tillåten i detta läget"
 
-#: includes/helpers.php:178
+#: includes/helpers.php:182 tornevall-wp-dnsbl.php:81
 msgid "Blacklisted"
 msgstr "Svartlistad"
 
-#: includes/helpers.php:184
+#: includes/helpers.php:188 tornevall-wp-dnsbl.php:84
 msgid "Not blacklisted"
 msgstr "Ej svartlistad"
 
-#: includes/helpers.php:186
+#: includes/helpers.php:190
 msgid "Address was delisted"
 msgstr "Adressen avlistades"
 
-#: includes/helpers.php:187
+#: includes/helpers.php:191
 msgid "but servers are not synchronized yet"
 msgstr "men servrarna är ännu inte synkroniserade"
 
-#: includes/helpers.php:220
+#: includes/helpers.php:224
 msgid "IP address control"
 msgstr "IP-adresskontroll"
 
@@ -358,12 +358,47 @@ msgstr ""
 "adressen. Denna egenskap gör att man också kan skriva över gamla flaggor."
 
 #: tornevall-wp-dnsbl.php:82
+msgid "Flags updated"
+msgstr "Flaggorna har uppdaterats"
+
+#: tornevall-wp-dnsbl.php:83
+msgid "Request failure"
+msgstr "Förfrågningen misslyckades"
+
+#: tornevall-wp-dnsbl.php:85
+msgid "Value must not be empty"
+msgstr "Värdet får inte vara tomt"
+
+#: tornevall-wp-dnsbl.php:86
+msgid "Removed"
+msgstr "Borttagen"
+
+#: tornevall-wp-dnsbl.php:88
+msgid "What does the image say (lowercase)?"
+msgstr "Vad står det i bilden (små bokstäver)?"
+
+#: tornevall-wp-dnsbl.php:89
+msgid "Removal time has been extended to "
+msgstr "Avlistningstiden har utökats till "
+
+#: tornevall-wp-dnsbl.php:90
+msgid "but with penalties due too high removal count in too short time."
+msgstr ""
+"men med strafftid på grund av allt för många avlistningar under för kort tid."
+
+#: tornevall-wp-dnsbl.php:93
 msgid ""
 "API data updated - If you have made any changes in this configuration, you "
 "should also save the settings."
 msgstr ""
 "API-data uppdaterades - Om du har gjort några ändringar i den här "
 "konfigurationen bör du också spara inställningarna."
+
+#~ msgid "Empty is not a value"
+#~ msgstr "Värdet får inte vara tomt"
+
+#~ msgid "Delisted successfully"
+#~ msgstr "Lyckades med avlistningen"
 
 #~ msgid "Protect this site by ..."
 #~ msgstr "Skydda denna sajt genom att ..."

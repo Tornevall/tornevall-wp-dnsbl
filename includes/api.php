@@ -83,7 +83,7 @@ function tornevall_dnsbl_api()
     $request  = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
     $verb     = isset($postdata['verb']) ? $postdata['verb'] : null;
     $n        = isset($_REQUEST['n']) ? $_REQUEST['n'] : null;
-    $m        = isset($_REQUEST['method']) ? $_REQUEST['method'] : null;
+    $m        = isset($postdata['method']) ? $postdata['method'] : null;
 
     $nId = 'tornevall_dnsbl_n';
     if ( ! defined('TORNEVALL_DNSBL_NONCE_EQUALITY')) {
