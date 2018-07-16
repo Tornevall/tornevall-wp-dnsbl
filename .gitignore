@@ -3,4 +3,5 @@
 includes/klarna.php
 includes/resursbank.php
 node_modules
+js/api.js
 package-lock.json
