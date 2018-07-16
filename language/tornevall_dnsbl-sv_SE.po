@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-10 02:15+0200\n"
-"PO-Revision-Date: 2018-07-10 02:15+0200\n"
+"POT-Creation-Date: 2018-07-17 00:14+0200\n"
+"PO-Revision-Date: 2018-07-17 00:21+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -24,67 +24,89 @@ msgstr ""
 msgid "Tornevall DNSBL"
 msgstr "Tornevall DNSBL"
 
-#: admin.php:45
+#: admin.php:49
 msgid "You do not have sufficient permissions to access this page."
 msgstr "Du har inte tillräckliga behörigheter för att nå denna sidan"
 
-#: admin.php:65
+#: admin.php:73
 msgid "DNS Blacklist Configurator"
 msgstr "Konfigurera DNS-Svartlista"
 
-#: admin.php:67
+#: admin.php:75
 msgid "Plugin information and help"
 msgstr "Plugin-information och hjälp"
 
-#: admin.php:68
+#: admin.php:76
 msgid "About DNSBLv5"
 msgstr "Om DNSBLv5"
 
-#: admin.php:70
+#: admin.php:78
 msgid "DNSBLWP Issue tracker"
 msgstr "DNSBLWP Utvecklings-tracker"
 
-#: admin.php:72
+#: admin.php:80
 msgid "How to get delisted"
 msgstr "Hur man blir avlistad"
 
-#: admin.php:114
+#: admin.php:131
 msgid "Plugin behaviour"
 msgstr "Pluginets beteende"
 
-#: admin.php:120
+#: admin.php:137
 msgid "Trigger on"
 msgstr "Detektera på"
 
-#: admin.php:126
+#: admin.php:143
 msgid "See full description on what the flags mean, here"
 msgstr "Se fulla beskrivningar på vad flaggorna innebär, här"
 
-#: admin.php:129
+#: admin.php:146
 msgid "To get a updated list of flags, you should consider using the API"
 msgstr ""
 "För att få en uppdaterad lista på flaggor, bör du överväga att använda APIet"
 
-#: admin.php:135
-msgid "Protect this site by ..."
-msgstr "Skydda denna sajt genom att ..."
+#: admin.php:153
+msgid "Cache age"
+msgstr "Cachens ålder"
 
-#: admin.php:141
+#: admin.php:154
+msgid ""
+"Define for how long a blacklisted ip should be stored in local memory, "
+"defined in seconds (minimum allowed value is 900 sec=15 minutes)"
+msgstr ""
+"Definiera hur länge en svartlistad ip-adress skall lagras i det lokala "
+"minnet, specificerat i sekunder (lägst tillåtna värde är 900 sekunder=15 "
+"minuter)"
+
+#: admin.php:165
+msgid "Preferred resolver hosts (comma separated)"
+msgstr "Föredragna namnupplösare (kommaseparerade)"
+
+#: admin.php:176
+msgid "Protect this site by"
+msgstr "Skydda denna sajt genom"
+
+#: admin.php:182
 msgid "hiding the comment section when a potential spammer arrives."
 msgstr "att gömma kommentarsfälten när en potentiell spammare anländer."
 
-#: admin.php:146
+#: admin.php:187
 msgid ""
 "immediately block access to the whole page by redirecting (does not affect "
 "logged in admins)"
 msgstr ""
-"omedelbart blockera åtkomst till hela sidan (påverkar inte inloggade admins)"
+"att omedelbart blockera åtkomst till hela sidan (påverkar inte inloggade "
+"admins)"
 
-#: admin.php:159
+#: admin.php:190
+msgid "Redirect to this URL when blocked"
+msgstr "Peka om till denna URLen när blockering sker"
+
+#: admin.php:203
 msgid "Delisting page"
 msgstr "Avlistningssida"
 
-#: admin.php:166
+#: admin.php:210
 msgid ""
 "The API key you are using indicates that this plugin supports global "
 "delistings. This means that your site can be used as a delisting service."
@@ -93,7 +115,7 @@ msgstr ""
 "avlistningar. Detta betyder att du kan använda din sajt som en "
 "avlistningstjänst."
 
-#: admin.php:168
+#: admin.php:212
 msgid ""
 "This option allows you to set up a page where the search-and-delist form "
 "should be shown."
@@ -101,7 +123,7 @@ msgstr ""
 "Denna inställningen tillåter att du sätter upp en sida där sök-av-avlista-"
 "formuläret skall visas."
 
-#: admin.php:170
+#: admin.php:214
 msgid ""
 "If you can't find any comfortable match, you can create a new under pages "
 "editor. You can use the shortcode [dnsbl_removal_form] if you want to "
@@ -111,13 +133,13 @@ msgstr ""
 "editorn. Du kan använda kortkoden [dnsbl_removal_form] om du vill anpassa "
 "sidan."
 
-#: admin.php:172
+#: admin.php:216
 msgid "If no shortcode is found, the form will be appended to the page."
 msgstr ""
 "Om ingen kortkod hittas, kommer formuläret att lägga till längst ned på "
 "sidan."
 
-#: admin.php:174
+#: admin.php:218
 msgid ""
 "There is a plain view accessible, in case the standard AJAX form does not "
 "work. Use ?plain in the URL to reach it"
@@ -125,11 +147,11 @@ msgstr ""
 "Det finns en ren vy att tillgå, ifall de vanliga AJAX-formulären inte "
 "fungerar. Använd ?plain i URLen för att nå den"
 
-#: admin.php:183
+#: admin.php:227
 msgid "Show delisting form in non-responsive mode"
 msgstr "Visa avlistningsformulär i icke-responsivt läge"
 
-#: admin.php:188
+#: admin.php:232
 msgid ""
 "Check this box to use prioritize the non-responsive form over the standard "
 "delisting form"
@@ -137,24 +159,24 @@ msgstr ""
 "Klicka i denna boxen för att prioritera den icke-reponsiva layouten före "
 "standardformuläret"
 
-#: admin.php:205
+#: admin.php:249
 msgid "API"
 msgstr "API"
 
-#: admin.php:207
+#: admin.php:251
 msgid "The plugin is fully functional even if the API is not in use"
 msgstr "Pluginet är fullt funktionellt även om APIet inte används"
 
-#: admin.php:213
+#: admin.php:257
 msgid "Test API functionality"
 msgstr "Testa API-funktionalitet"
 
-#: admin.php:216
+#: admin.php:260
 msgid "Update above flag list (no credentials required)"
 msgstr ""
 "Uppdatera ovanstående lista med flaggor (inga inloggningsbehörigheter krävs)"
 
-#: admin.php:218
+#: admin.php:262
 msgid ""
 "By entering an API id and key below, this function will validate that your "
 "key is correct."
@@ -162,48 +184,135 @@ msgstr ""
 "Genom att skriva in ett API-id och en nyckel nedan, kommer denna funktionen "
 "att validera att din nyckel är korrekt."
 
-#: admin.php:222
+#: admin.php:266
 msgid "Get your API key at"
 msgstr "Skaffa din API-nyckel via"
 
-#: admin.php:230
+#: admin.php:274
 msgid "Application API ID/Name"
 msgstr "API ID/Namn för applikationen"
 
-#: admin.php:242
+#: admin.php:286
 msgid "Click here to view available permissions"
 msgstr "Klicka här för att se tillgängliga behörigheter"
 
-#: admin.php:256
+#: admin.php:300
 msgid "Application API Key"
 msgstr "API-Nyckel för applikationen"
 
-#: admin.php:264
+#: admin.php:308
 msgid "Preferred API URL"
 msgstr "Föredragen URL för API"
 
-#: admin.php:272
+#: admin.php:316
+msgid "API MODE"
+msgstr "API-LÄGE"
+
+#: admin.php:321
+msgid "Always use API instead of DNS lookups when possible (limited requests)"
+msgstr ""
+"Använd alltid inbyggt API I stället för DNS-namnuppslagningar, när det är "
+"möjligt (begränsat antal förfrågningar)"
+
+#: admin.php:323
+msgid "This mode is incompatible with the plain form mode"
+msgstr "Detta läget är ej kompatibelt i läget där AJAX är avstängt"
+
+#: admin.php:330
+msgid "Request remotely resolved hosts"
+msgstr "Efterfråga namnupplösta adresser från server"
+
+#: admin.php:336
+msgid "Include (if any) the ip address resolved hostname in the request"
+msgstr ""
+"Inkludera (om det finns) namnupplösta ip-adresser i förfrågningen till API"
+
+#: admin.php:344
 msgid ""
 "Make sure that you really save your settings before trying to use them from "
 "this page"
 msgstr ""
 "Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: includes/helpers.php:101
+#: includes/helpers.php:112
+msgid "What does the image say?"
+msgstr "Vad står det i bilden?"
+
+#: includes/helpers.php:145
+msgid "Unknown API error"
+msgstr "Okänt API-fel"
+
+#: includes/helpers.php:148
+msgid "Delisted successfully"
+msgstr "Lyckades med avlistningen"
+
+#: includes/helpers.php:149
+msgid "Delist request failed: "
+msgstr "Förfrågan om avlistning misslyckades:"
+
+#: includes/helpers.php:164
+msgid "Address must not be empty"
+msgstr "Adressfältet får inte vara tomt"
+
+#: includes/helpers.php:166
+msgid "Invalid address format"
+msgstr "Felaktigt adressformat"
+
+#: includes/helpers.php:168
+msgid "Address format is not allowed in this mode"
+msgstr "Adressformateringen är inte tillåten i detta läget"
+
+#: includes/helpers.php:178
+msgid "Blacklisted"
+msgstr "Svartlistad"
+
+#: includes/helpers.php:184
+msgid "Not blacklisted"
+msgstr "Ej svartlistad"
+
+#: includes/helpers.php:186
+msgid "Address was delisted"
+msgstr "Adressen avlistades"
+
+#: includes/helpers.php:187
+msgid "but servers are not synchronized yet"
+msgstr "men servrarna är ännu inte synkroniserade"
+
+#: includes/helpers.php:220
 msgid "IP address control"
 msgstr "IP-adresskontroll"
 
-#: tornevall-wp-dnsbl.php:29
+#: includes/helpers.php:283
+msgid ""
+"Comments section is currently unavailable: Your ip address has been flagged "
+"as untrusted by a DNS Blacklist"
+msgstr ""
+"Kommentarssektionen är för närvarande ej tillgänglig. Din ip-adress har "
+"flaggats som opålitlig av en DNS-baserad svartlista"
+
+#: includes/helpers.php:415
+msgid ""
+"Tornevall DNSBL scanner has detected that your current visiting ip address "
+"is blacklisted!"
+msgstr ""
+"Tornevall DNSBL scanner har upptäckt att din beslökande ip-adress är "
+"svartlistad!"
+
+#: includes/helpers.php:416
+msgid "For more information, look here"
+msgstr "För mer information, se här"
+
+#: tornevall-wp-dnsbl.php:32
 msgid "Global delisting permission (can use as delisting service for visitors)"
 msgstr ""
 "Globala avlistningsbehörigheter (kan användas som avlistnings-service för "
 "besökare)"
 
-#: tornevall-wp-dnsbl.php:31
+#: tornevall-wp-dnsbl.php:34
 msgid "Local delisting permission (server can delist self)"
 msgstr "Lokala avlistningsbehörigheter (server kan avlista sig själv)"
 
-#: tornevall-wp-dnsbl.php:32
+#: tornevall-wp-dnsbl.php:35
 msgid ""
 "Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and "
 "bl.fraudbl.org)"
@@ -211,7 +320,7 @@ msgstr ""
 "Standardförmåga att uppdatera data i DNSBL (dnsbl.tornevall.org och bl."
 "fraudbl.org)"
 
-#: tornevall-wp-dnsbl.php:34
+#: tornevall-wp-dnsbl.php:37
 msgid ""
 "Extended ability to handle fraudbl-commerce (this is not the regular bl."
 "fraudbl.org resolver)"
@@ -219,7 +328,7 @@ msgstr ""
 "Utökad förmåga att hantera fraudbl-commerce (detta är inte den vanliga bl."
 "fraudbl.org namnförfrågningstjänsten)"
 
-#: tornevall-wp-dnsbl.php:36
+#: tornevall-wp-dnsbl.php:39
 msgid ""
 "Special ability to purge hosts instead of marking them deleted in the "
 "database"
@@ -227,7 +336,7 @@ msgstr ""
 "Specialegenskap för att totalradera adresser i stället för att enbart "
 "markera dem som raderade i database."
 
-#: tornevall-wp-dnsbl.php:38
+#: tornevall-wp-dnsbl.php:41
 msgid ""
 "The usage of CIDR-blocks are normally not permitted by the DNSBL API, in "
 "more functions than listing them. This permission also opens up for usage in "
@@ -240,7 +349,7 @@ msgstr ""
 "raderingar kommer detta hjälpa till en hel del). Lägga till data med CIDR "
 "och olika flaggor är dock ett fortsatt problem."
 
-#: tornevall-wp-dnsbl.php:40
+#: tornevall-wp-dnsbl.php:43
 msgid ""
 "When sending new or updated data to DNSBL, clients can only add more flags "
 "to the host. This feature makes it possible to overwrite old flags"
@@ -248,13 +357,16 @@ msgstr ""
 "När data uppdateras i DNSBL, kan klienter bara lägga till fler flaggor till "
 "adressen. Denna egenskap gör att man också kan skriva över gamla flaggor."
 
-#: tornevall-wp-dnsbl.php:71
+#: tornevall-wp-dnsbl.php:82
 msgid ""
 "API data updated - If you have made any changes in this configuration, you "
 "should also save the settings."
 msgstr ""
 "API-data uppdaterades - Om du har gjort några ändringar i den här "
 "konfigurationen bör du också spara inställningarna."
+
+#~ msgid "Protect this site by ..."
+#~ msgstr "Skydda denna sajt genom att ..."
 
 #~ msgid "Show delisting form in non-AJAX"
 #~ msgstr "Visa avlistningsformulären AJAX-fritt"
@@ -335,9 +447,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Primär webbsida för DNSBL-plattformet med borttagningsinstruktioner, "
 #~ "användning, med mera"
-
-#~ msgid "Cache age"
-#~ msgstr "Cachens ålder"
 
 #~ msgid ""
 #~ "Defines for how long one blacklisted ip should checked against cache "
