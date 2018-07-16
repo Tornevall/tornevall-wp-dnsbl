@@ -69,14 +69,14 @@ function tornevall_dnsbl_enqueue()
     $vars     = array(
         'ajax_url'         => $adminUrl,
         'spinner'          => $tapi_spinner,
-        'delete'           => $tapi_delete,
+        'd'                => $tapi_delete,
         'q'                => $tapi_q,
         'dnsbln'           => wp_create_nonce($dnsblNonce),
         'saveConfigNotice' => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall_dnsbl'),
     );
 
-    wp_enqueue_script('tornevall_dnsbl_backend', plugin_dir_url(__FILE__) . 'js/api.js?t=' . time(), array('jquery'),
+    wp_enqueue_script('tornevall_dnsbl_backend', plugin_dir_url(__FILE__) . 'js/api.min.js?t=' . time(), array('jquery'),
         TORNEVALL_DNSBL_VERSION);
     wp_localize_script('tornevall_dnsbl_backend', 'tornevall_dnsbl_vars', $vars);
 }
