@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-17 10:46+0200\n"
-"PO-Revision-Date: 2018-07-17 10:46+0200\n"
+"POT-Creation-Date: 2018-07-17 11:03+0200\n"
+"PO-Revision-Date: 2018-07-17 11:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -234,64 +234,64 @@ msgid ""
 msgstr ""
 "Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: includes/helpers.php:88
+#: includes/helpers.php:81
 msgid ""
 "This site does not have DNSBL delisting permissions. Ask the administrator "
 "to fix a proper API key for the DNSBL-service, to activate this function."
 msgstr ""
 "Denna sajten har inte tillåtelse att använda avlistningsfunktioner. Be "
-"administatören att skaffa en ordentlig API-nyckel för DNSBL-tjänsten, för "
-"att aktivera denna funktionen."
+"administratören att ordna en ordentlig API-nyckel för DNSBL-tjänsten, för "
+"att aktivera den här funktionen."
 
-#: includes/helpers.php:123
+#: includes/helpers.php:121
 msgid "What does the image say?"
 msgstr "Vad står det i bilden?"
 
-#: includes/helpers.php:156
+#: includes/helpers.php:154
 msgid "Unknown API error"
 msgstr "Okänt API-fel"
 
-#: includes/helpers.php:159 tornevall-wp-dnsbl.php:87
+#: includes/helpers.php:157 tornevall-wp-dnsbl.php:91
 msgid "Delist successful"
 msgstr "Avlistningen lyckades"
 
-#: includes/helpers.php:160
+#: includes/helpers.php:158
 msgid "Delist request failed: "
 msgstr "Förfrågan om avlistning misslyckades:"
 
-#: includes/helpers.php:175
+#: includes/helpers.php:173
 msgid "Address must not be empty"
 msgstr "Adressfältet får inte vara tomt"
 
-#: includes/helpers.php:177
+#: includes/helpers.php:175
 msgid "Invalid address format"
 msgstr "Felaktigt adressformat"
 
-#: includes/helpers.php:179
+#: includes/helpers.php:177
 msgid "Address format is not allowed in this mode"
 msgstr "Adressformateringen är inte tillåten i detta läget"
 
-#: includes/helpers.php:189 tornevall-wp-dnsbl.php:81
+#: includes/helpers.php:187 tornevall-wp-dnsbl.php:81
 msgid "Blacklisted"
 msgstr "Svartlistad"
 
-#: includes/helpers.php:195 tornevall-wp-dnsbl.php:84
+#: includes/helpers.php:193 tornevall-wp-dnsbl.php:88
 msgid "Not blacklisted"
 msgstr "Ej svartlistad"
 
-#: includes/helpers.php:197
+#: includes/helpers.php:195
 msgid "Address was delisted"
 msgstr "Adressen avlistades"
 
-#: includes/helpers.php:198
+#: includes/helpers.php:196
 msgid "but servers are not synchronized yet"
 msgstr "men servrarna är ännu inte synkroniserade"
 
-#: includes/helpers.php:231
+#: includes/helpers.php:229
 msgid "IP address control"
 msgstr "IP-adresskontroll"
 
-#: includes/helpers.php:318 includes/helpers.php:462
+#: includes/helpers.php:316 includes/helpers.php:460
 msgid ""
 "Tornevall DNSBL scanner has detected that your current visiting ip address "
 "is blacklisted!"
@@ -299,11 +299,11 @@ msgstr ""
 "Tornevall DNSBL scanner har upptäckt att din beslökande ip-adress är "
 "svartlistad!"
 
-#: includes/helpers.php:319 includes/helpers.php:463
+#: includes/helpers.php:317 includes/helpers.php:461
 msgid "For more information, look here"
 msgstr "För mer information, se här"
 
-#: includes/helpers.php:325
+#: includes/helpers.php:323
 msgid ""
 "Comments section is currently unavailable: Your ip address has been flagged "
 "as untrusted by a DNS Blacklist"
@@ -367,50 +367,53 @@ msgstr ""
 "adressen. Denna egenskap gör att man också kan skriva över gamla flaggor."
 
 #: tornevall-wp-dnsbl.php:82
+msgid "API reply success"
+msgstr "API gav lyckat svar"
+
+#: tornevall-wp-dnsbl.php:83
+msgid "API authorize response"
+msgstr "Svar från API-autentisering"
+
+#: tornevall-wp-dnsbl.php:84
+msgid "Failed. Did you save your settings before trying this?"
+msgstr "Misslyckades. Har du sparat dina inställningar innan du testat detta?"
+
+#: tornevall-wp-dnsbl.php:86
 msgid "Flags updated"
 msgstr "Flaggorna har uppdaterats"
 
-#: tornevall-wp-dnsbl.php:83
+#: tornevall-wp-dnsbl.php:87
 msgid "Request failure"
 msgstr "Förfrågningen misslyckades"
 
-#: tornevall-wp-dnsbl.php:85
+#: tornevall-wp-dnsbl.php:89
 msgid "Value must not be empty"
 msgstr "Värdet får inte vara tomt"
 
-#: tornevall-wp-dnsbl.php:86
+#: tornevall-wp-dnsbl.php:90
 msgid "Removed"
 msgstr "Borttagen"
 
-#: tornevall-wp-dnsbl.php:88
+#: tornevall-wp-dnsbl.php:92
 msgid "What does the image say (lowercase)?"
 msgstr "Vad står det i bilden (små bokstäver)?"
 
-#: tornevall-wp-dnsbl.php:89
+#: tornevall-wp-dnsbl.php:93
 msgid "Removal time has been extended to "
 msgstr "Avlistningstiden har utökats till "
 
-#: tornevall-wp-dnsbl.php:90
+#: tornevall-wp-dnsbl.php:94
 msgid "but with penalties due too high removal count in too short time."
 msgstr ""
 "men med strafftid på grund av allt för många avlistningar under för kort tid."
 
-#: tornevall-wp-dnsbl.php:93
+#: tornevall-wp-dnsbl.php:97
 msgid ""
 "API data updated - If you have made any changes in this configuration, you "
 "should also save the settings."
 msgstr ""
 "API-data uppdaterades - Om du har gjort några ändringar i den här "
 "konfigurationen bör du också spara inställningarna."
-
-#~ msgid ""
-#~ "This site does not have DNSBL delisting permissions. Ask the "
-#~ "administrator to fix a proper API key for the DNSBL, to activate this "
-#~ "function."
-#~ msgstr ""
-#~ "Denna sajten har inte tillåtelse att använda avlistningsfunktioner. Be "
-#~ "administatören att skaffa en ordentlig API-nyckel för DNSBL-tjänsten, för "
-#~ "att aktivera denna funktionen."
 
 #~ msgid "Empty is not a value"
 #~ msgstr "Värdet får inte vara tomt"
