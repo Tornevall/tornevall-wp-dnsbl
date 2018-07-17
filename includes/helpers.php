@@ -252,7 +252,7 @@ function dnsbl_blacklist_disable_comments()
 
     // Reaching here without a proper state, renders a recheck
     if ($dnsbl_blacklist_control_status != "checked") {
-        $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR']);
+        $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false);
     }
 
     // Set the plugin free on delisting page
@@ -263,8 +263,7 @@ function dnsbl_blacklist_disable_comments()
     // Block on blacklist
     if ($dnsbl_blacklist_status) {
 
-        if (get_option("tornevall_dnsbl_blockfull")) {
-
+        if (get_option("tornevall_dnsbl_blockfull") && ! $isAdmin) {
             $defaultRedirectUrl = 'https://dnsbl.tornevall.org/removal?redirected';
             $redirectUrl        = get_option('tornevall_dnsbl_blocked_redirecturl');
             if (empty($redirectUrl)) {
@@ -280,13 +279,50 @@ function dnsbl_blacklist_disable_comments()
             return true;
         }
 
-        echo __('Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist',
-            'tornevall_dnsbl');
-
         return false;
     }
 
     return true;
+}
+
+/**
+ * Experimental: Shows a message to blacklisted users in the comment section.
+ * Problem: Comment widgets are affected
+ * Currently disabled!
+ *
+ * @param $comments
+ *
+ * @return array
+ */
+function dnsbl_blacklist_disable_comments_message($comments)
+{
+    if (is_admin() || current_user_can('administrator')) {
+        $isAdmin = true;
+    }
+
+    // Check the blacklist status before showing comments, so we can notify admin about problems
+    $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true);
+
+    if ($dnsbl_blacklist_status) {
+        $commentsDisabledStyle = get_option('tornevall_dnsbl_comments_disabled_style');
+
+        if ($isAdmin) {
+            echo '<div style="' . $commentsDisabledStyle . '">' . __('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
+                    'tornevall_dnsbl') . ' <a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
+                    'tornevall_dnsbl') . '</a>' . '</div>';
+
+            return $comments;
+        } else {
+
+            echo '<div style="' . $commentsDisabledStyle . '">' . __('Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist',
+                    'tornevall_dnsbl') . '</div>';
+
+            $comments = array();
+        }
+
+    }
+
+    return $comments;
 }
 
 /**
@@ -360,7 +396,7 @@ function dnsbl_resolve_addr($addr)
  * @return bool|void
  * @todo Move this into class controller
  */
-function dnsbl_check_blacklist($addr, $getIsListed = false)
+function dnsbl_check_blacklist($addr, $getIsListed = false, $adminPassThrough = false)
 {
     $currentFlags = get_option('tornevall_dnsbl_current_flags');
     $savedFlags   = get_option("tornevall_dnsbl_filter_types");
@@ -382,7 +418,7 @@ function dnsbl_check_blacklist($addr, $getIsListed = false)
     }
 
     // No checking in admin
-    if (is_admin() || current_user_can('administrator')) {
+    if (is_admin() || current_user_can('administrator') && ! $adminPassThrough) {
         if ($isListedByRequirements) {
             add_action('admin_notices', 'dnsbl_is_protected_user');
         }
@@ -471,4 +507,3 @@ function dnsbl_check_blacklist_cache($addr)
         return $testIpResponseObject->lastResponse;
     }
 }
-

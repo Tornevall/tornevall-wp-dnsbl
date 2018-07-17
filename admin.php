@@ -35,6 +35,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_prefer_api');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_getlisted_resolver');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -123,6 +124,11 @@ function tornevall_dnsbl_options()
             $flagListSelector[] = '<option value="' . $flag . '" ' . (in_array($flag,
                     $savedFlags) ? 'selected=selected' : '') . '>' . htmlentities($flag) . ' [' . $bitValue . ']</option>';
         }
+        $commentsStyle = get_option('tornevall_dnsbl_comments_disabled_style');
+        if (empty($commentsStyle)) {
+            $commentsStyle = 'font-weight: bold;';
+            update_option('tornevall_dnsbl_comments_disabled_style', $commentsStyle);
+        }
 
         ?>
 
@@ -160,6 +166,7 @@ function tornevall_dnsbl_options()
                     </td>
                 </tr>
 
+
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
                         style="font-weight: bold;"><?php echo __('Preferred resolver hosts (comma separated)',
@@ -192,6 +199,25 @@ function tornevall_dnsbl_options()
                                name="tornevall_dnsbl_blocked_redirecturl" size="32">
                     </td>
                 </tr>
+
+                <!--
+                Unprepared configuration
+                <tr>
+                    <td width="<?php /*echo $td['left']; */
+                ?>" valign="top"
+                        style="font-weight: bold;"><?php /*echo __('CSS-string for the comments disabled message',
+                            'tornevall_dnsbl'); */
+                ?>
+                    </td>
+                    <td width="<?php /*echo $td['right']; */
+                ?>" valign="top">
+                        <input type="text" size="50"
+                               value="<?php /*echo $commentsStyle; */
+                ?>"
+                               name="tornevall_dnsbl_comments_disabled_style">
+                    </td>
+                </tr>
+-->
                 <?php
 
                 if (in_array('global_delist', $tornevallDnsblFlags)) {
@@ -245,8 +271,7 @@ function tornevall_dnsbl_options()
 
             </table>
 
-            <div style="font-weight: bold;font-size: 20px !important;margin-top:5px;margin-bottom:5px;"
-                 onclick="$('#dnsblApiView').show()"><?php echo __('API',
+            <div style="font-weight: bold;font-size: 20px !important;margin-top:5px;margin-bottom:5px;"><?php echo __('API',
                     'tornevall_dnsbl'); ?></div>
             <?php echo __('The plugin is fully functional even if the API is not in use'); ?>
 

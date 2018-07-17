@@ -3,7 +3,7 @@ Contributors: Tornevall
 Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
-Tested up to: 4.8.1
+Tested up to: 4.9.7
 Stable tag: 2.0.0
 License: Apache
 
@@ -33,25 +33,45 @@ The installations creates a new caching table in your wordpress database. This i
 
 == Frequently Asked Questions ==
 
+Can I get delisted?
 
+Yes. If you are blacklisted in Tornevall DNSBL, you can via https://dnsbl.tornevall.org - otherwise, you can't.
 
 
 == Screenshots ==
 
 The below screenshots is obsolete. New will come soone!
 
-1. Screen shot that shows how the control panel looks like
+1. Screenshot that shows custom CSS, when comments section is disabled due to blacklisted address
 
-http://tracker.tornevall.net/secure/attachment/10200/dnsbl_config_comments.jpg
+https://www.tornevall.com/wp-content/uploads/2018/07/commentsDisabledCustomCSS.png
 
-2. Full view for 1.0.1-updates (141205)
+2. A part of the new DNSBL configuration interface
 
-https://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
+https://www.tornevall.com/wp-content/uploads/2018/07/dnsbl_config.png
+
+The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOptions.jpg
+
 
 == Changelog ==
 
 = 2.0.0 =
 
+    * [DNSBLWP-30] - IPtype in helpers.php has no effect anywhere (and is translated into arpas instead of iptypes)
+    * [DNSBLWP-33] - Do not use HTTP Post when sending DELETE (it fails)
+    * [DNSBLWP-4] - API Key for handling of blacklists
+    * [DNSBLWP-18] - Instead of using TorneLIB-curl, use internal WP functions where it is possible
+    * [DNSBLWP-21] - Clean up database during deactivation/uninstall
+    * [DNSBLWP-22] - Configuration menus
+    * [DNSBLWP-25] - Reinstate the commentblock
+    * [DNSBLWP-26] - Reinstate page redirection
+    * [DNSBLWP-27] - Reinstate listcontrol
+    * [DNSBLWP-28] - DNS Lookups in plain mode
+    * [DNSBLWP-29] - Currently the lookups is based on API - make it resolver-based when single addresses are being requested
+    * [DNSBLWP-31] - Remove test hosts from project
+    * [DNSBLWP-32] - Use API instead of DNS when running delisting requests
+    * [DNSBLWP-34] - Delist in ajax mode
+    * [DNSBLWP-35] - Allow enter in search form (ajax)
 
 
 == Upgrade Notice ==
