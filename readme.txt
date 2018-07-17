@@ -1,10 +1,10 @@
-=== Tornevall Networks DNSBL Implementation ===
+=== Tornevall Networks DNSBL and Fraud Blacklist implementation ===
 Contributors: Tornevall
-Donate link: https://auth.tornevall.net/
+Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
-Tested up to: 4.8.1
-Stable tag: 1.1.1
+Tested up to: 4.9.7
+Stable tag: 2.0.0
 License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -33,71 +33,48 @@ The installations creates a new caching table in your wordpress database. This i
 
 == Frequently Asked Questions ==
 
+Can I get delisted?
 
+Yes. If you are blacklisted in Tornevall DNSBL, you can via https://dnsbl.tornevall.org - otherwise, you can't.
 
 
 == Screenshots ==
 
 The below screenshots is obsolete. New will come soone!
 
-1. Screen shot that shows how the control panel looks like
+1. Screenshot that shows custom CSS, when comments section is disabled due to blacklisted address
 
-http://tracker.tornevall.net/secure/attachment/10200/dnsbl_config_comments.jpg
+https://www.tornevall.com/wp-content/uploads/2018/07/commentsDisabledCustomCSS.png
 
-2. Full view for 1.0.1-updates (141205)
+2. A part of the new DNSBL configuration interface
 
-https://tracker.tornevall.net/secure/attachment/10201/dnsblOptions.jpg
+https://www.tornevall.com/wp-content/uploads/2018/07/dnsbl_config.png
+
+The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOptions.jpg
+
 
 == Changelog ==
 
-= 1.1.1 =
+= 2.0.0 =
 
- * DNSBLWP-17: Incorrect index on table alteration might still cause headers already sent (Final!)
- * Making sure that curl is really active before approving usage (showing notice if not available or disabled)
- * Database issues (causing background notices) fixed
- * Code reformatting
- * Moved location of the menus
- * Initialized parts for FraudBLv2
-
-= 1.1.0 =
-
- * DNSBLWP-16 - Activation failures
- * DNSBLWP-14 - Synch with current bitmask set
- * Resolver class update
-
-= 1.0.5 =
-
-* Found a html-tag that was not closed properly in the translation releae (which was 1.0.4)
-
-= 1.0.4 =
-
-* Added support for language Swedish (http://tracker.tornevall.net/browse/TSDWP-13)
-
-= 1.0.3 =
-
-* Issue tracker switched to JIRA (http://tracker.tornevall.net/projects/TSDWP)
-
-= 1.0.2 =
-
-* Tablename fixes
-
-= 1.0.1 =
-
-* Minimalistic statistics (http://tracker.tornevall.net/browse/TSDWP-7)
-* Update timestamps before expire (http://tracker.tornevall.net/browse/TSDWP-6)
-* Avoid using internal MySQL Calls (http://tracker.tornevall.net/browse/TSDWP-2)
-* Duplicate key-fixes (http://tracker.tornevall.net/browse/TSDWP-1)
-
-= 1.0.0 =
-
-* Plugin init (http://tracker.tornevall.net/browse/TSDWP-9, http://tracker.tornevall.net/projects/TSDWP/issues/TSDWP-5)
-* Admin control panel added
-* Detection of hosts on bitmask level
+    * [DNSBLWP-30] - IPtype in helpers.php has no effect anywhere (and is translated into arpas instead of iptypes)
+    * [DNSBLWP-33] - Do not use HTTP Post when sending DELETE (it fails)
+    * [DNSBLWP-4] - API Key for handling of blacklists
+    * [DNSBLWP-18] - Instead of using TorneLIB-curl, use internal WP functions where it is possible
+    * [DNSBLWP-21] - Clean up database during deactivation/uninstall
+    * [DNSBLWP-22] - Configuration menus
+    * [DNSBLWP-25] - Reinstate the commentblock
+    * [DNSBLWP-26] - Reinstate page redirection
+    * [DNSBLWP-27] - Reinstate listcontrol
+    * [DNSBLWP-28] - DNS Lookups in plain mode
+    * [DNSBLWP-29] - Currently the lookups is based on API - make it resolver-based when single addresses are being requested
+    * [DNSBLWP-31] - Remove test hosts from project
+    * [DNSBLWP-32] - Use API instead of DNS when running delisting requests
+    * [DNSBLWP-34] - Delist in ajax mode
+    * [DNSBLWP-35] - Allow enter in search form (ajax)
 
 
 == Upgrade Notice ==
-
-= 1.0.0 =
 
 Nothing to see here
 
