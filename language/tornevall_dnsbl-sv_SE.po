@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-17 10:23+0200\n"
-"PO-Revision-Date: 2018-07-17 10:23+0200\n"
+"POT-Creation-Date: 2018-07-17 10:46+0200\n"
+"PO-Revision-Date: 2018-07-17 10:46+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -159,24 +159,24 @@ msgstr ""
 "Klicka i denna boxen för att prioritera den icke-reponsiva layouten före "
 "standardformuläret"
 
-#: admin.php:274
+#: admin.php:271
 msgid "API"
 msgstr "API"
 
-#: admin.php:276
+#: admin.php:273
 msgid "The plugin is fully functional even if the API is not in use"
 msgstr "Pluginet är fullt funktionellt även om APIet inte används"
 
-#: admin.php:282
+#: admin.php:279
 msgid "Test API functionality"
 msgstr "Testa API-funktionalitet"
 
-#: admin.php:285
+#: admin.php:282
 msgid "Update above flag list (no credentials required)"
 msgstr ""
 "Uppdatera ovanstående lista med flaggor (inga inloggningsbehörigheter krävs)"
 
-#: admin.php:287
+#: admin.php:284
 msgid ""
 "By entering an API id and key below, this function will validate that your "
 "key is correct."
@@ -184,105 +184,114 @@ msgstr ""
 "Genom att skriva in ett API-id och en nyckel nedan, kommer denna funktionen "
 "att validera att din nyckel är korrekt."
 
-#: admin.php:291
+#: admin.php:288
 msgid "Get your API key at"
 msgstr "Skaffa din API-nyckel via"
 
-#: admin.php:299
+#: admin.php:296
 msgid "Application API ID/Name"
 msgstr "API ID/Namn för applikationen"
 
-#: admin.php:311
+#: admin.php:308
 msgid "Click here to view available permissions"
 msgstr "Klicka här för att se tillgängliga behörigheter"
 
-#: admin.php:325
+#: admin.php:322
 msgid "Application API Key"
 msgstr "API-Nyckel för applikationen"
 
-#: admin.php:333
+#: admin.php:330
 msgid "Preferred API URL"
 msgstr "Föredragen URL för API"
 
-#: admin.php:341
+#: admin.php:338
 msgid "API MODE"
 msgstr "API-LÄGE"
 
-#: admin.php:346
+#: admin.php:343
 msgid "Always use API instead of DNS lookups when possible (limited requests)"
 msgstr ""
 "Använd alltid inbyggt API I stället för DNS-namnuppslagningar, när det är "
 "möjligt (begränsat antal förfrågningar)"
 
-#: admin.php:348
+#: admin.php:345
 msgid "This mode is incompatible with the plain form mode"
 msgstr "Detta läget är ej kompatibelt i läget där AJAX är avstängt"
 
-#: admin.php:355
+#: admin.php:352
 msgid "Request remotely resolved hosts"
 msgstr "Efterfråga namnupplösta adresser från server"
 
-#: admin.php:361
+#: admin.php:358
 msgid "Include (if any) the ip address resolved hostname in the request"
 msgstr ""
 "Inkludera (om det finns) namnupplösta ip-adresser i förfrågningen till API"
 
-#: admin.php:369
+#: admin.php:366
 msgid ""
 "Make sure that you really save your settings before trying to use them from "
 "this page"
 msgstr ""
 "Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: includes/helpers.php:116
+#: includes/helpers.php:88
+msgid ""
+"This site does not have DNSBL delisting permissions. Ask the administrator "
+"to fix a proper API key for the DNSBL-service, to activate this function."
+msgstr ""
+"Denna sajten har inte tillåtelse att använda avlistningsfunktioner. Be "
+"administatören att skaffa en ordentlig API-nyckel för DNSBL-tjänsten, för "
+"att aktivera denna funktionen."
+
+#: includes/helpers.php:123
 msgid "What does the image say?"
 msgstr "Vad står det i bilden?"
 
-#: includes/helpers.php:149
+#: includes/helpers.php:156
 msgid "Unknown API error"
 msgstr "Okänt API-fel"
 
-#: includes/helpers.php:152 tornevall-wp-dnsbl.php:87
+#: includes/helpers.php:159 tornevall-wp-dnsbl.php:87
 msgid "Delist successful"
 msgstr "Avlistningen lyckades"
 
-#: includes/helpers.php:153
+#: includes/helpers.php:160
 msgid "Delist request failed: "
 msgstr "Förfrågan om avlistning misslyckades:"
 
-#: includes/helpers.php:168
+#: includes/helpers.php:175
 msgid "Address must not be empty"
 msgstr "Adressfältet får inte vara tomt"
 
-#: includes/helpers.php:170
+#: includes/helpers.php:177
 msgid "Invalid address format"
 msgstr "Felaktigt adressformat"
 
-#: includes/helpers.php:172
+#: includes/helpers.php:179
 msgid "Address format is not allowed in this mode"
 msgstr "Adressformateringen är inte tillåten i detta läget"
 
-#: includes/helpers.php:182 tornevall-wp-dnsbl.php:81
+#: includes/helpers.php:189 tornevall-wp-dnsbl.php:81
 msgid "Blacklisted"
 msgstr "Svartlistad"
 
-#: includes/helpers.php:188 tornevall-wp-dnsbl.php:84
+#: includes/helpers.php:195 tornevall-wp-dnsbl.php:84
 msgid "Not blacklisted"
 msgstr "Ej svartlistad"
 
-#: includes/helpers.php:190
+#: includes/helpers.php:197
 msgid "Address was delisted"
 msgstr "Adressen avlistades"
 
-#: includes/helpers.php:191
+#: includes/helpers.php:198
 msgid "but servers are not synchronized yet"
 msgstr "men servrarna är ännu inte synkroniserade"
 
-#: includes/helpers.php:224
+#: includes/helpers.php:231
 msgid "IP address control"
 msgstr "IP-adresskontroll"
 
-#: includes/helpers.php:310 includes/helpers.php:451
+#: includes/helpers.php:318 includes/helpers.php:462
 msgid ""
 "Tornevall DNSBL scanner has detected that your current visiting ip address "
 "is blacklisted!"
@@ -290,11 +299,11 @@ msgstr ""
 "Tornevall DNSBL scanner har upptäckt att din beslökande ip-adress är "
 "svartlistad!"
 
-#: includes/helpers.php:311 includes/helpers.php:452
+#: includes/helpers.php:319 includes/helpers.php:463
 msgid "For more information, look here"
 msgstr "För mer information, se här"
 
-#: includes/helpers.php:317
+#: includes/helpers.php:325
 msgid ""
 "Comments section is currently unavailable: Your ip address has been flagged "
 "as untrusted by a DNS Blacklist"
@@ -393,6 +402,15 @@ msgid ""
 msgstr ""
 "API-data uppdaterades - Om du har gjort några ändringar i den här "
 "konfigurationen bör du också spara inställningarna."
+
+#~ msgid ""
+#~ "This site does not have DNSBL delisting permissions. Ask the "
+#~ "administrator to fix a proper API key for the DNSBL, to activate this "
+#~ "function."
+#~ msgstr ""
+#~ "Denna sajten har inte tillåtelse att använda avlistningsfunktioner. Be "
+#~ "administatören att skaffa en ordentlig API-nyckel för DNSBL-tjänsten, för "
+#~ "att aktivera denna funktionen."
 
 #~ msgid "Empty is not a value"
 #~ msgstr "Värdet får inte vara tomt"

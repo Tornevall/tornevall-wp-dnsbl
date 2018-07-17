@@ -84,6 +84,9 @@ function tornevall_dnsbl_content_handler($content)
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
 
     if ($post->ID != $currentDelistingPage) {
+
+        $content = preg_replace("/\[dnsbl_removal_form\]/", '<div style="font-weight: bold;color: #990000; background: #fffefe; border:1px solid #990000; padding: 5px;">' . __('This site does not have DNSBL delisting permissions. Ask the administrator to fix a proper API key for the DNSBL-service, to activate this function.', 'tornevall_dnsbl') . '</div>', $content);
+
         return $content;
     }
 
