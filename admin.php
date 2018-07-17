@@ -261,9 +261,6 @@ function tornevall_dnsbl_options()
                         </td>
                     </tr>
 
-                    </tr>
-
-
                     <?php
                 }
 

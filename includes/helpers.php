@@ -9,6 +9,8 @@ function tornevall_wp_dnsbl_activate_db()
 {
     global $wpdb;
 
+    $dbDeltaQuery = array();
+
     $dnsbl_db_tables = array(
         'dnsblcache' => '
             `ipAddr` VARCHAR(50) NOT NULL,
@@ -66,6 +68,8 @@ function tornevall_wp_dnsbl_uninstall_db()
 /**
  * Removal interface
  *
+ * @param $content
+ *
  * @return string
  * @throws Exception
  * @todo Move this into class controller
@@ -74,7 +78,7 @@ function tornevall_dnsbl_content_handler($content)
 {
     global $post, $dnsblNonce, $tornevallDnsblFlags;
     if ( ! in_array('global_delist', $tornevallDnsblFlags)) {
-        return;
+        return null;
     }
 
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
@@ -263,7 +267,7 @@ function dnsbl_blacklist_disable_comments()
     // Block on blacklist
     if ($dnsbl_blacklist_status) {
 
-        if (get_option("tornevall_dnsbl_blockfull") && ! $isAdmin) {
+        if (get_option("tornevall_dnsbl_blockfull")) {
             $defaultRedirectUrl = 'https://dnsbl.tornevall.org/removal?redirected';
             $redirectUrl        = get_option('tornevall_dnsbl_blocked_redirecturl');
             if (empty($redirectUrl)) {
@@ -296,6 +300,7 @@ function dnsbl_blacklist_disable_comments()
  */
 function dnsbl_blacklist_disable_comments_message($comments)
 {
+    $isAdmin = false;
     if (is_admin() || current_user_can('administrator')) {
         $isAdmin = true;
     }
@@ -340,7 +345,9 @@ function dnsbl_resolve_addr($addr)
     $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
     $currentFlags  = get_option('tornevall_dnsbl_current_flags');
 
-    $newArray = array();
+    $newArray  = array();
+    $constants = array();
+    $typeBit   = 0;
     if (is_array($currentFlags) && count($currentFlags)) {
         $BIT = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
         foreach ($resolverNames as $rName) {
@@ -392,8 +399,9 @@ function dnsbl_resolve_addr($addr)
 /**
  * @param      $addr
  * @param bool $getIsListed
+ * @param bool $adminPassThrough
  *
- * @return bool|void
+ * @return int
  * @todo Move this into class controller
  */
 function dnsbl_check_blacklist($addr, $getIsListed = false, $adminPassThrough = false)
@@ -423,7 +431,7 @@ function dnsbl_check_blacklist($addr, $getIsListed = false, $adminPassThrough = 
             add_action('admin_notices', 'dnsbl_is_protected_user');
         }
 
-        return;
+        return false;
     }
 
     return $isListedByRequirements;
@@ -493,7 +501,7 @@ function dnsbl_check_blacklist_cache($addr)
         return $internalResult['typebit'];
     } else {
 
-        $lastRes = time() - intval($testIpResponseObject->lastResolve);
+        $lastRes = time() - (isset($testIpResponseObject->lastResolve) ? intval($testIpResponseObject->lastResolve) : time());
         // When time is up, update with new data
         if ($lastRes >= $cacheAge) {
             $result         = dnsbl_resolve_addr($addr);

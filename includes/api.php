@@ -29,7 +29,6 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
 
     if (strtolower($postMethod) == "delete") {
         // Deletion is made easier with json as post parameters does not seem to reach the whole way properly
-        /** @var header $response */
         $response = wp_remote_request($apiUrl, array(
             'body'    => @json_encode($postdata),
             'method'  => 'DELETE',
@@ -40,8 +39,6 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
         ));
 
     } else {
-
-        /** @var header $response */
         $response = wp_remote_post($apiUrl, array(
             'body'    => $postdata,
             'headers' => array('Authorization' => 'Basic ' . base64_encode($appId . ":" . $appKey))
