@@ -9,8 +9,7 @@ function tornevall_wp_dnsbl_activate_db()
 {
     global $wpdb;
 
-    $dbDeltaQuery = array();
-
+    $dbDeltaQuery    = array();
     $dnsbl_db_tables = array(
         'dnsblcache' => '
             `ipAddr` VARCHAR(50) NOT NULL,
@@ -25,6 +24,13 @@ function tornevall_wp_dnsbl_activate_db()
             INDEX `denyIndex` (`ipAddr` ASC, `wasBlocked` ASC)
         ',
     );
+
+    $dbVersion = get_option('tornevall_dnsbl_database_version');
+    if (empty($dbVersion) || version_compare(TORNEVALL_DNSBL_DATA_VERSION, '2.0.0', '<')) {
+        // Drop tables if data versions are too old or completely new.
+        update_option('tornevall_dnsbl_database_version', TORNEVALL_DNSBL_DATA_VERSION);
+        tornevall_wp_dnsbl_deactivate_db();
+    }
 
     foreach ($dnsbl_db_tables as $tableName => $tableData) {
         $dbDeltaQuery[] = 'CREATE TABLE ' . $wpdb->prefix . $tableName . ' (' . $tableData . ') ' . $wpdb->get_charset_collate();
@@ -78,7 +84,10 @@ function tornevall_dnsbl_content_handler($content)
 {
     global $post, $dnsblNonce, $tornevallDnsblFlags;
     if ( ! in_array('global_delist', $tornevallDnsblFlags)) {
-        $content = preg_replace("/\[dnsbl_removal_form\]/", '<div style="font-weight: bold;color: #990000; background: #fffefe; border:1px solid #990000; padding: 5px;">' . __('This site does not have DNSBL delisting permissions. Ask the administrator to fix a proper API key for the DNSBL-service, to activate this function.', 'tornevall_dnsbl') . '</div>', $content);
+        $content = preg_replace("/\[dnsbl_removal_form\]/",
+            '<div style="font-weight: bold;color: #990000; background: #fffefe; border:1px solid #990000; padding: 5px;">' . __('This site does not have DNSBL delisting permissions. Ask the administrator to fix a proper API key for the DNSBL-service, to activate this function.',
+                'tornevall_dnsbl') . '</div>', $content);
+
         return $content;
     }
 

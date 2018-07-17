@@ -58,7 +58,7 @@ if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETB
 				'BIT_64'  => 64,
 				'BIT_128' => 128
 			);
-			if ( count( $bitStructure ) ) {
+			if ( is_array($bitStructure) && count( $bitStructure ) ) {
 				$this->BIT_SETUP = $this->validateBitStructure( $bitStructure );
 			}
 		}
