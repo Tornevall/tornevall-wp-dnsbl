@@ -1,5 +1,8 @@
 <?php
 
+use Tornevall_WP_DNSBL\MODULE_NETBITS;
+use Tornevall_WP_DNSBL\MODULE_NETWORK;
+
 /**
  * Plugin activation hook
  *
@@ -191,7 +194,7 @@ function tornevall_dnsbl_content_handler($content)
             $constants = 'Not available';
             if ($isListed && ! $alreadyDeletedControl) {
                 $currentFlags  = get_option('tornevall_dnsbl_current_flags');
-                $BIT           = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+                $BIT           = new MODULE_NETBITS($currentFlags);
                 $constants     = implode("<br>", $BIT->getBitArray($isListed));
                 $blacklistInfo = $requestingAddress . ": " . __('Blacklisted', 'tornevall_dnsbl');
                 $borderFormat  = "border: 1px solid #990000;padding: 5px;background:#FFEEFF";
@@ -350,7 +353,7 @@ function dnsbl_blacklist_disable_comments_message($comments)
  */
 function dnsbl_resolve_addr($addr)
 {
-    $TESTNET       = new \Tornevall_WP_DNSBL\MODULE_NETWORK();
+    $TESTNET       = new MODULE_NETWORK();
     $arpaName      = $TESTNET->getArpaFromAddr($addr);
     $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
     $currentFlags  = get_option('tornevall_dnsbl_current_flags');
@@ -359,7 +362,7 @@ function dnsbl_resolve_addr($addr)
     $constants = array();
     $typeBit   = 0;
     if (is_array($currentFlags) && count($currentFlags)) {
-        $BIT = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+        $BIT = new MODULE_NETBITS($currentFlags);
         foreach ($resolverNames as $rName) {
             $listed      = false;
             $resolveHost = $arpaName . "." . $rName;
@@ -418,7 +421,7 @@ function dnsbl_check_blacklist($addr, $getIsListed = false, $adminPassThrough = 
 {
     $currentFlags = get_option('tornevall_dnsbl_current_flags');
     $savedFlags   = get_option("tornevall_dnsbl_filter_types");
-    $BIT          = new \Tornevall_WP_DNSBL\MODULE_NETBITS($currentFlags);
+    $BIT          = new MODULE_NETBITS($currentFlags);
 
     $bitMaskResponse        = dnsbl_check_blacklist_cache($addr);
     $isListedByRequirements = false;
@@ -504,8 +507,11 @@ function dnsbl_check_blacklist_cache($addr)
         $internalResult = array_pop($result['response']['requestResponse']);
 
         if (isset($internalResult['ip'])) {
-            $wpdb->query($wpdb->prepare("INSERT INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
+            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
                 array($addr, $internalResult['typebit'], time())));
+        } else {
+            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
+                array($addr, 0, time())));
         }
 
         return $internalResult['typebit'];

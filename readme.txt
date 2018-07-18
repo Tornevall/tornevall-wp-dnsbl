@@ -4,7 +4,7 @@ Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
 Tested up to: 4.9.7
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -13,12 +13,14 @@ Tornevall Networks DNS Blacklist support for Wordpress
 
 Tornevall Networks DNS Blacklist support. Blocks comment functions or redirects visitors who is blacklisted to external site.
 
-[Project and plugin development](https://tracker.tornevall.net/projects/DNSBLWP/issues) - [Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
+[Project tracker](https://tracker.tornevall.net/projects/DNSBLWP/issues) - Contribute with suggestions or bug reports here!
+[Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
+
 
 = Contribute =
 
-Do you think there are ways to make our plugin even better? Join our project for Tornevall DNSBL at [Bitbucket](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-wp-dnsbl/browse) or 
-You can also visit the [project tracker](https://tracker.tornevall.net/secure/Dashboard.jspa?selectPageId=10900) for the "DNSBL for WordPress" - or the [major project tracker for Tornevall Networks DNSBL with FraudBL](https://tracker.tornevall.net/secure/Dashboard.jspa?selectPageId=10601).
+Can you help? Register and join the [project tracker]((https://tracker.tornevall.net/projects/DNSBLWP/issues)) and start creating!
+You can also join the open source project at [Bitbucket](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-wp-dnsbl/browse). 
 
 Want to add a new language to this plugin? You can contribute via [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation).
 
@@ -31,11 +33,14 @@ Want to add a new language to this plugin? You can contribute via [translate.wor
 
 The installations creates a new caching table in your wordpress database. This is used to not overload DNS servers with extreme resolving. The default cache lives for 900 sec (5 minutes) and will then clean up itself.
 
+As of 2.0.0, the plugin should be "self healed" when the database is not in synch. Installing this plugin via for example [GIT](https://bitbucket.tornevall.net/projects/WWW/repos/tornevall-wp-dnsbl) might put the plugin in this mode (desynch) since tables might update between versions. If this is happening, disable and enable the plugin to reset them (as they during each disable/enable/plugin removal are reinstalled).
+
 == Frequently Asked Questions ==
 
-Can I get delisted?
+* Can I get delisted?
 
 Yes. If you are blacklisted in Tornevall DNSBL, you can via https://dnsbl.tornevall.org - otherwise, you can't.
+
 
 
 == Screenshots ==
@@ -55,28 +60,22 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
+= 2.0.2 =
+
+   * [DNSBLWP-40] - Duplicate indexes report
+   * [DNSBLWP-41] - MODULE_NETWORK and MODULE_NETBITS is in some systems not present
+   
+[CHANGELOG 2.0.2](https://www.tornevall.net/2018/07/18/dnsbl-for-wordpress-2-0-2-changelog/)
+
+
 = 2.0.1 =
 
-    * [DNSBLWP-37] MODULE_BITMASK does counting even if there are no valid array
-    * [DNSBLWP-38] Updating database from 1.x might fail in some cases
+[CHANGELOG 2.0.1](https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/)
+
 
 = 2.0.0 =
 
-    * [DNSBLWP-30] - IPtype in helpers.php has no effect anywhere (and is translated into arpas instead of iptypes)
-    * [DNSBLWP-33] - Do not use HTTP Post when sending DELETE (it fails)
-    * [DNSBLWP-4] - API Key for handling of blacklists
-    * [DNSBLWP-18] - Instead of using TorneLIB-curl, use internal WP functions where it is possible
-    * [DNSBLWP-21] - Clean up database during deactivation/uninstall
-    * [DNSBLWP-22] - Configuration menus
-    * [DNSBLWP-25] - Reinstate the commentblock
-    * [DNSBLWP-26] - Reinstate page redirection
-    * [DNSBLWP-27] - Reinstate listcontrol
-    * [DNSBLWP-28] - DNS Lookups in plain mode
-    * [DNSBLWP-29] - Currently the lookups is based on API - make it resolver-based when single addresses are being requested
-    * [DNSBLWP-31] - Remove test hosts from project
-    * [DNSBLWP-32] - Use API instead of DNS when running delisting requests
-    * [DNSBLWP-34] - Delist in ajax mode
-    * [DNSBLWP-35] - Allow enter in search form (ajax)
+[CHANGELOG 2.0.0](https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/)
 
 
 == Upgrade Notice ==

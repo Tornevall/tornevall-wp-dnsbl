@@ -34,7 +34,7 @@ if ( ! defined( 'NETCURL_NETBITS_MODIFY' ) ) {
 }
 
 // Check if there is a packagist release already loaded, since this network standalone release is deprecated as of 20180320.
-if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'TorneLIB\MODULE_NETBITS' ) ) {
+if ( ! class_exists( 'MODULE_NETBITS' ) && ! class_exists( 'Tornevall_WP_DNSBL\MODULE_NETBITS' ) ) {
 	/**
 	 * Class TorneLIB_NetBits Netbits Library for calculations with bitmasks
 	 *

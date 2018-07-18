@@ -12,12 +12,12 @@
  */
 
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.1');
+define('TORNEVALL_DNSBL_VERSION', '2.0.2');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
-require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/bits.php');
+require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/helpers.php');
 

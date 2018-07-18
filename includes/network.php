@@ -25,7 +25,7 @@
 
 namespace Tornevall_WP_DNSBL;
 
-if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'TorneLIB\MODULE_NETWORK' ) ) {
+if ( ! class_exists( 'MODULE_NETWORK' ) && ! class_exists( 'Tornevall_WP_DNSBL\MODULE_NETWORK' ) ) {
 	if ( ! defined( 'NETCURL_NETWORK_RELEASE' ) ) {
 		define( 'NETCURL_NETWORK_RELEASE', '6.0.6' );
 	}
