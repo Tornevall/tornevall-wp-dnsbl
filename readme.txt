@@ -60,6 +60,10 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
+= 2.0.4 =
+
+ * Translation update (text domain fixed)
+
 = 2.0.3 =
 
  * Text and translation
