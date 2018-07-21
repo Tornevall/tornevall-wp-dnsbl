@@ -4,7 +4,7 @@ Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
 Tested up to: 4.9.7
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -60,10 +60,14 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
+= 2.0.3 =
+
+ * Text and translation
+
 = 2.0.2 =
 
-   * [DNSBLWP-40] - Duplicate indexes report
-   * [DNSBLWP-41] - MODULE_NETWORK and MODULE_NETBITS is in some systems not present
+ * Duplicate indexes report
+ * MODULE_NETWORK and MODULE_NETBITS is in some systems not present
    
 [CHANGELOG 2.0.2](https://www.tornevall.net/2018/07/18/dnsbl-for-wordpress-2-0-2-changelog/)
 
