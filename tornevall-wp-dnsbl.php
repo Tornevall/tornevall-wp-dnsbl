@@ -4,15 +4,14 @@
  * Plugin URI: https://docs.tornevall.net/x/AoA_/
  * Project URI: https://tracker.tornevall.net/projects/DNSBLWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 2.0.3
+ * Version: 2.0.4
  * Author: Tomas Tornevall
  * Author URI: https://www.tornevalls.se/
- * Text Domain: tornevall_dnsbl
- * Domain Path: /language
+ * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.3');
+define('TORNEVALL_DNSBL_VERSION', '2.0.4');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
@@ -21,7 +20,8 @@ require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/helpers.php');
 
-load_plugin_textdomain('tornevall_dnsbl', false, dirname(plugin_basename(__FILE__)) . '/language');
+load_plugin_textdomain('tornevall-networks-dnsbl-implementation', false,
+    dirname(plugin_basename(__FILE__)) . '/language');
 
 $dnsbl_blacklist_status         = false;
 $dnsbl_blacklist_control_status = "unchecked";
@@ -30,20 +30,21 @@ $dnsblPermissionArray = array();
 $dnsblClientData      = @unserialize(get_option('tornevall_dnsbl_clientdata'));
 $permissions          = array(
     'allow_cidr'        => __('The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
     'allow_cidr_update' => __('Setting that partially allows CIDR-block updates for the DNSBL (there migt me limitations linked to this permission - see the documentation for this information)',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
     'can_purge'         => __('Special ability to purge hosts instead of marking them deleted in the database',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
     'dnsbl_update'      => __('Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and bl.fraudbl.org)',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
     'fraudbl_update'    => __('Extended ability to handle fraudbl-commerce (this is not the regular bl.fraudbl.org resolver)',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
     'global_delist'     => __('Global delisting permission (can use as delisting service for visitors)',
-        'tornevall_dnsbl'),
-    'local_delist'      => __('Local delisting permission (server can delist self)', 'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
+    'local_delist'      => __('Local delisting permission (server can delist self)',
+        'tornevall-networks-dnsbl-implementation'),
     'overwrite_flags'   => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
-        'tornevall_dnsbl'),
+        'tornevall-networks-dnsbl-implementation'),
 );
 $tornevallDnsblFlags  = array();
 if (is_object($dnsblClientData)) {
@@ -80,24 +81,27 @@ function tornevall_dnsbl_enqueue()
         'd'                                  => $tapi_delete,
         'q'                                  => $tapi_q,
         'dnsbln'                             => $dnsblNonce,
-        'tr_blacklisted'                     => __('Blacklisted', 'tornevall_dnsbl'),
-        'tr_api_reply_success'               => __('API reply success', 'tornevall_dnsbl'),
-        'tr_api_reply_authorized'            => __('API authorize response', 'tornevall_dnsbl'),
+        'tr_blacklisted'                     => __('Blacklisted', 'tornevall-networks-dnsbl-implementation'),
+        'tr_api_reply_success'               => __('API reply success', 'tornevall-networks-dnsbl-implementation'),
+        'tr_api_reply_authorized'            => __('API authorize response', 'tornevall-networks-dnsbl-implementation'),
         'tr_api_reply_fail'                  => __('Failed. Did you save your settings before trying this?',
-            'tornevall_dnsbl'),
-        'tr_flags_updated'                   => __('Flags updated', 'tornevall_dnsbl'),
-        'tr_request_failure'                 => __('Request failure', 'tornevall_dnsbl'),
-        'tr_not_blacklisted'                 => __('Not blacklisted', 'tornevall_dnsbl'),
-        'tr_no_empty_value'                  => __('Value must not be empty', 'tornevall_dnsbl'),
-        'tr_removed'                         => __('Removed', 'tornevall_dnsbl'),
-        'tr_delist_success'                  => __('Delist successful', 'tornevall_dnsbl'),
-        'tr_captcha_image'                   => __('What does the image say (lowercase)?', 'tornevall_dnsbl'),
-        'tr_delist_extended'                 => __('Removal time has been extended to ', 'tornevall_dnsbl'),
+            'tornevall-networks-dnsbl-implementation'),
+        'tr_flags_updated'                   => __('Flags updated', 'tornevall-networks-dnsbl-implementation'),
+        'tr_request_failure'                 => __('Request failure', 'tornevall-networks-dnsbl-implementation'),
+        'tr_not_blacklisted'                 => __('Not blacklisted', 'tornevall-networks-dnsbl-implementation'),
+        'tr_no_empty_value'                  => __('Value must not be empty',
+            'tornevall-networks-dnsbl-implementation'),
+        'tr_removed'                         => __('Removed', 'tornevall-networks-dnsbl-implementation'),
+        'tr_delist_success'                  => __('Delist successful', 'tornevall-networks-dnsbl-implementation'),
+        'tr_captcha_image'                   => __('What does the image say (lowercase)?',
+            'tornevall-networks-dnsbl-implementation'),
+        'tr_delist_extended'                 => __('Removal time has been extended to ',
+            'tornevall-networks-dnsbl-implementation'),
         'tr_delist_penalties'                => __('but with penalties due too high removal count in too short time.',
-            'tornevall_dnsbl'),
+            'tornevall-networks-dnsbl-implementation'),
         'tornevall_dnsbl_getlisted_resolver' => get_option('tornevall_dnsbl_getlisted_resolver'),
         'saveConfigNotice'                   => __('API data updated - If you have made any changes in this configuration, you should also save the settings.',
-            'tornevall_dnsbl'),
+            'tornevall-networks-dnsbl-implementation'),
     );
 
     wp_enqueue_script('tornevall_dnsbl_backend', plugin_dir_url(__FILE__) . 'js/api.min.js?t=' . time(),
