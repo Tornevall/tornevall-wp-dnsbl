@@ -4,7 +4,7 @@
  * Plugin URI: https://docs.tornevall.net/x/AoA_/
  * Project URI: https://tracker.tornevall.net/projects/DNSBLWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 2.0.2
+ * Version: 2.0.3
  * Author: Tomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall_dnsbl
@@ -12,7 +12,7 @@
  */
 
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.2');
+define('TORNEVALL_DNSBL_VERSION', '2.0.3');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
@@ -29,18 +29,20 @@ $dnsbl_blacklist_control_status = "unchecked";
 $dnsblPermissionArray = array();
 $dnsblClientData      = @unserialize(get_option('tornevall_dnsbl_clientdata'));
 $permissions          = array(
-    'global_delist'   => __('Global delisting permission (can use as delisting service for visitors)',
+    'allow_cidr'        => __('The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
         'tornevall_dnsbl'),
-    'local_delist'    => __('Local delisting permission (server can delist self)', 'tornevall_dnsbl'),
-    'dnsbl_update'    => __('Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and bl.fraudbl.org)',
+    'allow_cidr_update' => __('Setting that partially allows CIDR-block updates for the DNSBL (there migt me limitations linked to this permission - see the documentation for this information)',
         'tornevall_dnsbl'),
-    'fraudbl_update'  => __('Extended ability to handle fraudbl-commerce (this is not the regular bl.fraudbl.org resolver)',
+    'can_purge'         => __('Special ability to purge hosts instead of marking them deleted in the database',
         'tornevall_dnsbl'),
-    'can_purge'       => __('Special ability to purge hosts instead of marking them deleted in the database',
+    'dnsbl_update'      => __('Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and bl.fraudbl.org)',
         'tornevall_dnsbl'),
-    'allow_cidr'      => __('The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
+    'fraudbl_update'    => __('Extended ability to handle fraudbl-commerce (this is not the regular bl.fraudbl.org resolver)',
         'tornevall_dnsbl'),
-    'overwrite_flags' => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
+    'global_delist'     => __('Global delisting permission (can use as delisting service for visitors)',
+        'tornevall_dnsbl'),
+    'local_delist'      => __('Local delisting permission (server can delist self)', 'tornevall_dnsbl'),
+    'overwrite_flags'   => __('When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
         'tornevall_dnsbl'),
 );
 $tornevallDnsblFlags  = array();

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Tornevall Networks DNSBL Implementation\n"
-"POT-Creation-Date: 2018-07-17 11:03+0200\n"
-"PO-Revision-Date: 2018-07-17 11:05+0200\n"
+"POT-Creation-Date: 2018-07-21 10:51+0200\n"
+"PO-Revision-Date: 2018-07-21 10:52+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -111,7 +111,7 @@ msgid ""
 "The API key you are using indicates that this plugin supports global "
 "delistings. This means that your site can be used as a delisting service."
 msgstr ""
-"API-nyckel du använder indikerar att detta plugin stödjer globala "
+"API-nyckeln du använder indikerar att detta plugin stödjer globala "
 "avlistningar. Detta betyder att du kan använda din sajt som en "
 "avlistningstjänst."
 
@@ -120,7 +120,7 @@ msgid ""
 "This option allows you to set up a page where the search-and-delist form "
 "should be shown."
 msgstr ""
-"Denna inställningen tillåter att du sätter upp en sida där sök-av-avlista-"
+"Denna inställningen tillåter att du sätter upp en sida där sök-och-avlista-"
 "formuläret skall visas."
 
 #: admin.php:240
@@ -136,7 +136,7 @@ msgstr ""
 #: admin.php:242
 msgid "If no shortcode is found, the form will be appended to the page."
 msgstr ""
-"Om ingen kortkod hittas, kommer formuläret att lägga till längst ned på "
+"Om ingen kortkod hittas, kommer formuläret att lägga tills längst ned på "
 "sidan."
 
 #: admin.php:244
@@ -144,7 +144,7 @@ msgid ""
 "There is a plain view accessible, in case the standard AJAX form does not "
 "work. Use ?plain in the URL to reach it"
 msgstr ""
-"Det finns en ren vy att tillgå, ifall de vanliga AJAX-formulären inte "
+"Det finns en \"ren\" vy att tillgå, ifall de vanliga AJAX-formulären inte "
 "fungerar. Använd ?plain i URLen för att nå den"
 
 #: admin.php:253
@@ -234,7 +234,7 @@ msgid ""
 msgstr ""
 "Glöm inte att spara inställningarna innan du börjar försöka använda dem"
 
-#: includes/helpers.php:81
+#: includes/helpers.php:91
 msgid ""
 "This site does not have DNSBL delisting permissions. Ask the administrator "
 "to fix a proper API key for the DNSBL-service, to activate this function."
@@ -243,55 +243,55 @@ msgstr ""
 "administratören att ordna en ordentlig API-nyckel för DNSBL-tjänsten, för "
 "att aktivera den här funktionen."
 
-#: includes/helpers.php:121
+#: includes/helpers.php:133
 msgid "What does the image say?"
 msgstr "Vad står det i bilden?"
 
-#: includes/helpers.php:154
+#: includes/helpers.php:166
 msgid "Unknown API error"
 msgstr "Okänt API-fel"
 
-#: includes/helpers.php:157 tornevall-wp-dnsbl.php:91
+#: includes/helpers.php:169 tornevall-wp-dnsbl.php:93
 msgid "Delist successful"
 msgstr "Avlistningen lyckades"
 
-#: includes/helpers.php:158
+#: includes/helpers.php:170
 msgid "Delist request failed: "
 msgstr "Förfrågan om avlistning misslyckades:"
 
-#: includes/helpers.php:173
+#: includes/helpers.php:185
 msgid "Address must not be empty"
 msgstr "Adressfältet får inte vara tomt"
 
-#: includes/helpers.php:175
+#: includes/helpers.php:187
 msgid "Invalid address format"
 msgstr "Felaktigt adressformat"
 
-#: includes/helpers.php:177
+#: includes/helpers.php:189
 msgid "Address format is not allowed in this mode"
 msgstr "Adressformateringen är inte tillåten i detta läget"
 
-#: includes/helpers.php:187 tornevall-wp-dnsbl.php:81
+#: includes/helpers.php:199 tornevall-wp-dnsbl.php:83
 msgid "Blacklisted"
 msgstr "Svartlistad"
 
-#: includes/helpers.php:193 tornevall-wp-dnsbl.php:88
+#: includes/helpers.php:205 tornevall-wp-dnsbl.php:90
 msgid "Not blacklisted"
 msgstr "Ej svartlistad"
 
-#: includes/helpers.php:195
+#: includes/helpers.php:207
 msgid "Address was delisted"
 msgstr "Adressen avlistades"
 
-#: includes/helpers.php:196
+#: includes/helpers.php:208
 msgid "but servers are not synchronized yet"
 msgstr "men servrarna är ännu inte synkroniserade"
 
-#: includes/helpers.php:229
+#: includes/helpers.php:241
 msgid "IP address control"
 msgstr "IP-adresskontroll"
 
-#: includes/helpers.php:316 includes/helpers.php:460
+#: includes/helpers.php:328 includes/helpers.php:472
 msgid ""
 "Tornevall DNSBL scanner has detected that your current visiting ip address "
 "is blacklisted!"
@@ -299,11 +299,11 @@ msgstr ""
 "Tornevall DNSBL scanner har upptäckt att din beslökande ip-adress är "
 "svartlistad!"
 
-#: includes/helpers.php:317 includes/helpers.php:461
+#: includes/helpers.php:329 includes/helpers.php:473
 msgid "For more information, look here"
 msgstr "För mer information, se här"
 
-#: includes/helpers.php:323
+#: includes/helpers.php:335
 msgid ""
 "Comments section is currently unavailable: Your ip address has been flagged "
 "as untrusted by a DNS Blacklist"
@@ -312,40 +312,6 @@ msgstr ""
 "flaggats som opålitlig av en DNS-baserad svartlista"
 
 #: tornevall-wp-dnsbl.php:32
-msgid "Global delisting permission (can use as delisting service for visitors)"
-msgstr ""
-"Globala avlistningsbehörigheter (kan användas som avlistnings-service för "
-"besökare)"
-
-#: tornevall-wp-dnsbl.php:34
-msgid "Local delisting permission (server can delist self)"
-msgstr "Lokala avlistningsbehörigheter (server kan avlista sig själv)"
-
-#: tornevall-wp-dnsbl.php:35
-msgid ""
-"Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and "
-"bl.fraudbl.org)"
-msgstr ""
-"Standardförmåga att uppdatera data i DNSBL (dnsbl.tornevall.org och bl."
-"fraudbl.org)"
-
-#: tornevall-wp-dnsbl.php:37
-msgid ""
-"Extended ability to handle fraudbl-commerce (this is not the regular bl."
-"fraudbl.org resolver)"
-msgstr ""
-"Utökad förmåga att hantera fraudbl-commerce (detta är inte den vanliga bl."
-"fraudbl.org namnförfrågningstjänsten)"
-
-#: tornevall-wp-dnsbl.php:39
-msgid ""
-"Special ability to purge hosts instead of marking them deleted in the "
-"database"
-msgstr ""
-"Specialegenskap för att totalradera adresser i stället för att enbart "
-"markera dem som raderade i database."
-
-#: tornevall-wp-dnsbl.php:41
 msgid ""
 "The usage of CIDR-blocks are normally not permitted by the DNSBL API, in "
 "more functions than listing them. This permission also opens up for usage in "
@@ -358,7 +324,51 @@ msgstr ""
 "raderingar kommer detta hjälpa till en hel del). Lägga till data med CIDR "
 "och olika flaggor är dock ett fortsatt problem."
 
-#: tornevall-wp-dnsbl.php:43
+#: tornevall-wp-dnsbl.php:34
+msgid ""
+"Setting that partially allows CIDR-block updates for the DNSBL (there migt "
+"me limitations linked to this permission - see the documentation for this "
+"information)"
+msgstr ""
+"Inställning som delvis tillåter CIDR-block-uppdateringar för DNSBL (det kan "
+"finnas begränsningar kopplade till den här behörigheter - se dokumentationen "
+"för denna informationen)"
+
+#: tornevall-wp-dnsbl.php:36
+msgid ""
+"Special ability to purge hosts instead of marking them deleted in the "
+"database"
+msgstr ""
+"Specialegenskap för att totalradera adresser i stället för att enbart "
+"markera dem som raderade i database."
+
+#: tornevall-wp-dnsbl.php:38
+msgid ""
+"Standard DNSBL ability to update data in the DNSBL (dnsbl.tornevall.org and "
+"bl.fraudbl.org)"
+msgstr ""
+"Standardförmåga att uppdatera data i DNSBL (dnsbl.tornevall.org och bl."
+"fraudbl.org)"
+
+#: tornevall-wp-dnsbl.php:40
+msgid ""
+"Extended ability to handle fraudbl-commerce (this is not the regular bl."
+"fraudbl.org resolver)"
+msgstr ""
+"Utökad förmåga att hantera fraudbl-commerce (detta är inte den vanliga bl."
+"fraudbl.org namnförfrågningstjänsten)"
+
+#: tornevall-wp-dnsbl.php:42
+msgid "Global delisting permission (can use as delisting service for visitors)"
+msgstr ""
+"Globala avlistningsbehörigheter (kan användas som avlistnings-service för "
+"besökare)"
+
+#: tornevall-wp-dnsbl.php:44
+msgid "Local delisting permission (server can delist self)"
+msgstr "Lokala avlistningsbehörigheter (server kan avlista sig själv)"
+
+#: tornevall-wp-dnsbl.php:45
 msgid ""
 "When sending new or updated data to DNSBL, clients can only add more flags "
 "to the host. This feature makes it possible to overwrite old flags"
@@ -366,48 +376,48 @@ msgstr ""
 "När data uppdateras i DNSBL, kan klienter bara lägga till fler flaggor till "
 "adressen. Denna egenskap gör att man också kan skriva över gamla flaggor."
 
-#: tornevall-wp-dnsbl.php:82
+#: tornevall-wp-dnsbl.php:84
 msgid "API reply success"
 msgstr "API gav lyckat svar"
 
-#: tornevall-wp-dnsbl.php:83
+#: tornevall-wp-dnsbl.php:85
 msgid "API authorize response"
 msgstr "Svar från API-autentisering"
 
-#: tornevall-wp-dnsbl.php:84
+#: tornevall-wp-dnsbl.php:86
 msgid "Failed. Did you save your settings before trying this?"
 msgstr "Misslyckades. Har du sparat dina inställningar innan du testat detta?"
 
-#: tornevall-wp-dnsbl.php:86
+#: tornevall-wp-dnsbl.php:88
 msgid "Flags updated"
 msgstr "Flaggorna har uppdaterats"
 
-#: tornevall-wp-dnsbl.php:87
+#: tornevall-wp-dnsbl.php:89
 msgid "Request failure"
 msgstr "Förfrågningen misslyckades"
 
-#: tornevall-wp-dnsbl.php:89
+#: tornevall-wp-dnsbl.php:91
 msgid "Value must not be empty"
 msgstr "Värdet får inte vara tomt"
 
-#: tornevall-wp-dnsbl.php:90
+#: tornevall-wp-dnsbl.php:92
 msgid "Removed"
 msgstr "Borttagen"
 
-#: tornevall-wp-dnsbl.php:92
+#: tornevall-wp-dnsbl.php:94
 msgid "What does the image say (lowercase)?"
 msgstr "Vad står det i bilden (små bokstäver)?"
 
-#: tornevall-wp-dnsbl.php:93
+#: tornevall-wp-dnsbl.php:95
 msgid "Removal time has been extended to "
 msgstr "Avlistningstiden har utökats till "
 
-#: tornevall-wp-dnsbl.php:94
+#: tornevall-wp-dnsbl.php:96
 msgid "but with penalties due too high removal count in too short time."
 msgstr ""
 "men med strafftid på grund av allt för många avlistningar under för kort tid."
 
-#: tornevall-wp-dnsbl.php:97
+#: tornevall-wp-dnsbl.php:99
 msgid ""
 "API data updated - If you have made any changes in this configuration, you "
 "should also save the settings."
