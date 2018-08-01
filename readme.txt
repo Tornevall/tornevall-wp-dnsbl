@@ -66,29 +66,11 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
  * Ability to disable comments on removal page
  * Make notice on "comments disabled"-page, that admins are blacklisted (if they are)
 
-= 2.0.4 =
+= Recent versions =
 
- * Translation update (text domain fixed)
-
-= 2.0.3 =
-
- * Text and translation
-
-= 2.0.2 =
-
- * Duplicate indexes report
- * MODULE_NETWORK and MODULE_NETBITS is in some systems not present
-   
+[CHANGELOG 2.0.5](https://www.tornevall.net/2018/08/01/dnsbl-for-wordpress-2-0-5-changelog/)
 [CHANGELOG 2.0.2](https://www.tornevall.net/2018/07/18/dnsbl-for-wordpress-2-0-2-changelog/)
-
-
-= 2.0.1 =
-
 [CHANGELOG 2.0.1](https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/)
-
-
-= 2.0.0 =
-
 [CHANGELOG 2.0.0](https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/)
 
 
