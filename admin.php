@@ -37,6 +37,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_prefer_api');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_getlisted_resolver');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_delistingpage_comments_disabled');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -108,8 +109,17 @@ function tornevall_dnsbl_options()
             update_option('tornevall_dnsbl_filter_types', $savedFlags);
         }
 
+        $hasProperResolvers = false;
         $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
-        if ( ! is_array($resolverNames) || (is_array($resolverNames) && ! count($resolverNames))) {
+        if (is_array($resolverNames) && count($resolverNames)) {
+            foreach ($resolverNames as $rName) {
+                if (!empty($rName)) {
+                    $hasProperResolvers = true;
+                }
+            }
+        }
+        if ( ! is_array($resolverNames) || (is_array($resolverNames) && ! count($resolverNames)) || ! in_array('dnsbl.tornevall.org',
+                $resolverNames) || !$hasProperResolvers) {
             $resolverNames = array(
                 'dnsbl.tornevall.org',
                 'bl.fraudbl.org'
@@ -248,6 +258,20 @@ function tornevall_dnsbl_options()
                                         'tornevall-networks-dnsbl-implementation') . " ";
                                 ?>
                             </i>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;">
+                            <?php echo __('Disable comments on delisting page',
+                                'tornevall-networks-dnsbl-implementation'); ?>
+                        </td>
+                        <td width="<?php echo $td['right']; ?>" valign="top">
+                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_delistingpage_comments_disabled") ? "checked" : ""); ?>
+                                   value="1"
+                                   name="tornevall_dnsbl_delistingpage_comments_disabled"> <?php echo __("If you are experiencing a lot of comments that ask you to delist people, you can turn off comments by using this setting",
+                                'tornevall-networks-dnsbl-implementation'); ?>
+
                         </td>
                     </tr>
 

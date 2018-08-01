@@ -277,6 +277,9 @@ function dnsbl_blacklist_disable_comments()
 
     // Set the plugin free on delisting page
     if ($post->ID == $currentDelistingPage) {
+        if (get_option('tornevall_dnsbl_delistingpage_comments_disabled') == "1") {
+            //return false;
+        }
         return true;
     }
 
@@ -473,7 +476,7 @@ function dnsbl_is_protected_user()
         <div class="notice notice-error"
              style="font-weight: bold !important; background: #ffeeee; border:1px solid #990000; text-align: center;">
             <p><?php echo __('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
-                        'tornevall-networks-dnsbl-implementation') . ' <a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
+                        'tornevall-networks-dnsbl-implementation') . '<br><a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
                         'tornevall-networks-dnsbl-implementation') . '</a>'; ?></p>
         </div>
         <?php
@@ -532,5 +535,17 @@ function dnsbl_check_blacklist_cache($addr)
         }
 
         return $testIpResponseObject->lastResponse;
+    }
+}
+
+function dnsbl_blacklist_comments($comment_template) {
+    global $post;
+    $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
+
+    if ($post->ID == $currentDelistingPage) {
+        if (get_option('tornevall_dnsbl_delistingpage_comments_disabled') == "1") {
+            return plugin_dir_path(__FILE__) . "../comments.php";
+        }
+        return $comment_template;
     }
 }
