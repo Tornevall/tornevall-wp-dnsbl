@@ -4,14 +4,14 @@
  * Plugin URI: https://docs.tornevall.net/x/AoA_/
  * Project URI: https://tracker.tornevall.net/projects/DNSBLWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 2.0.5
+ * Version: 2.0.6
  * Author: Tomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.5');
+define('TORNEVALL_DNSBL_VERSION', '2.0.6');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 

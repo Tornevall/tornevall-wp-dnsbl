@@ -4,7 +4,7 @@ Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
 Requires at least: 3.0.1
 Tested up to: 4.9.7
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: Apache
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -60,11 +60,9 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
-= 2.0.5 =
+= 2.0.6 =
 
- * Fixed url text in readme
- * Ability to disable comments on removal page
- * Make notice on "comments disabled"-page, that admins are blacklisted (if they are)
+ * Minor fix for open/closed comments on delisting page
 
 = Recent versions =
 
