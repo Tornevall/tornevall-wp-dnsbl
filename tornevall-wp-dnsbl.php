@@ -131,7 +131,7 @@ add_action('wp_ajax_tornednsbl', 'tornevall_dnsbl_api');
 add_action('wp_ajax_nopriv_tornednsbl', 'tornevall_dnsbl_api');
 add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
-add_filter('comments_open', 'dnsbl_blacklist_disable_comments');
+add_filter('comments_open', 'dnsbl_blacklist_disable_comments', 10, 1);
 add_filter('comments_template', 'dnsbl_blacklist_comments');
 
 //add_filter('the_comments', 'dnsbl_blacklist_disable_comments_message');

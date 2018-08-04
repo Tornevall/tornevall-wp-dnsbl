@@ -265,7 +265,7 @@ function tornevall_dnsbl_content_handler($content)
  *
  * @return bool
  */
-function dnsbl_blacklist_disable_comments()
+function dnsbl_blacklist_disable_comments($open)
 {
     global $post, $dnsbl_blacklist_control_status, $dnsbl_blacklist_status;
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
@@ -278,9 +278,8 @@ function dnsbl_blacklist_disable_comments()
     // Set the plugin free on delisting page
     if ($post->ID == $currentDelistingPage) {
         if (get_option('tornevall_dnsbl_delistingpage_comments_disabled') == "1") {
-            //return false;
+            $open = false;
         }
-        return true;
     }
 
     // Block on blacklist
@@ -298,14 +297,10 @@ function dnsbl_blacklist_disable_comments()
 
         }
 
-        if ( ! get_option('tornevall_dnsbl_nocomment')) {
-            return true;
-        }
-
-        return false;
+        $open = false;
     }
 
-    return true;
+    return $open;
 }
 
 /**
