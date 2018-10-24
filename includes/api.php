@@ -54,6 +54,15 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
         ));
     }
 
+    // Handle internal errors
+    if (is_wp_error($response)) {
+        $return = array(
+            'response' => null,
+            'code' => 500,
+            'faultstring' => $response->get_error_message()
+        );
+        return @json_encode($return);
+    }
     $objectifiedResponse = @json_decode($response['body']);
 
     if (isset($response['body'])) {
