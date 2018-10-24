@@ -1,9 +1,9 @@
-=== Tornevall Networks DNSBL and Fraud Blacklist implementation ===
+=== Tornevall Networks AntiSpam and Fraud Blacklist (DNSBL w/FraudBL) implementation ===
 Contributors: Tornevall
 Donate link: https://auth.tornevall.com/donate/
-Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking
+Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam
 Requires at least: 3.0.1
-Tested up to: 4.9.7
+Tested up to: 5.0
 Stable tag: 2.0.6
 License: Apache
 
@@ -12,6 +12,8 @@ Tornevall Networks DNS Blacklist support for Wordpress
 == Description ==
 
 Tornevall Networks DNS Blacklist support. Blocks comment functions or redirects visitors who is blacklisted to external site.
+
+Confirmed to run with WordPress 5.0 alpha.
 
 [Project tracker](https://tracker.tornevall.net/projects/DNSBLWP/issues) - Contribute with suggestions or bug reports here!
 [Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)

@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * @param null $method
+ * @param null $verb
+ * @param array $postdata
+ * @param bool $objectify
+ * @param null $postMethod
+ * @return null
+ * @throws Exception
+ */
 function torneApi($method = null, $verb = null, $postdata = array(), $objectify = true, $postMethod = null)
 {
     if (empty($method)) {
@@ -13,9 +22,9 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
 
     $apiUrl = $prefApiUrl . $method . "/" . $verb;
 
-    $appId  = get_option('tornevall_dnsbl_api_id');
+    $appId = get_option('tornevall_dnsbl_api_id');
     $appKey = get_option('tornevall_dnsbl_api_key');
-    $curId  = get_current_user_id();
+    $curId = get_current_user_id();
 
     if ($appId) {
         $postdata['application'] = $appId;
@@ -30,17 +39,17 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
     if (strtolower($postMethod) == "delete") {
         // Deletion is made easier with json as post parameters does not seem to reach the whole way properly
         $response = wp_remote_request($apiUrl, array(
-            'body'    => @json_encode($postdata),
-            'method'  => 'DELETE',
+            'body' => @json_encode($postdata),
+            'method' => 'DELETE',
             'headers' => array(
-                'Content-Type'  => 'application/json',
+                'Content-Type' => 'application/json',
                 'Authorization' => 'Basic ' . base64_encode($appId . ":" . $appKey),
             )
         ));
 
     } else {
         $response = wp_remote_post($apiUrl, array(
-            'body'    => $postdata,
+            'body' => $postdata,
             'headers' => array('Authorization' => 'Basic ' . base64_encode($appId . ":" . $appKey))
         ));
     }
@@ -48,7 +57,7 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
     $objectifiedResponse = @json_decode($response['body']);
 
     if (isset($response['body'])) {
-        if ( ! $objectify) {
+        if (!$objectify) {
             if (isset($objectifiedResponse->errors) && isset($objectifiedResponse->errors->code) && $objectifiedResponse->errors->code >= 400) {
                 return json_encode($objectifiedResponse->errors);
             }
@@ -77,13 +86,13 @@ function torneApi($method = null, $verb = null, $postdata = array(), $objectify 
 function tornevall_dnsbl_api()
 {
     $postdata = isset($_REQUEST['postdata']) ? $_REQUEST['postdata'] : array();
-    $request  = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
-    $verb     = isset($postdata['verb']) ? $postdata['verb'] : null;
-    $n        = isset($_REQUEST['n']) ? $_REQUEST['n'] : null;
-    $m        = isset($postdata['method']) ? $postdata['method'] : null;
+    $request = isset($_REQUEST['request']) ? $_REQUEST['request'] : null;
+    $verb = isset($postdata['verb']) ? $postdata['verb'] : null;
+    $n = isset($_REQUEST['n']) ? $_REQUEST['n'] : null;
+    $m = isset($postdata['method']) ? $postdata['method'] : null;
 
     $nId = 'tornevall_dnsbl_n';
-    if ( ! defined('TORNEVALL_DNSBL_NONCE_EQUALITY')) {
+    if (!defined('TORNEVALL_DNSBL_NONCE_EQUALITY')) {
         if (is_admin()) {
             $nId = 'tornevall_dnsbl_a';
         }
@@ -92,8 +101,8 @@ function tornevall_dnsbl_api()
 
     if ($postdata['verb'] == 'request' && isset($postdata['ip'])) {
         $verified = true;
-        if ( ! preg_match("/\//", trim($postdata['ip']))) {
-            if ( ! get_option('tornevall_dnsbl_prefer_api')) {
+        if (!preg_match("/\//", trim($postdata['ip']))) {
+            if (!get_option('tornevall_dnsbl_prefer_api')) {
                 $response = dnsbl_resolve_addr($postdata['ip']);
                 dnsbl_display_response($response);
             }
@@ -101,17 +110,17 @@ function tornevall_dnsbl_api()
     }
 
     $response = array(
-        'timestamp'   => time(),
-        'request'     => $postdata,
-        'response'    => array(),
+        'timestamp' => time(),
+        'request' => $postdata,
+        'response' => array(),
         'errorstring' => '',
-        'errorcode'   => '0',
-        'verified'    => $verified
+        'errorcode' => '0',
+        'verified' => $verified
     );
 
-    if ( ! $verified) {
+    if (!$verified) {
         $response['errorstring'] = "Invalid API call";
-        $response['errorcode']   = 403;
+        $response['errorcode'] = 403;
     } else {
         try {
             $getResponse = @json_decode(torneApi($request, $verb, $postdata, false, $m));
@@ -121,12 +130,12 @@ function tornevall_dnsbl_api()
             }
             if (isset($getResponse->code) && $getResponse->code >= 400) {
                 $response['errorstring'] = $getResponse->faultstring;
-                $response['errorcode']   = $getResponse->code;
+                $response['errorcode'] = $getResponse->code;
             }
 
         } catch (\Exception $e) {
             $response['errorstring'] = $e->getMessage();
-            $response['errorcode']   = $e->getCode();
+            $response['errorcode'] = $e->getCode();
         }
     }
 
