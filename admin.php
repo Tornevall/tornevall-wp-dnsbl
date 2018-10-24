@@ -1,8 +1,8 @@
 <?php
 
-$pagelist             = get_pages();
+$pagelist = get_pages();
 $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
-$delistPageOption     = array();
+$delistPageOption = array();
 if (is_array($pagelist)) {
     $delistPageOption[] = '<option value="">None</option>';
     foreach ($pagelist as $pageObject) {
@@ -48,7 +48,7 @@ function register_dnsbl_settings()
 
 function tornevall_dnsbl_options()
 {
-    if ( ! current_user_can('manage_options')) {
+    if (!current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
     global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
@@ -65,7 +65,7 @@ function tornevall_dnsbl_options()
         update_option('tornevall_dnsbl_blocked_redirecturl', $redirectUrl);
     }
 
-    $authUrl    = "https://auth.tornevall.net";
+    $authUrl = "https://auth.tornevall.net";
     $prefApiUrl = get_option('tornevall_dnsbl_preferred_api_url');
     if (empty($prefApiUrl)) {
         $prefApiUrl = "https://api.tornevall.net/3.0/";
@@ -84,21 +84,19 @@ function tornevall_dnsbl_options()
             'tornevall-networks-dnsbl-implementation'); ?></a><br>
 
     <form method="post" action="options.php">
-
         <?php
-
         settings_fields('dnsblOptions-group');
         do_settings_sections('dnsblOptions-group');
 
         $td = array(
-            'left'  => '250px',
+            'left' => '250px',
             'right' => '550px',
         );
 
         $flagListSelector = array();
-        $currentFlags     = get_option('tornevall_dnsbl_current_flags');
-        $savedFlags       = get_option("tornevall_dnsbl_filter_types");
-        if ( ! is_array($savedFlags)) {
+        $currentFlags = get_option('tornevall_dnsbl_current_flags');
+        $savedFlags = get_option("tornevall_dnsbl_filter_types");
+        if (!is_array($savedFlags)) {
             // Configure best practice initially
             $savedFlags = array(
                 'IP_CONFIRMED',
@@ -118,7 +116,7 @@ function tornevall_dnsbl_options()
                 }
             }
         }
-        if ( ! is_array($resolverNames) || (is_array($resolverNames) && ! count($resolverNames)) || ! in_array('dnsbl.tornevall.org',
+        if (!is_array($resolverNames) || (is_array($resolverNames) && !count($resolverNames)) || !in_array('dnsbl.tornevall.org',
                 $resolverNames) || !$hasProperResolvers) {
             $resolverNames = array(
                 'dnsbl.tornevall.org',
@@ -127,7 +125,7 @@ function tornevall_dnsbl_options()
             update_option('tornevall_dnsbl_resolver_hosts', implode(",", array_map("trim", $resolverNames)));
         }
 
-        if (empty($currentFlags) || ! is_array($currentFlags)) {
+        if (empty($currentFlags) || !is_array($currentFlags)) {
             // Flag list updated 180609
             $currentFlags = unserialize('a:9:{s:31:"FREE_SLOT_1_PREVIOUSLY_REPORTED";s:1:"1";s:12:"IP_CONFIRMED";s:1:"2";s:11:"IP_PHISHING";s:1:"4";s:35:"FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT";s:1:"8";s:18:"IP_MAILSERVER_SPAM";s:2:"16";s:14:"IP_SECOND_EXIT";s:2:"32";s:16:"IP_ABUSE_NO_SMTP";s:2:"64";s:12:"IP_ANONYMOUS";s:3:"128";s:7:"BIT_256";s:3:"256";}');
         }
@@ -230,7 +228,7 @@ function tornevall_dnsbl_options()
                                name="tornevall_dnsbl_comments_disabled_style">
                     </td>
                 </tr>
--->
+                -->
                 <?php
 
                 if (in_array('global_delist', $tornevallDnsblFlags)) {
@@ -400,12 +398,7 @@ function tornevall_dnsbl_options()
                     'tornevall-networks-dnsbl-implementation') ?></div>
 
         </div>
-
         <?php submit_button(); ?>
-
     </form>
-
-
     <?php
-
 }
