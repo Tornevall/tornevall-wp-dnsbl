@@ -87,9 +87,15 @@ function tornevall_dnsbl_content_handler($content)
 {
     global $post, $dnsblNonce, $tornevallDnsblFlags;
     if (!in_array('global_delist', $tornevallDnsblFlags)) {
-        $content = preg_replace("/\[dnsbl_removal_form\]/",
-            '<div style="font-weight: bold;color: #990000; background: #fffefe; border:1px solid #990000; padding: 5px;">' . __('This site does not have DNSBL delisting permissions. Ask the administrator to fix a proper API key for the DNSBL-service, to activate this function.',
-                'tornevall-networks-dnsbl-implementation') . '</div>', $content);
+        $content = preg_replace(
+            "/\[dnsbl_removal_form\]/",
+            '<div style="font-weight: bold;color: #990000; background: #fffefe; border:1px solid #990000; padding: 5px;">' .
+            __(
+                'This site does not have DNSBL delisting permissions. Ask the administrator to fix a proper API key for the DNSBL-service, to activate this function.',
+                'tornevall-networks-dnsbl-implementation'
+            ) . '</div>',
+            $content
+        );
 
         return $content;
     }
@@ -152,22 +158,33 @@ function tornevall_dnsbl_content_handler($content)
     }
 
     $deleteRequestResponse = null;
-    if (isset($_REQUEST['submitDelistingRequest']) && isset($_REQUEST['captchaString']) && !empty($_REQUEST['captchaString'])) {
+    if (isset($_REQUEST['submitDelistingRequest']) &&
+        isset($_REQUEST['captchaString']) &&
+        !empty($_REQUEST['captchaString'])
+    ) {
         // User input
         $cString = isset($_REQUEST['captchaString']) ? $_REQUEST['captchaString'] : null;
         $cHash = isset($_REQUEST['captchaHash']) ? $_REQUEST['captchaHash'] : null;
 
         $showDeleteForm = null;
         $testCaptcha = torneApi('captcha', 'testCaptcha', array('hash' => $cHash, 'response' => $cString));
-        if (!is_null($deleteAddr) && isset($testCaptcha->testCaptchaResponse) && (bool)$testCaptcha->testCaptchaResponse === true) {
-
+        if (!is_null($deleteAddr) &&
+            isset($testCaptcha->testCaptchaResponse) &&
+            (bool)$testCaptcha->testCaptchaResponse === true
+        ) {
             $deleteRequest = torneApi("dnsbl", "", array('ip' => $deleteAddr), true, 'DELETE');
             $success = isset($deleteRequest->success) ? $deleteRequest->success : false;
-            $faultString = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __('Unknown API error',
-                'tornevall-networks-dnsbl-implementation');
+            $faultString = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __(
+                'Unknown API error',
+                'tornevall-networks-dnsbl-implementation'
+            );
 
-            $deleteRequestResponse = $success ? __('Delist successful',
-                'tornevall-networks-dnsbl-implementation') : __('Delist request failed: ' . $faultString);
+            $deleteRequestResponse = $success ? __(
+                'Delist successful',
+                'tornevall-networks-dnsbl-implementation'
+            ) : sprintf(__(
+                'Delist request failed: %s'
+            ), $faultString);
         }
     }
 
@@ -186,8 +203,10 @@ function tornevall_dnsbl_content_handler($content)
             } elseif ($noAddr && !preg_match("/\//", $requestingAddress)) {
                 $blacklistInfo = __('Invalid address format', 'tornevall-networks-dnsbl-implementation');
             } else {
-                $blacklistInfo = __('Address format is not allowed in this mode',
-                    'tornevall-networks-dnsbl-implementation');
+                $blacklistInfo = __(
+                    'Address format is not allowed in this mode',
+                    'tornevall-networks-dnsbl-implementation'
+                );
             }
             $borderFormat = "border: 1px solid #000099;padding: 5px;background:#FFEEFF";
         } else {
@@ -197,19 +216,31 @@ function tornevall_dnsbl_content_handler($content)
                 $currentFlags = get_option('tornevall_dnsbl_current_flags');
                 $BIT = new MODULE_NETBITS($currentFlags);
                 $constants = implode("<br>", $BIT->getBitArray($isListed));
-                $blacklistInfo = $requestingAddress . ": " . __('Blacklisted',
-                        'tornevall-networks-dnsbl-implementation');
+                $blacklistInfo = $requestingAddress . ": " .
+                    __(
+                        'Blacklisted',
+                        'tornevall-networks-dnsbl-implementation'
+                    );
                 $borderFormat = "border: 1px solid #990000;padding: 5px;background:#FFEEFF";
                 $fontColor = "#990000";
             } else {
                 $fontColor = "#009900";
                 $borderFormat = "border: 1px solid #009900; padding: 5px;";
-                $blacklistInfo = $requestingAddress . ": " . __('Not blacklisted',
-                        'tornevall-networks-dnsbl-implementation');
+                $blacklistInfo = $requestingAddress . ": " .
+                    __(
+                        'Not blacklisted',
+                        'tornevall-networks-dnsbl-implementation'
+                    );
                 if ($alreadyDeletedControl) {
-                    $blacklistInfo = $requestingAddress . ": " . __('Address was delisted',
-                            'tornevall-networks-dnsbl-implementation') . " " . $removalController->deleted . " " . __('but servers are not synchronized yet',
-                            'tornevall-networks-dnsbl-implementation');
+                    $blacklistInfo = $requestingAddress . ": " .
+                        __(
+                            'Address was delisted',
+                            'tornevall-networks-dnsbl-implementation'
+                        ) . ' ' . $removalController->deleted . ' ' .
+                        __(
+                            'but servers are not synchronized yet',
+                            'tornevall-networks-dnsbl-implementation'
+                        );
                 }
                 $showDeleteForm = null;
             }
@@ -241,8 +272,13 @@ function tornevall_dnsbl_content_handler($content)
     <form ' . $formAction . ' method="post">
     ' . $hiddenParameters . '
     <input type="text" size="50" maxlength="50" value="' . $requestingAddress . '" id="findIpAddr" name="findIpAddr" onkeyup="findIpAddrPress(event)"><br>
-    <button type="' . ($isAjax ? 'button' : 'submit') . '" ' . $buttonAction . '>' . __('IP address control',
-            'tornevall-networks-dnsbl-implementation') . '</button><br>
+    <button type="' .
+        ($isAjax ? 'button' : 'submit') .
+        '" ' . $buttonAction . '>' .
+        __(
+            'IP address control',
+            'tornevall-networks-dnsbl-implementation'
+        ) . '</button><br>
             <br>
     <div id="delistingTestStatus" style="display: ' . $delistingStatusDisplay . ';">
     ' . $delistingDataPlain . '
@@ -285,7 +321,6 @@ function dnsbl_blacklist_disable_comments($open)
 
     // Block on blacklist
     if ($dnsbl_blacklist_status) {
-
         if (get_option("tornevall_dnsbl_blockfull")) {
             $defaultRedirectUrl = 'https://dnsbl.tornevall.org/removal?redirected';
             $redirectUrl = get_option('tornevall_dnsbl_blocked_redirecturl');
