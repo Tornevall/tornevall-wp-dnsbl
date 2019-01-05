@@ -322,15 +322,23 @@ function dnsbl_blacklist_disable_comments_message($comments)
         $commentsDisabledStyle = get_option('tornevall_dnsbl_comments_disabled_style');
 
         if ($isAdmin) {
-            echo '<div style="' . $commentsDisabledStyle . '">' . __('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
-                    'tornevall-networks-dnsbl-implementation') . ' <a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
-                    'tornevall-networks-dnsbl-implementation') . '</a>' . '</div>';
+            echo '<div style="' . $commentsDisabledStyle . '">' .
+                __(
+                    'Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
+                    'tornevall-networks-dnsbl-implementation'
+                ) . ' <a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' .
+                __(
+                    'For more information, look here',
+                    'tornevall-networks-dnsbl-implementation'
+                ) . '</a>' . '</div>';
 
             return $comments;
         } else {
-
-            echo '<div style="' . $commentsDisabledStyle . '">' . __('Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist',
-                    'tornevall-networks-dnsbl-implementation') . '</div>';
+            echo '<div style="' . $commentsDisabledStyle . '">' .
+                __(
+                    'Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist',
+                    'tornevall-networks-dnsbl-implementation'
+                ) . '</div>';
 
             $comments = array();
         }
@@ -460,13 +468,19 @@ function dnsbl_is_protected_user()
     }
 
     if ($showDnsblWarning == true) {
-
         ?>
         <div class="notice notice-error"
              style="font-weight: bold !important; background: #ffeeee; border:1px solid #990000; text-align: center;">
-            <p><?php echo __('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
-                        'tornevall-networks-dnsbl-implementation') . '<br><a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' . __('For more information, look here',
-                        'tornevall-networks-dnsbl-implementation') . '</a>'; ?></p>
+            <p>
+                <?php echo
+                    __(
+                        'Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!',
+                        'tornevall-networks-dnsbl-implementation'
+                    ) . '<br><a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' .
+                    __(
+                        'For more information, look here',
+                        'tornevall-networks-dnsbl-implementation'
+                    ) . '</a>'; ?></p>
         </div>
         <?php
     }
@@ -502,23 +516,44 @@ function dnsbl_check_blacklist_cache($addr)
         $internalResult = array_pop($result['response']['requestResponse']);
 
         if (isset($internalResult['ip'])) {
-            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
-                array($addr, $internalResult['typebit'], time())));
+            $wpdb->query(
+                $wpdb->prepare(
+                    'INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)',
+                    array(
+                        $addr,
+                        $internalResult['typebit'],
+                        time()
+                    )
+                )
+            );
         } else {
-            $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
-                array($addr, 0, time())));
+            $wpdb->query($wpdb->prepare(
+                'INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)',
+                array(
+                    $addr,
+                    0,
+                    time()
+                )
+            ));
         }
 
         return $internalResult['typebit'];
     } else {
-
         $lastRes = time() - (isset($testIpResponseObject->lastResolve) ? intval($testIpResponseObject->lastResolve) : time());
         // When time is up, update with new data
         if ($lastRes >= $cacheAge) {
             $result = dnsbl_resolve_addr($addr);
             $internalResult = array_pop($result['response']['requestResponse']);
-            $wpdb->query($wpdb->prepare("UPDATE {$tableCache} set lastResponse = %d, lastResolve = %d WHERE ipAddr = %s",
-                array($internalResult['typebit'], time(), $addr)));
+            $wpdb->query(
+                $wpdb->prepare(
+                    'UPDATE {$tableCache} set lastResponse = %d, lastResolve = %d WHERE ipAddr = %s',
+                    array(
+                        $internalResult['typebit'],
+                        time(),
+                        $addr
+                    )
+                )
+            );
 
             return $internalResult['typebit'];
         }
