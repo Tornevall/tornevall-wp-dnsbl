@@ -47,7 +47,7 @@ if (!class_exists('MODULE_NETBITS') && !class_exists('Tornevall_WP_DNSBL\MODULE_
         private $BIT_SETUP;
         private $maxBits = 8;
 
-        function __construct($bitStructure = array())
+        public function __construct($bitStructure = array())
         {
             $this->BIT_SETUP = array(
                 'OFF' => 0,
@@ -174,21 +174,6 @@ if (!class_exists('MODULE_NETBITS') && !class_exists('Tornevall_WP_DNSBL\MODULE_
                 }
             }
 
-            // Solution that works with bits up to 8
-            /*
-            $sum = 0;
-            preg_match_all("/\d/", sprintf("%08d", decbin( $requestedBitSum)), $bitArray);
-            for ($bitCount = count($bitArray[0]); $bitCount >= 0; $bitCount--) {
-                if (isset($bitArray[0][$bitCount])) {
-                    if ( $requestedBitSum & pow(2, $bitCount)) {
-                        if ( $requestedExistingBit == pow(2, $bitCount)) {
-                            $return = true;
-                        }
-                    }
-                }
-            }
-            */
-
             return $return;
         }
 
@@ -210,7 +195,6 @@ if (!class_exists('MODULE_NETBITS') && !class_exists('Tornevall_WP_DNSBL\MODULE_
 
             return $returnBitList;
         }
-
     }
 }
 

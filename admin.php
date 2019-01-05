@@ -1,26 +1,18 @@
 <?php
 
-$pagelist = get_pages();
-$currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
-$delistPageOption = array();
-if (is_array($pagelist)) {
-    $delistPageOption[] = '<option value="">None</option>';
-    foreach ($pagelist as $pageObject) {
-        $selectedPage = '';
-        if ($pageObject->ID == $currentDelistingPage) {
-            $selectedPage = 'selected=selected';
-        }
-        $delistPageOption[] = '<option value="' . $pageObject->ID . '" ' . $selectedPage . '>' . $pageObject->post_title . '</option>';
-    }
-}
-
-
 function tornevall_wp_dnsbl_admin()
 {
     add_action('admin_init', 'register_dnsbl_settings');
-    add_menu_page("Tornevall DNSBL Options", __("Tornevall DNSBL", 'tornevall-networks-dnsbl-implementation'),
-        "manage_options",
-        "tornevallDnsblMenu", "tornevall_dnsbl_options");
+    add_menu_page(
+        'Tornevall DNSBL Options',
+        __(
+            'Tornevall DNSBL',
+            'tornevall-networks-dnsbl-implementation'
+        ),
+        'manage_options',
+        'tornevallDnsblMenu',
+        'tornevall_dnsbl_options'
+    );
 }
 
 function register_dnsbl_settings()
@@ -51,8 +43,22 @@ function tornevall_dnsbl_options()
     if (!current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
-    global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
+    global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions;
 
+    $pagelist = get_pages();
+    $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
+    $delistPageOption = array();
+    if (is_array($pagelist)) {
+        $delistPageOption[] = '<option value="">None</option>';
+        foreach ($pagelist as $pageObject) {
+            $selectedPage = '';
+            if ($pageObject->ID == $currentDelistingPage) {
+                $selectedPage = 'selected=selected';
+            }
+            $delistPageOption[] = '<option value="' .
+                $pageObject->ID . '" ' . $selectedPage . '>' . $pageObject->post_title . '</option>';
+        }
+    }
 
     $cacheAgeTest = get_option('tornevall_dnsbl_cache_age');
     if (empty($cacheAgeTest)) {
@@ -76,12 +82,15 @@ function tornevall_dnsbl_options()
     <h1><?php echo __('DNS Blacklist Configurator', 'tornevall-networks-dnsbl-implementation'); ?></h1>
 
     <h2><?php echo __('Plugin information and help'); ?></h2>
-    <a href="https://docs.tornevall.net/x/AoA_/" target="_blank"><?php echo __("About DNSBLv5",
-            'tornevall-networks-dnsbl-implementation'); ?></a><br>
-    <a href="https://tracker.tornevall.net/projects/DNSBLWP" target="_blank"><?php echo __("DNSBLWP Issue tracker",
-            'tornevall-networks-dnsbl-implementation'); ?></a><br>
-    <a href="https://dnsbl.tornevall.org/removal/" target="_blank"><?php echo __("How to get delisted",
-            'tornevall-networks-dnsbl-implementation'); ?></a><br>
+    <a href="https://docs.tornevall.net/x/AoA_/" target="_blank"><?php
+        echo
+        __("About DNSBLv5", 'tornevall-networks-dnsbl-implementation'); ?></a><br>
+    <a href="https://tracker.tornevall.net/projects/DNSBLWP" target="_blank"><?php
+        echo
+        __("DNSBLWP Issue tracker", 'tornevall-networks-dnsbl-implementation'); ?></a><br>
+    <a href="https://dnsbl.tornevall.org/removal/" target="_blank"><?php
+        echo
+        __("How to get delisted", 'tornevall-networks-dnsbl-implementation'); ?></a><br>
 
     <form method="post" action="options.php">
         <?php
@@ -116,8 +125,14 @@ function tornevall_dnsbl_options()
                 }
             }
         }
-        if (!is_array($resolverNames) || (is_array($resolverNames) && !count($resolverNames)) || !in_array('dnsbl.tornevall.org',
-                $resolverNames) || !$hasProperResolvers) {
+        if (!is_array($resolverNames) ||
+            (is_array($resolverNames) &&
+                !count($resolverNames)) ||
+            !in_array(
+                'dnsbl.tornevall.org',
+                $resolverNames
+            ) || !$hasProperResolvers
+        ) {
             $resolverNames = array(
                 'dnsbl.tornevall.org',
                 'bl.fraudbl.org'
@@ -127,11 +142,14 @@ function tornevall_dnsbl_options()
 
         if (empty($currentFlags) || !is_array($currentFlags)) {
             // Flag list updated 180609
-            $currentFlags = unserialize('a:9:{s:31:"FREE_SLOT_1_PREVIOUSLY_REPORTED";s:1:"1";s:12:"IP_CONFIRMED";s:1:"2";s:11:"IP_PHISHING";s:1:"4";s:35:"FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT";s:1:"8";s:18:"IP_MAILSERVER_SPAM";s:2:"16";s:14:"IP_SECOND_EXIT";s:2:"32";s:16:"IP_ABUSE_NO_SMTP";s:2:"64";s:12:"IP_ANONYMOUS";s:3:"128";s:7:"BIT_256";s:3:"256";}');
+            $currentFlags = unserialize(
+                'a:9:{s:31:"FREE_SLOT_1_PREVIOUSLY_REPORTED";s:1:"1";s:12:"IP_CONFIRMED";s:1:"2";s:11:"IP_PHISHING";s:1:"4";s:35:"FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT";s:1:"8";s:18:"IP_MAILSERVER_SPAM";s:2:"16";s:14:"IP_SECOND_EXIT";s:2:"32";s:16:"IP_ABUSE_NO_SMTP";s:2:"64";s:12:"IP_ANONYMOUS";s:3:"128";s:7:"BIT_256";s:3:"256";}'
+            );
         }
         foreach ($currentFlags as $flag => $bitValue) {
-            $flagListSelector[] = '<option value="' . $flag . '" ' . (in_array($flag,
-                    $savedFlags) ? 'selected=selected' : '') . '>' . htmlentities($flag) . ' [' . $bitValue . ']</option>';
+            $flagListSelector[] = '<option value="' . $flag . '" ' . (
+                in_array($flag, $savedFlags) ? 'selected=selected' : ''
+                ) . '>' . htmlentities($flag) . ' [' . $bitValue . ']</option>';
         }
         $commentsStyle = get_option('tornevall_dnsbl_comments_disabled_style');
         if (empty($commentsStyle)) {
@@ -139,96 +157,143 @@ function tornevall_dnsbl_options()
             update_option('tornevall_dnsbl_comments_disabled_style', $commentsStyle);
         }
 
+        $cacheAge = esc_attr(get_option('tornevall_dnsbl_cache_age') ? get_option('tornevall_dnsbl_cache_age') : 900);
+
+        $apiKeyInformation =
+            __(
+                'The API key you are using indicates that this plugin supports global delistings. This means that your site can be used as a delisting service.',
+                'tornevall-networks-dnsbl-implementation'
+            ) . ' ' .
+            __(
+                'This option allows you to set up a page where the search-and-delist form should be shown.',
+                'tornevall-networks-dnsbl-implementation'
+            ) . " " .
+            __(
+                'If you can\'t find any comfortable match, you can create a new under pages editor. You can use the shortcode [dnsbl_removal_form] if you want to customize the page.',
+                'tornevall-networks-dnsbl-implementation'
+            ) . ' ' .
+            __(
+                'If no shortcode is found, the form will be appended to the page.',
+                'tornevall-networks-dnsbl-implementation'
+            ) . ' ' .
+            __(
+                'There is a plain view accessible, in case the standard AJAX form does not work. Use ?plain in the URL to reach it',
+                'tornevall-networks-dnsbl-implementation'
+            ) . ' ';
+
+
         ?>
 
         <div style="border-top:1px dashed gray;margin-top:10px;margin-bottom: 5px;">
 
-            <div style="font-weight: bold; font-size: 20px !important;margin-top:5px;margin-bottom:5px;"><?php echo __('Plugin behaviour',
-                    'tornevall-networks-dnsbl-implementation'); ?></div>
+            <div style="font-weight: bold; font-size: 20px !important;margin-top:5px;margin-bottom:5px;"><?php echo
+                __('Plugin behaviour', 'tornevall-networks-dnsbl-implementation'); ?>
+            </div>
 
             <table width="80%" cellpadding="6" cellspacing="0" style="border: 1px solid black;">
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Trigger on',
-                                'tornevall-networks-dnsbl-implementation') . " ..."; ?>
+                        style="font-weight: bold;"><?php echo
+                            __('Trigger on', 'tornevall-networks-dnsbl-implementation') . " ...";
+                        ?>
                     </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <select multiple size="8" name="tornevall_dnsbl_filter_types[]">
-                            <?php echo implode("\n", $flagListSelector); ?>
-                        </select><br>
-                        <a href="https://docs.tornevall.net/x/AoA_#DNSBLv5:AbouttheDNSBlacklistProjectandusage-RBLBitmaskingData"><?php echo __('See full description on what the flags mean, here',
-                                'tornevall-networks-dnsbl-implementation'); ?></a> <br>
-
-                        <?php echo __('To get a updated list of flags, you should consider using the API',
-                            'tornevall-networks-dnsbl-implementation'); ?>
+                        <label>
+                            <select multiple size="8" name="tornevall_dnsbl_filter_types[]">
+                                <?php echo implode("\n", $flagListSelector); ?>
+                            </select>
+                        </label><br>
+                        <a href="https://docs.tornevall.net/x/AoA_#DNSBLv5:Aboutandusage-RBLBitmaskingData">
+                            <?php echo __(
+                                'See full description on what the flags mean, here',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?></a><br>
+                        <?php echo
+                        __(
+                            'To get a updated list of flags, you should consider using the API',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                     </td>
                 </tr>
 
                 <tr>
                     <td>
                         <b><?php echo __("Cache age", 'tornevall-networks-dnsbl-implementation'); ?></b><br>
-                        <i><?php echo __("Define for how long a blacklisted ip should be stored in local memory, defined in seconds (minimum allowed value is 900 sec=15 minutes)",
-                                'tornevall-networks-dnsbl-implementation'); ?></i>
+                        <i><?php echo
+                            __(
+                                'Time to live in local caches (seconds) - minimum is 900 seconds',
+                                'tornevall-networks-dnsbl-implementation'
+                            );
+                            ?></i>
                     </td>
                     <td>
-                        <input type="text" name="tornevall_dnsbl_cache_age"
-                               value="<?php echo esc_attr(get_option('tornevall_dnsbl_cache_age') ? get_option('tornevall_dnsbl_cache_age') : 900); ?>">
+                        <label>
+                            <input type="text" name="tornevall_dnsbl_cache_age"
+                                   value="<?php echo $cacheAge; ?>">
+                        </label>
                     </td>
                 </tr>
 
 
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Preferred resolver hosts (comma separated)',
-                                'tornevall-networks-dnsbl-implementation') . " ..."; ?>
+                        style="font-weight: bold;">
+                        <?php
+                        echo __(
+                            'Preferred resolver hosts (comma separated).',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                     </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="text" size="32" value="<?php echo implode(",", $resolverNames); ?>"
-                               name="tornevall_dnsbl_resolver_hosts">
+                        <label>
+                            <input type="text" size="32" value="<?php echo implode(",", $resolverNames); ?>"
+                                   name="tornevall_dnsbl_resolver_hosts">
+                        </label>
                     </td>
                 </tr>
 
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Protect this site by',
-                                'tornevall-networks-dnsbl-implementation') . " ..."; ?>
+                        style="font-weight: bold;">
+                        <?php
+                        echo __(
+                            'Protect this site by',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                     </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_nocomment") ? "checked" : ""); ?>
-                               value="1"
-                               name="tornevall_dnsbl_nocomment"> <?php echo "... " . __("hiding the comment section when a potential spammer arrives.",
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                        <label>
+                            <input type="checkbox" <?php
+                            echo(get_option("tornevall_dnsbl_nocomment") ? "checked" : ""); ?> value="1"
+                                   name="tornevall_dnsbl_nocomment">
+                        </label>
+                        <?php echo __(
+                            'Hiding the comment section when a potential spammer arrives.',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                         <br>
-                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_blockfull") ? "checked" : ""); ?>
-                               value="1"
-                               name="tornevall_dnsbl_blockfull"> <?php echo "... " . __("immediately block access to the whole page by redirecting (does not affect logged in admins)",
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                        <label>
+                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_blockfull") ? "checked" : ""); ?>
+                                   value="1"
+                                   name="tornevall_dnsbl_blockfull">
+                        </label>
+                        <?php echo __(
+                            'Immediately block access to the whole page by redirecting (does not affect logged in admins)',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                         <br><br>
-                        <i><b><?php echo __('Redirect to this URL when blocked',
-                                    'tornevall-networks-dnsbl-implementation') ?>:</b></i><br>
-                        <input type="text" value="<?php echo $redirectUrl ?>"
-                               name="tornevall_dnsbl_blocked_redirecturl" size="32">
+                        <i><b><?php
+                                echo __(
+                                    'Redirect to this URL when blocked',
+                                    'tornevall-networks-dnsbl-implementation'
+                                ) ?>:</b></i><br>
+                        <label>
+                            <input type="text" value="<?php echo $redirectUrl ?>"
+                                   name="tornevall_dnsbl_blocked_redirecturl" size="32">
+                        </label>
                     </td>
                 </tr>
 
-                <!--
-                Unprepared configuration
-                <tr>
-                    <td width="<?php /*echo $td['left']; */
-                ?>" valign="top"
-                        style="font-weight: bold;"><?php /*echo __('CSS-string for the comments disabled message',
-                            'tornevall-networks-dnsbl-implementation'); */
-                ?>
-                    </td>
-                    <td width="<?php /*echo $td['right']; */
-                ?>" valign="top">
-                        <input type="text" size="50"
-                               value="<?php /*echo $commentsStyle; */
-                ?>"
-                               name="tornevall_dnsbl_comments_disabled_style">
-                    </td>
-                </tr>
-                -->
                 <?php
 
                 if (in_array('global_delist', $tornevallDnsblFlags)) {
@@ -239,21 +304,19 @@ function tornevall_dnsbl_options()
                             style="font-weight: bold;border-top:1px dotted gray;">
                             <?php echo __('Delisting page', 'tornevall-networks-dnsbl-implementation'); ?>
                         </td>
-                        <td width="<?php echo $td['right']; ?>" valign="top" style="border-top:1px dotted gray;">
-                            <select name="tornevall_dnsbl_delisting_page"><?php echo(is_array($delistPageOption) ? implode("\n",
-                                    $delistPageOption) : ''); ?></select> <br>
+                        <td width="<?php echo $td['right']; ?>" valign="top"
+                            style="border-top:1px dotted gray;">
+                            <label>
+                                <select name="tornevall_dnsbl_delisting_page"><?php
+                                    echo
+                                    is_array($delistPageOption) ? implode("\n", $delistPageOption) : ''; ?></select>
+
+                            </label> <br>
                             <i>
                                 <?php
-                                echo __('The API key you are using indicates that this plugin supports global delistings. This means that your site can be used as a delisting service.',
-                                        'tornevall-networks-dnsbl-implementation') . " ";
-                                echo __('This option allows you to set up a page where the search-and-delist form should be shown.',
-                                        'tornevall-networks-dnsbl-implementation') . " ";
-                                echo __('If you can\'t find any comfortable match, you can create a new under pages editor. You can use the shortcode [dnsbl_removal_form] if you want to customize the page.',
-                                        'tornevall-networks-dnsbl-implementation') . " ";
-                                echo __('If no shortcode is found, the form will be appended to the page.',
-                                        'tornevall-networks-dnsbl-implementation') . " ";
-                                echo __('There is a plain view accessible, in case the standard AJAX form does not work. Use ?plain in the URL to reach it',
-                                        'tornevall-networks-dnsbl-implementation') . " ";
+
+                                echo $apiKeyInformation;
+
                                 ?>
                             </i>
                         </td>
@@ -261,28 +324,44 @@ function tornevall_dnsbl_options()
 
                     <tr>
                         <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;">
-                            <?php echo __('Disable comments on delisting page',
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                            <?php echo __(
+                                'Disable comments on delisting page',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?>
                         </td>
                         <td width="<?php echo $td['right']; ?>" valign="top">
-                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_delistingpage_comments_disabled") ? "checked" : ""); ?>
-                                   value="1"
-                                   name="tornevall_dnsbl_delistingpage_comments_disabled"> <?php echo __("If you are experiencing a lot of comments that ask you to delist people, you can turn off comments by using this setting",
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                            <label>
+                                <input type="checkbox" <?php
+                                echo get_option("tornevall_dnsbl_delistingpage_comments_disabled") ? "checked" : ""; ?>
+                                       value="1"
+                                       name="tornevall_dnsbl_delistingpage_comments_disabled">
+                            </label>
+                            <?php echo __(
+                                "If you are experiencing a lot of comments that ask you to delist people, you can turn off comments by using this setting",
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?>
 
                         </td>
                     </tr>
 
                     <tr>
                         <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;">
-                            <?php echo __('Show delisting form in non-responsive mode',
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                            <?php echo __(
+                                'Show delisting form in non-responsive mode',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?>
                         </td>
                         <td width="<?php echo $td['right']; ?>" valign="top">
-                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_form_noajax") ? "checked" : ""); ?>
-                                   value="1"
-                                   name="tornevall_dnsbl_form_noajax"> <?php echo __("Check this box to use prioritize the non-responsive form over the standard delisting form",
-                                'tornevall-networks-dnsbl-implementation'); ?>
+                            <label>
+                                <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_form_noajax") ? "checked" : ""); ?>
+                                       value="1"
+                                       name="tornevall_dnsbl_form_noajax">
+                            </label>
+                            <?php
+                            echo __(
+                                "Check this box to use prioritize the non-responsive form over the standard delisting form",
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?>
 
                         </td>
                     </tr>
@@ -294,25 +373,44 @@ function tornevall_dnsbl_options()
 
             </table>
 
-            <div style="font-weight: bold;font-size: 20px !important;margin-top:5px;margin-bottom:5px;"><?php echo __('API',
-                    'tornevall-networks-dnsbl-implementation'); ?></div>
-            <?php echo __('The plugin is fully functional even if the API is not in use'); ?>
+            <div style="font-weight: bold;font-size: 20px !important;margin-top:5px;margin-bottom:5px;">
+                <?php echo __(
+                    'API',
+                    'tornevall-networks-dnsbl-implementation'
+                ); ?></div>
+            <?php echo
+            __(
+                'The plugin is fully functional even if the API is not in use',
+                'tornevall-networks-dnsbl-implementation'
+            ); ?>
 
             <table width="80%" cellpadding="6" cellspacing="0" style="border: 1px solid black;" id="dnsblApiView">
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top" style="font-weight: bold;">API</td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <button type="button" onclick="runApiTest('test')"><?php echo __('Test API functionality',
-                                'tornevall-networks-dnsbl-implementation'); ?></button>
+                        <button type="button" onclick="runApiTest('test')">
+                            <?php echo __(
+                                'Test API functionality',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?></button>
                         <button type="button"
-                                onclick="runApiTest('flags')"><?php echo __('Update above flag list (no credentials required)',
-                                'tornevall-networks-dnsbl-implementation'); ?></button>
-                        <div style="font-style: italic;"><?php echo __('By entering an API id and key below, this function will validate that your key is correct.',
-                                'tornevall-networks-dnsbl-implementation'); ?></div>
+                                onclick="runApiTest('flags')">
+                            <?php echo __(
+                                'Update above flag list (no credentials required)',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?></button>
+                        <div style="font-style: italic;">
+                            <?php echo __(
+                                'By entering an API id and key below, this function will validate that your key is correct.',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?></div>
                         <div style="display: none;" id="apiTestResponse"></div>
                         <div style="margin-top: 5px; font-style: italic;color:#000099;"
-                             id="apiInformation"><?php echo __('Get your API key at',
-                                'tornevall-networks-dnsbl-implementation'); ?> <a
+                             id="apiInformation">
+                            <?php echo __(
+                                'Get your API key at',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?> <a
                                     href="<?php echo $authUrl; ?>"><?php echo $authUrl; ?></a> today, to extend the
                             functions of the DNS Blacklist.
                         </div>
@@ -320,24 +418,36 @@ function tornevall_dnsbl_options()
                 </tr>
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Application API ID/Name',
-                            'tornevall-networks-dnsbl-implementation'); ?> </td>
+                        style="font-weight: bold;">
+                        <?php echo __(
+                            'Application API ID/Name',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
+                    </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="text" size="32" id="tornevall_dnsbl_api_id" name="tornevall_dnsbl_api_id"
+                        <label for="tornevall_dnsbl_api_id"></label>
+                        <input type="text" size="32"
+                               id="tornevall_dnsbl_api_id"
+                               name="tornevall_dnsbl_api_id"
                                value="<?php echo get_option('tornevall_dnsbl_api_id'); ?>">
                         <?php
                         if (is_array($dnsblPermissionArray) && count($dnsblPermissionArray)) {
                             echo '
                                 <div style="color:#000099;font-weight: bold;font-size:16px;">Discovered permissions</div>
-                                <div style="color:#009900;font-weight: bold;">' . implode("<br>\n",
-                                    $dnsblPermissionArray) . '</div>';
+                                <div style="color:#009900;font-weight: bold;">' .
+                                implode(
+                                    "<br>\n",
+                                    $dnsblPermissionArray
+                                ) . '</div>';
                         }
-                        echo '
-                                <div style="color:#990033;font-weight: bold;font-size:11px;cursor: pointer;margin-top:6px;" onclick="jQuery(\'#avPermissionList\').toggle(\'medium\')">' . __('Click here to view available permissions',
-                                'tornevall-networks-dnsbl-implementation') . '</div>
+                        echo '<div style="color:#990033;font-weight: bold;font-size:11px;cursor: pointer;margin-top:6px;" onclick="jQuery(\'#avPermissionList\').toggle(\'medium\')">' .
+                            __(
+                                'Click here to view available permissions',
+                                'tornevall-networks-dnsbl-implementation'
+                            ) . '</div>
                                 <div id="avPermissionList" style="display:none;"><ul>';
                         foreach ($permissions as $flag => $description) {
-                            echo '<b>' . $flag . '</b><br><i>' . htmlentities($description) . '</i><br>';
+                            echo '<strong>' . $flag . '</strong><br><em>' . htmlentities($description) . '</em><br>';
                         }
                         echo '</ul></div>
                         ';
@@ -347,55 +457,97 @@ function tornevall_dnsbl_options()
                 </tr>
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Application API Key',
-                            'tornevall-networks-dnsbl-implementation'); ?></td>
+                        style="font-weight: bold;">
+                        <?php echo __(
+                            'Application API Key',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?></td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="password" size="50" id="tornevall_dnsbl_api_key" name="tornevall_dnsbl_api_key"
-                               value="<?php echo get_option('tornevall_dnsbl_api_key'); ?>">
+                        <label for="tornevall_dnsbl_api_key"></label><input type="password" size="50"
+                                                                            id="tornevall_dnsbl_api_key"
+                                                                            name="tornevall_dnsbl_api_key"
+                                                                            value="<?php echo get_option('tornevall_dnsbl_api_key'); ?>">
                     </td>
                 </tr>
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Preferred API URL',
-                            'tornevall-networks-dnsbl-implementation'); ?></td>
+                        style="font-weight: bold;">
+                        <?php
+                        echo __(
+                            'Preferred API URL',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?></td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="text" name="tornevall_dnsbl_preferred_api_url" value="<?php echo $prefApiUrl; ?>">
-                    </td>
-                </tr>
-
-                <tr>
-                    <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('API MODE',
-                            'tornevall-networks-dnsbl-implementation'); ?>
-                    </td>
-                    <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_prefer_api") ? "checked" : ""); ?>
-                               value="1"
-                               name="tornevall_dnsbl_prefer_api"> <?php echo __('Always use API instead of DNS lookups when possible (limited requests)',
-                            'tornevall-networks-dnsbl-implementation'); ?><br>
-                        <i><?php echo __('This mode is incompatible with the plain form mode',
-                                'tornevall-networks-dnsbl-implementation'); ?></i>
+                        <label>
+                            <input type="text" name="tornevall_dnsbl_preferred_api_url"
+                                   value="<?php echo $prefApiUrl; ?>">
+                        </label>
                     </td>
                 </tr>
 
                 <tr>
                     <td width="<?php echo $td['left']; ?>" valign="top"
-                        style="font-weight: bold;"><?php echo __('Request remotely resolved hosts',
-                            'tornevall-networks-dnsbl-implementation'); ?>
+                        style="font-weight: bold;">
+                        <?php
+                        echo __(
+                            'API MODE',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                     </td>
                     <td width="<?php echo $td['right']; ?>" valign="top">
-                        <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_getlisted_resolver") ? "checked" : ""); ?>
-                               value="1"
-                               name="tornevall_dnsbl_getlisted_resolver"> <?php echo __('Include (if any) the ip address resolved hostname in the request',
-                            'tornevall-networks-dnsbl-implementation'); ?>
+                        <label>
+                            <input type="checkbox" <?php
+                            echo(get_option("tornevall_dnsbl_prefer_api") ? "checked" : "");
+                            ?> value="1"
+                                   name="tornevall_dnsbl_prefer_api">
+                        </label>
+                        <?php echo
+                        __(
+                            'Always use API instead of DNS lookups when possible (limited requests)',
+                            'tornevall-networks-dnsbl-implementation'
+                        );
+                        ?><br>
+                        <i><?php echo
+                            __(
+                                'This mode is incompatible with the plain form mode',
+                                'tornevall-networks-dnsbl-implementation'
+                            ); ?></i>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width="<?php echo $td['left']; ?>" valign="top"
+                        style="font-weight: bold;">
+                        <?php echo __(
+                            'Request remotely resolved hosts',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
+                    </td>
+                    <td width="<?php echo $td['right']; ?>" valign="top">
+                        <label>
+                            <input type="checkbox" <?php
+                            echo(get_option("tornevall_dnsbl_getlisted_resolver") ? "checked" : ""); ?>
+                                   value="1"
+                                   name="tornevall_dnsbl_getlisted_resolver">
+                        </label>
+                        <?php
+                        echo __(
+                            'Include (if any) the ip address resolved hostname in the request',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
                     </td>
                 </tr>
 
             </table>
 
             <br>
-            <div style="font-style: italic;"><?php echo __('Make sure that you really save your settings before trying to use them from this page',
-                    'tornevall-networks-dnsbl-implementation') ?></div>
+            <div style="font-style: italic;">
+                <?php echo
+                __(
+                    'Make sure that you really save your settings before trying to use them from this page',
+                    'tornevall-networks-dnsbl-implementation'
+                );
+                ?></div>
 
         </div>
         <?php submit_button(); ?>
