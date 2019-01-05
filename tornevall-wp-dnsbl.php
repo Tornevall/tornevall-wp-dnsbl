@@ -20,8 +20,11 @@ require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/api.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/network.php');
 require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/helpers.php');
 
-load_plugin_textdomain('tornevall-networks-dnsbl-implementation', false,
-    dirname(plugin_basename(__FILE__)) . '/language');
+load_plugin_textdomain(
+    'tornevall-networks-dnsbl-implementation',
+    false,
+    dirname(plugin_basename(__FILE__)) . '/language'
+);
 
 $dnsbl_blacklist_status = false;
 $dnsbl_blacklist_control_status = "unchecked";
