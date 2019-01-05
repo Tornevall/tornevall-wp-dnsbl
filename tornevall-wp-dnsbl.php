@@ -125,6 +125,14 @@ function tornevall_dnsbl_checkpoint()
     $dnsbl_blacklist_control_status = "checked";
 }
 
+function dnsbl_resurs_data_info_version($dataInfoKey)
+{
+    return array(
+        'name' => 'Tornevall DNSBL Version',
+        'value' => TORNEVALL_DNSBL_VERSION
+    );
+}
+
 add_action('admin_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_ajax_tornednsbl', 'tornevall_dnsbl_api');
@@ -133,5 +141,5 @@ add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
 add_filter('comments_open', 'dnsbl_blacklist_disable_comments', 10, 1);
 add_filter('comments_template', 'dnsbl_blacklist_comments');
-
-//add_filter('the_comments', 'dnsbl_blacklist_disable_comments_message');
+add_filter('resursbank_data_info_array', 'dnsbl_resurs_data_info_array');
+add_filter('resursbank_data_info_dnsbl_version', 'dnsbl_resurs_data_info_version');
