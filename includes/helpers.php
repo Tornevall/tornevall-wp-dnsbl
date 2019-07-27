@@ -285,6 +285,7 @@ function tornevall_dnsbl_content_handler($content)
     <div id="delistingTestStatus" style="display: ' . $delistingStatusDisplay . ';">
     ' . $delistingDataPlain . '
     </div>
+    <div id="delistingWorker" style="display: ' . $delistingStatusDisplay . ';">
     </form>
     <br>
     ';
@@ -402,6 +403,7 @@ function dnsbl_resolve_addr($addr)
     $newArray = [];
     $constants = [];
     $typeBit = 0;
+    $hasBlacklist = false;
     if (is_array($currentFlags) && count($currentFlags)) {
         $BIT = new MODULE_NETBITS($currentFlags);
         foreach ($resolverNames as $rName) {
@@ -412,6 +414,7 @@ function dnsbl_resolve_addr($addr)
                 $resultEx = explode(".", $resultHost);
                 if (isset($resultEx[0]) && isset($resultEx[3]) && $resultEx[0] == "127") {
                     $listed = true;
+                    $hasBlacklist= true;
                     $preResult = $BIT->getBitArray($resultEx[3]);
                     $typeBit = $resultEx[3];
                     $constants = [];
@@ -423,12 +426,14 @@ function dnsbl_resolve_addr($addr)
                 }
             }
         }
-        $newArray[] = [
-            'ip' => $addr,
-            'constants' => $constants,
-            'typebit' => $typeBit,
-            'deleted' => (!empty($listed) ? '0000-00-00 00:00:00' : null),
-        ];
+        if ($hasBlacklist) {
+            $newArray[] = [
+                'ip' => $addr,
+                'constants' => $constants,
+                'typebit' => $typeBit,
+                'deleted' => (!empty($listed) ? '0000-00-00 00:00:00' : null),
+            ];
+        }
     }
 
     // Mirroring APIv3 response
