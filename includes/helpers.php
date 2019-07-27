@@ -170,10 +170,19 @@ function tornevall_dnsbl_content_handler($content)
 
         $showDeleteForm = null;
         $testCaptcha = torneApi('captcha', 'testCaptcha', ['hash' => $cHash, 'response' => $cString]);
-        if (!is_null($deleteAddr) &&
-            isset($testCaptcha->testCaptchaResponse) &&
+
+        $allowRemoval = false;
+        if (isset($testCaptcha->testCaptchaResponse) &&
             (bool)$testCaptcha->testCaptchaResponse === true
         ) {
+            $allowRemoval = true;
+        }
+
+        if (tornevall_dnsbl_is_admin()) {
+            $allowRemoval = true;
+        }
+
+        if (!is_null($deleteAddr) && $allowRemoval) {
             $deleteRequest = torneApi("dnsbl", "", ['ip' => $deleteAddr], true, 'DELETE');
             $success = isset($deleteRequest->success) ? $deleteRequest->success : false;
             $faultString = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __(
@@ -414,7 +423,7 @@ function dnsbl_resolve_addr($addr)
                 $resultEx = explode(".", $resultHost);
                 if (isset($resultEx[0]) && isset($resultEx[3]) && $resultEx[0] == "127") {
                     $listed = true;
-                    $hasBlacklist= true;
+                    $hasBlacklist = true;
                     $preResult = $BIT->getBitArray($resultEx[3]);
                     $typeBit = $resultEx[3];
                     $constants = [];
@@ -550,7 +559,7 @@ function dnsbl_check_blacklist_cache($addr)
     $test_ip = $wpdb->prepare(
         "SELECT * FROM {$tableCache} WHERE ipAddr = %s",
         [
-            $addr
+            $addr,
         ]
     );
     $testIpResponse = $wpdb->get_results($test_ip);
@@ -570,7 +579,7 @@ function dnsbl_check_blacklist_cache($addr)
                     [
                         $addr,
                         $internalResult['typebit'],
-                        time()
+                        time(),
                     ]
                 )
             );
@@ -580,7 +589,7 @@ function dnsbl_check_blacklist_cache($addr)
                 [
                     $addr,
                     0,
-                    time()
+                    time(),
                 ]
             ));
         }
@@ -598,7 +607,7 @@ function dnsbl_check_blacklist_cache($addr)
                     [
                         $internalResult['typebit'],
                         time(),
-                        $addr
+                        $addr,
                     ]
                 )
             );
