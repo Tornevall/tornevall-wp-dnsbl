@@ -77,6 +77,15 @@ if (is_object($dnsblClientData)) {
     }
 }
 
+function tornevall_dnsbl_is_admin()
+{
+    if (current_user_can('administrator') || is_admin()) {
+        return true;
+    }
+
+    return false;
+}
+
 function tornevall_dnsbl_enqueue()
 {
     global $dnsblNonce;
@@ -90,9 +99,6 @@ function tornevall_dnsbl_enqueue()
     $tapi_spinner = plugin_dir_url(__FILE__) . "images/spinner-1s-32px.gif";
     $tapi_delete = plugin_dir_url(__FILE__) . "images/d.png";
     $tapi_q = plugin_dir_url(__FILE__) . "images/q.png";
-
-    //echo $dnsblNonceId . " => " . $dnsblNonce;
-    //die;
 
     $adminUrl = admin_url('admin-ajax.php');
     $vars = [
@@ -134,6 +140,7 @@ function tornevall_dnsbl_enqueue()
             'API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall-networks-dnsbl-implementation'
         ),
+        'tornevall_dnsbl_is_admin_notification' => tornevall_dnsbl_is_admin()
     ];
 
     wp_enqueue_script(
