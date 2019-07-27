@@ -62,12 +62,19 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
-= 2.0.6 =
+= 2.0.7 =
 
- * Minor fix for open/closed comments on delisting page
+    * [DNSBLWP-60] - False positives shown with fraudbl
+    * [DNSBLWP-52] - wp5 error
+    * [DNSBLWP-56] - Code inspections
+    * [DNSBLWP-59] - Spinner at "delist" click
+    * [DNSBLWP-61] - Admin can without captcha
+
 
 = Recent versions =
 
+[CHANGELOG 2.0.7](https://www.tornevall.net/2019/07/27/dnsbl-for-wordpress-2-0-7-changelog/)
+[CHANGELOG 2.0.6](https://www.tornevall.net/2018/08/01/dnsbl-for-wordpress-2-0-5-changelog/)
 [CHANGELOG 2.0.5](https://www.tornevall.net/2018/08/01/dnsbl-for-wordpress-2-0-5-changelog/)
 [CHANGELOG 2.0.2](https://www.tornevall.net/2018/07/18/dnsbl-for-wordpress-2-0-2-changelog/)
 [CHANGELOG 2.0.1](https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/)
