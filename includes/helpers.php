@@ -542,7 +542,12 @@ function dnsbl_check_blacklist_cache($addr)
 
     $tableCache = $wpdb->prefix . 'dnsblcache';
 
-    $test_ip = $wpdb->prepare("SELECT * FROM {$tableCache} WHERE ipAddr = %s", [$addr]);
+    $test_ip = $wpdb->prepare(
+        "SELECT * FROM {$tableCache} WHERE ipAddr = %s",
+        [
+            $addr
+        ]
+    );
     $testIpResponse = $wpdb->get_results($test_ip);
 
     if (isset($testIpResponse[0])) {
@@ -556,21 +561,21 @@ function dnsbl_check_blacklist_cache($addr)
         if (isset($internalResult['ip'])) {
             $wpdb->query(
                 $wpdb->prepare(
-                    "INSERT IGNORE INTO {\$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
+                    "INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
                     [
                         $addr,
                         $internalResult['typebit'],
-                        time(),
+                        time()
                     ]
                 )
             );
         } else {
             $wpdb->query($wpdb->prepare(
-                "INSERT IGNORE INTO {\$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
+                "INSERT IGNORE INTO {$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
                 [
                     $addr,
                     0,
-                    time(),
+                    time()
                 ]
             ));
         }
@@ -588,7 +593,7 @@ function dnsbl_check_blacklist_cache($addr)
                     [
                         $internalResult['typebit'],
                         time(),
-                        $addr,
+                        $addr
                     ]
                 )
             );
