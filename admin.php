@@ -47,7 +47,7 @@ function tornevall_dnsbl_options()
 
     $pagelist = get_pages();
     $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
-    $delistPageOption = array();
+    $delistPageOption = [];
     if (is_array($pagelist)) {
         $delistPageOption[] = '<option value="">None</option>';
         foreach ($pagelist as $pageObject) {
@@ -97,22 +97,22 @@ function tornevall_dnsbl_options()
         settings_fields('dnsblOptions-group');
         do_settings_sections('dnsblOptions-group');
 
-        $td = array(
+        $td = [
             'left' => '250px',
             'right' => '550px',
-        );
+        ];
 
-        $flagListSelector = array();
+        $flagListSelector = [];
         $currentFlags = get_option('tornevall_dnsbl_current_flags');
         $savedFlags = get_option("tornevall_dnsbl_filter_types");
         if (!is_array($savedFlags)) {
             // Configure best practice initially
-            $savedFlags = array(
+            $savedFlags = [
                 'IP_CONFIRMED',
                 'IP_SECOND_EXIT',
                 'IP_ABUSE_NO_SMTP',
-                'IP_ANONYMOUS'
-            );
+                'IP_ANONYMOUS',
+            ];
             update_option('tornevall_dnsbl_filter_types', $savedFlags);
         }
 
@@ -133,10 +133,10 @@ function tornevall_dnsbl_options()
                 $resolverNames
             ) || !$hasProperResolvers
         ) {
-            $resolverNames = array(
+            $resolverNames = [
                 'dnsbl.tornevall.org',
-                'bl.fraudbl.org'
-            );
+                'bl.fraudbl.org',
+            ];
             update_option('tornevall_dnsbl_resolver_hosts', implode(",", array_map("trim", $resolverNames)));
         }
 

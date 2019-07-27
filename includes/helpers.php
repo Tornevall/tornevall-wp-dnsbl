@@ -1,4 +1,6 @@
-<?php /** @noinspection CssInvalidPropertyValue */
+<?php
+
+/** @noinspection CssInvalidPropertyValue */
 
 use Tornevall_WP_DNSBL\MODULE_NETBITS;
 use Tornevall_WP_DNSBL\MODULE_NETWORK;
@@ -12,8 +14,8 @@ function tornevall_wp_dnsbl_activate_db()
 {
     global $wpdb;
 
-    $dbDeltaQuery = array();
-    $dnsbl_db_tables = array(
+    $dbDeltaQuery = [];
+    $dnsbl_db_tables = [
         'dnsblcache' => '
             `ipAddr` VARCHAR(50) NOT NULL,
             `lastResponse` INT NOT NULL DEFAULT 0,
@@ -26,7 +28,7 @@ function tornevall_wp_dnsbl_activate_db()
             `wasBlocked` INT NULL DEFAULT 0,
             INDEX `denyIndex` (`ipAddr` ASC, `wasBlocked` ASC)
         ',
-    );
+    ];
 
     $dbVersion = get_option('tornevall_dnsbl_database_version');
     if (empty($dbVersion) || version_compare(TORNEVALL_DNSBL_DATA_VERSION, '2.0.0', '<')) {
@@ -53,7 +55,7 @@ function tornevall_wp_dnsbl_deactivate_db()
 {
     global $wpdb;
 
-    $dnsbl_db_tables = array('dnsblcache', 'dnsblstats');
+    $dnsbl_db_tables = ['dnsblcache', 'dnsblstats'];
     foreach ($dnsbl_db_tables as $tableName) {
         $wpdb->query("DROP TABLE IF EXISTS " . $wpdb->prefix . $tableName);
     }
@@ -68,7 +70,7 @@ function tornevall_wp_dnsbl_uninstall_db()
 {
     global $wpdb;
 
-    $dnsbl_db_tables = array('dnsblstats');
+    $dnsbl_db_tables = ['dnsblstats'];
     foreach ($dnsbl_db_tables as $tableName) {
         $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $tableName);
     }
@@ -143,7 +145,7 @@ function tornevall_dnsbl_content_handler($content)
             <input type="submit" name="submitDelistingRequest">
             ';
         }
-        $removalController = torneApi('dnsbl', '', array("ip" => $deleteAddr));
+        $removalController = torneApi('dnsbl', '', ["ip" => $deleteAddr]);
         if (isset($removalController->dnsblResponse)) {
             $removalController = $removalController->dnsblResponse;
         }
@@ -167,12 +169,12 @@ function tornevall_dnsbl_content_handler($content)
         $cHash = isset($_REQUEST['captchaHash']) ? $_REQUEST['captchaHash'] : null;
 
         $showDeleteForm = null;
-        $testCaptcha = torneApi('captcha', 'testCaptcha', array('hash' => $cHash, 'response' => $cString));
+        $testCaptcha = torneApi('captcha', 'testCaptcha', ['hash' => $cHash, 'response' => $cString]);
         if (!is_null($deleteAddr) &&
             isset($testCaptcha->testCaptchaResponse) &&
             (bool)$testCaptcha->testCaptchaResponse === true
         ) {
-            $deleteRequest = torneApi("dnsbl", "", array('ip' => $deleteAddr), true, 'DELETE');
+            $deleteRequest = torneApi("dnsbl", "", ['ip' => $deleteAddr], true, 'DELETE');
             $success = isset($deleteRequest->success) ? $deleteRequest->success : false;
             $faultString = isset($deleteRequest->faultstring) ? $deleteRequest->faultstring : __(
                 'Unknown API error',
@@ -375,7 +377,7 @@ function dnsbl_blacklist_disable_comments_message($comments)
                     'tornevall-networks-dnsbl-implementation'
                 ) . '</div>';
 
-            $comments = array();
+            $comments = [];
         }
 
     }
@@ -385,6 +387,7 @@ function dnsbl_blacklist_disable_comments_message($comments)
 
 /**
  * DNS before API resolver
+ *
  * @param $addr
  * @return array
  * @todo Move this into class controller
@@ -396,8 +399,8 @@ function dnsbl_resolve_addr($addr)
     $resolverNames = explode(",", get_option('tornevall_dnsbl_resolver_hosts'));
     $currentFlags = get_option('tornevall_dnsbl_current_flags');
 
-    $newArray = array();
-    $constants = array();
+    $newArray = [];
+    $constants = [];
     $typeBit = 0;
     if (is_array($currentFlags) && count($currentFlags)) {
         $BIT = new MODULE_NETBITS($currentFlags);
@@ -411,7 +414,7 @@ function dnsbl_resolve_addr($addr)
                     $listed = true;
                     $preResult = $BIT->getBitArray($resultEx[3]);
                     $typeBit = $resultEx[3];
-                    $constants = array();
+                    $constants = [];
                     foreach ($preResult as $preValue) {
                         if (!in_array($preValue, $constants)) {
                             $constants[] = $preValue;
@@ -420,22 +423,22 @@ function dnsbl_resolve_addr($addr)
                 }
             }
         }
-        $newArray[] = array(
+        $newArray[] = [
             'ip' => $addr,
             'constants' => $constants,
             'typebit' => $typeBit,
             'deleted' => (!empty($listed) ? '0000-00-00 00:00:00' : null),
-        );
+        ];
     }
 
     // Mirroring APIv3 response
-    $returnThis = array(
-        'response' => array(
+    $returnThis = [
+        'response' => [
             'requestResponse' => $newArray,
-            'requestType' => 'DNS'
+            'requestType' => 'DNS',
 
-        )
-    );
+        ],
+    ];
     if (!count($newArray)) {
         $returnThis['errorcode'] = 404;
         $returnThis['errorstring'] = 'Nothing found as listed';
@@ -539,7 +542,7 @@ function dnsbl_check_blacklist_cache($addr)
 
     $tableCache = $wpdb->prefix . 'dnsblcache';
 
-    $test_ip = $wpdb->prepare("SELECT * FROM {$tableCache} WHERE ipAddr = %s", array($addr));
+    $test_ip = $wpdb->prepare("SELECT * FROM {$tableCache} WHERE ipAddr = %s", [$addr]);
     $testIpResponse = $wpdb->get_results($test_ip);
 
     if (isset($testIpResponse[0])) {
@@ -554,21 +557,21 @@ function dnsbl_check_blacklist_cache($addr)
             $wpdb->query(
                 $wpdb->prepare(
                     "INSERT IGNORE INTO {\$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
-                    array(
+                    [
                         $addr,
                         $internalResult['typebit'],
-                        time()
-                    )
+                        time(),
+                    ]
                 )
             );
         } else {
             $wpdb->query($wpdb->prepare(
                 "INSERT IGNORE INTO {\$tableCache} (ipAddr, lastResponse, lastResolve) VALUES (%s, %d, %d)",
-                array(
+                [
                     $addr,
                     0,
-                    time()
-                )
+                    time(),
+                ]
             ));
         }
 
@@ -582,11 +585,11 @@ function dnsbl_check_blacklist_cache($addr)
             $wpdb->query(
                 $wpdb->prepare(
                     "UPDATE {$tableCache} set lastResponse = %d, lastResolve = %d WHERE ipAddr = %s",
-                    array(
+                    [
                         $internalResult['typebit'],
                         time(),
-                        $addr
-                    )
+                        $addr,
+                    ]
                 )
             );
 
