@@ -4,14 +4,16 @@
  * Plugin URI: https://docs.tornevall.net/x/AoA_/
  * Project URI: https://tracker.tornevall.net/projects/DNSBLWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 2.0.7
+ * Version: 2.0.8
  * Author: Tomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
+$_SERVER['REMOTE_ADDR'] = '194.68.237.230';
+
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.6');
+define('TORNEVALL_DNSBL_VERSION', '2.0.8');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
@@ -140,7 +142,7 @@ function tornevall_dnsbl_enqueue()
             'API data updated - If you have made any changes in this configuration, you should also save the settings.',
             'tornevall-networks-dnsbl-implementation'
         ),
-        'tornevall_dnsbl_is_admin_notification' => tornevall_dnsbl_is_admin()
+        'tornevall_dnsbl_is_admin_notification' => tornevall_dnsbl_is_admin(),
     ];
 
     wp_enqueue_script(
@@ -164,7 +166,18 @@ function tornevall_dnsbl_checkpoint()
 {
     global $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
     $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR']);
+    $dnsbl_blacklist_real = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true);
     $dnsbl_blacklist_control_status = "checked";
+    if ($dnsbl_blacklist_real) {
+        add_filter('wpcf7_form_tag', 'tornevall_dnsbl_wpcf7_form_tag', 11, 2);
+    }
+}
+
+function tornevall_dnsbl_wpcf7_form_tag($scanned_tag, $replace)
+{
+    if ($scanned_tag['type'] === 'submit') {
+    }
+    return $scanned_tag;
 }
 
 function dnsbl_resurs_data_info_version($dataInfoKey)
@@ -186,9 +199,11 @@ add_action('wp_enqueue_scripts', 'tornevall_dnsbl_enqueue');
 add_action('wp_ajax_tornednsbl', 'tornevall_dnsbl_api');
 add_action('wp_ajax_nopriv_tornednsbl', 'tornevall_dnsbl_api');
 add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
+
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
 add_filter('comments_open', 'dnsbl_blacklist_disable_comments', 10, 1);
 add_filter('comments_template', 'dnsbl_blacklist_comments');
 add_filter('resursbank_data_info_array', 'dnsbl_resurs_data_info_array');
 add_filter('resursbank_data_info_dnsbl_version', 'dnsbl_resurs_data_info_version');
+
 //add_filter('the_comments', 'dnsbl_blacklist_disable_comments_message');

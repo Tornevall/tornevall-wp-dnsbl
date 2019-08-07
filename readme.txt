@@ -4,8 +4,8 @@ Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam
 Requires at least: 3.0.1
 Tested up to: 5.2.2
-Stable tag: 2.0.7
-License: Apache
+Stable tag: 2.0.8
+License: Apach
 
 Tornevall Networks DNS Blacklist support for Wordpress
 
