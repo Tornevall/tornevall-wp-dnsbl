@@ -10,8 +10,6 @@
  * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
-$_SERVER['REMOTE_ADDR'] = '194.68.237.230';
-
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TORNEVALL_DNSBL_VERSION', '2.0.8');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
