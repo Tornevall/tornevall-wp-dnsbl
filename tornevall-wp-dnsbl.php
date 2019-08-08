@@ -166,18 +166,62 @@ function tornevall_dnsbl_checkpoint()
 {
     global $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
     $dnsbl_blacklist_status = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR']);
-    $dnsbl_blacklist_real = dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true);
     $dnsbl_blacklist_control_status = "checked";
-    if ($dnsbl_blacklist_real) {
-        add_filter('wpcf7_form_tag', 'tornevall_dnsbl_wpcf7_form_tag', 11, 2);
+
+    if (get_option('tornevall_dnsbl_wpcf7')) {
+        // WPCF7 (Contact Form DNSBL Addition).
+        add_filter('wpcf7_submission_is_blacklisted', 'tornevall_dnsbl_wpcf7_is_blacklisted', 10, 2);
+        add_filter('wpcf7_messages', 'tornevall_dnsbl_wpcf7_messages', 9);
+        add_filter('wpcf7_display_message', 'tornevall_dnsbl_wpcf7_show_spam_warning', 11, 1);
     }
 }
 
-function tornevall_dnsbl_wpcf7_form_tag($scanned_tag, $replace)
+/**
+ * @param $trg
+ * @param $wpcf7 WPCF7_Submission
+ * @return bool
+ */
+function tornevall_dnsbl_wpcf7_is_blacklisted($trg, $wpcf7)
 {
-    if ($scanned_tag['type'] === 'submit') {
+    if (dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true)) {
+        $wpcf7->add_spam_log([
+            'agent' => 'tornevall-dnsbl',
+            'reason' => __('Blacklisted ip address in use', 'tornevall-networks-dnsbl-implementation'),
+        ]);
+        $wpcf7->set_status('tornevall_dnsbl');
+        $wpcf7->set_response('tornevall_dnsbl_blacklist');
+        return true;
     }
-    return $scanned_tag;
+}
+
+function tornevall_dnsbl_wpcf7_show_spam_warning($message)
+{
+    if (dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true)) {
+        $message = '<a href="https://dnsbl.tornevall.org/removal?redirected" target="_blank">' .
+            __(
+                'Your ip address seem to be blacklisted, so your message is not sent. Click for more information.',
+                'tornevall-networks-dnsbl-implementation'
+            )
+            . '</a>';
+    }
+
+    return $message;
+}
+
+/**
+ * @param $messages
+ * @return array
+ */
+function tornevall_dnsbl_wpcf7_messages($messages)
+{
+    if (is_array($messages)) {
+        $messages['tornevall_dnsbl_blacklist'] = [
+            'description' => "Sender's message failed to send due to blacklist in Tornevall DNSBL.",
+            'default' => "The ip address you are using to send this message is blacklisted.",
+        ];
+    }
+
+    return $messages;
 }
 
 function dnsbl_resurs_data_info_version($dataInfoKey)
@@ -205,5 +249,3 @@ add_filter('comments_open', 'dnsbl_blacklist_disable_comments', 10, 1);
 add_filter('comments_template', 'dnsbl_blacklist_comments');
 add_filter('resursbank_data_info_array', 'dnsbl_resurs_data_info_array');
 add_filter('resursbank_data_info_dnsbl_version', 'dnsbl_resurs_data_info_version');
-
-//add_filter('the_comments', 'dnsbl_blacklist_disable_comments_message');

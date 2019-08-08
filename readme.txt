@@ -1,7 +1,7 @@
 === Tornevall Networks AntiSpam and Fraud Blacklist (DNSBL w/FraudBL) implementation ===
 Contributors: Tornevall
 Donate link: https://auth.tornevall.com/donate/
-Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam
+Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam, wpcf7, contactform, contact-form
 Requires at least: 3.0.1
 Tested up to: 5.2.2
 Stable tag: 2.0.8

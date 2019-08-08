@@ -30,6 +30,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_getlisted_resolver');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_delistingpage_comments_disabled');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_wpcf7');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -257,7 +258,7 @@ function tornevall_dnsbl_options()
                         style="font-weight: bold;">
                         <?php
                         echo __(
-                            'Protect this site by',
+                            'Protective options',
                             'tornevall-networks-dnsbl-implementation'
                         ); ?>
                     </td>
@@ -272,6 +273,7 @@ function tornevall_dnsbl_options()
                             'tornevall-networks-dnsbl-implementation'
                         ); ?>
                         <br>
+
                         <label>
                             <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_blockfull") ? "checked" : ""); ?>
                                    value="1"
@@ -281,7 +283,20 @@ function tornevall_dnsbl_options()
                             'Immediately block access to the whole page by redirecting (does not affect logged in admins)',
                             'tornevall-networks-dnsbl-implementation'
                         ); ?>
-                        <br><br>
+                        <br>
+
+                        <label>
+                            <input type="checkbox" <?php echo(get_option("tornevall_dnsbl_wpcf7") ? "checked" : ""); ?>
+                                   value="1"
+                                   name="tornevall_dnsbl_wpcf7">
+                        </label>
+                        <?php echo __(
+                            'Turn on support for WPCF7 (Contact-Form 7) and flag spam on hits.',
+                            'tornevall-networks-dnsbl-implementation'
+                        ); ?>
+                        <br>
+
+                        <br>
                         <i><b><?php
                                 echo __(
                                     'Redirect to this URL when blocked',
