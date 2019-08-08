@@ -291,7 +291,7 @@ function tornevall_dnsbl_options()
                                    name="tornevall_dnsbl_wpcf7">
                         </label>
                         <?php echo __(
-                            'Turn on support for WPCF7 (Contact-Form 7) and flag spam on hits.',
+                            'Turn on support for WPCF7 (Contact-Form 7) and block submitting on hits.',
                             'tornevall-networks-dnsbl-implementation'
                         ); ?>
                         <br>
