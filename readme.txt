@@ -1,19 +1,18 @@
 === Tornevall Networks AntiSpam and Fraud Blacklist (DNSBL w/FraudBL) implementation ===
 Contributors: Tornevall
 Donate link: https://auth.tornevall.com/donate/
-Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam
+Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam, wpcf7, contactform, contact-form
 Requires at least: 3.0.1
 Tested up to: 5.2.2
-Stable tag: 2.0.7
-License: Apache
+Stable tag: 2.0.8
+License: Apach
 
 Tornevall Networks DNS Blacklist support for Wordpress
 
 == Description ==
 
 Tornevall Networks DNS Blacklist support. Blocks comment functions or redirects visitors who is blacklisted to external site.
-
-Confirmed to run with WordPress 5.0 alpha.
+Tested with WPCF7 5.1.4 (v2.0.8).
 
 [Project tracker](https://tracker.tornevall.net/projects/DNSBLWP/issues) - Contribute with suggestions or bug reports here!
 [Plugin URL](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -62,17 +61,14 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
-= 2.0.7 =
+= 2.0.8 =
 
-    * [DNSBLWP-60] - False positives shown with fraudbl
-    * [DNSBLWP-52] - wp5 error
-    * [DNSBLWP-56] - Code inspections
-    * [DNSBLWP-59] - Spinner at "delist" click
-    * [DNSBLWP-61] - Admin can without captcha
+    * [DNSBLWP-63] - Support ContactForm7
 
 
 = Recent versions =
 
+[CHANGELOG 2.0.8](https://www.tornevall.net/2019/08/08/dnsbl-for-wordpress-2-0-8-changelog/)
 [CHANGELOG 2.0.7](https://www.tornevall.net/2019/07/27/dnsbl-for-wordpress-2-0-7-changelog/)
 [CHANGELOG 2.0.6](https://www.tornevall.net/2018/08/01/dnsbl-for-wordpress-2-0-5-changelog/)
 [CHANGELOG 2.0.5](https://www.tornevall.net/2018/08/01/dnsbl-for-wordpress-2-0-5-changelog/)
