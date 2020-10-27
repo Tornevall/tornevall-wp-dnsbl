@@ -11,7 +11,7 @@
  */
 
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('TORNEVALL_DNSBL_VERSION', '2.0.8');
+define('TORNEVALL_DNSBL_VERSION', '2.0.9');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 
@@ -33,11 +33,13 @@ $dnsblPermissionArray = [];
 $dnsblClientData = @unserialize(get_option('tornevall_dnsbl_clientdata'));
 $permissions = [
     'allow_cidr' => __(
-        'The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them. This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
+        'The usage of CIDR-blocks are normally not permitted by the DNSBL API, in more functions than listing them.' .
+        ' This permission also opens up for usage in DELETE/UPDATE cases (for CIDR-block removals this would help a lot). Adding data with CIDR and different flags is however still a problem.',
         'tornevall-networks-dnsbl-implementation'
     ),
     'allow_cidr_update' => __(
-        'Setting that partially allows CIDR-block updates for the DNSBL (there migt me limitations linked to this permission - see the documentation for this information)',
+        'Setting that partially allows CIDR-block updates for the DNSBL (there migt me limitations linked to this' .
+        ' permission - see the documentation for this information)',
         'tornevall-networks-dnsbl-implementation'
     ),
     'can_purge' => __(
@@ -61,7 +63,8 @@ $permissions = [
         'tornevall-networks-dnsbl-implementation'
     ),
     'overwrite_flags' => __(
-        'When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes it possible to overwrite old flags',
+        'When sending new or updated data to DNSBL, clients can only add more flags to the host. This feature makes ' .
+        'it possible to overwrite old flags',
         'tornevall-networks-dnsbl-implementation'
     ),
 ];
@@ -77,6 +80,10 @@ if (is_object($dnsblClientData)) {
     }
 }
 
+/**
+ * @return bool
+ * @since 2.0
+ */
 function tornevall_dnsbl_is_admin()
 {
     if (current_user_can('administrator') || is_admin()) {
@@ -86,6 +93,9 @@ function tornevall_dnsbl_is_admin()
     return false;
 }
 
+/**
+ * @since 2.0
+ */
 function tornevall_dnsbl_enqueue()
 {
     global $dnsblNonce;
@@ -160,6 +170,9 @@ if (is_admin()) {
     register_uninstall_hook(__FILE__, 'tornevall_wp_dnsbl_uninstall_db');
 }
 
+/**
+ * @since 2.0
+ */
 function tornevall_dnsbl_checkpoint()
 {
     global $dnsbl_blacklist_status, $dnsbl_blacklist_control_status;
@@ -167,7 +180,6 @@ function tornevall_dnsbl_checkpoint()
     $dnsbl_blacklist_control_status = "checked";
 
     if (get_option('tornevall_dnsbl_wpcf7')) {
-        // WPCF7 (Contact Form DNSBL Addition).
         add_filter('wpcf7_submission_is_blacklisted', 'tornevall_dnsbl_wpcf7_is_blacklisted', 10, 2);
         add_filter('wpcf7_messages', 'tornevall_dnsbl_wpcf7_messages', 9);
         add_filter('wpcf7_display_message', 'tornevall_dnsbl_wpcf7_show_spam_warning', 11, 1);
@@ -175,11 +187,12 @@ function tornevall_dnsbl_checkpoint()
 }
 
 /**
- * @param $trg
+ * @param $trigger
  * @param $wpcf7 WPCF7_Submission
  * @return bool
+ * @since 2.0.x
  */
-function tornevall_dnsbl_wpcf7_is_blacklisted($trg, $wpcf7)
+function tornevall_dnsbl_wpcf7_is_blacklisted($trigger, $wpcf7)
 {
     if (dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true)) {
         $wpcf7->add_spam_log([
@@ -192,6 +205,11 @@ function tornevall_dnsbl_wpcf7_is_blacklisted($trg, $wpcf7)
     }
 }
 
+/**
+ * @param $message
+ * @return string
+ * @since 2.0.x
+ */
 function tornevall_dnsbl_wpcf7_show_spam_warning($message)
 {
     if (dnsbl_check_blacklist($_SERVER['REMOTE_ADDR'], false, true)) {
@@ -209,6 +227,7 @@ function tornevall_dnsbl_wpcf7_show_spam_warning($message)
 /**
  * @param $messages
  * @return array
+ * @since 2.0.x
  */
 function tornevall_dnsbl_wpcf7_messages($messages)
 {
@@ -222,6 +241,11 @@ function tornevall_dnsbl_wpcf7_messages($messages)
     return $messages;
 }
 
+/**
+ * @param $dataInfoKey
+ * @return string[]
+ * @since 2.0
+ */
 function dnsbl_resurs_data_info_version($dataInfoKey)
 {
     return [
@@ -230,6 +254,11 @@ function dnsbl_resurs_data_info_version($dataInfoKey)
     ];
 }
 
+/**
+ * @param $array
+ * @return mixed
+ * @since 2.0
+ */
 function dnsbl_resurs_data_info_array($array)
 {
     $array[] = 'dnsbl_version';
@@ -245,5 +274,7 @@ add_action('plugins_loaded', 'tornevall_dnsbl_checkpoint');
 add_filter('the_content', 'tornevall_dnsbl_content_handler');
 add_filter('comments_open', 'dnsbl_blacklist_disable_comments', 10, 1);
 add_filter('comments_template', 'dnsbl_blacklist_comments');
+
+// Resurs Bank for WC internal release 2.2
 add_filter('resursbank_data_info_array', 'dnsbl_resurs_data_info_array');
 add_filter('resursbank_data_info_dnsbl_version', 'dnsbl_resurs_data_info_version');

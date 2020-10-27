@@ -1,6 +1,6 @@
-// Keeping this uncompressed - 201027
-
+// Let's stay uncompressed for now (october 2020).
 $T_DNSBL = jQuery.noConflict();
+
 var flagIndex;
 
 /**
@@ -168,20 +168,26 @@ function tFindDnsblAddr() {
  */
 function setDelistAddr(addr, index) {
     flagIndex = index;
+    $T_DNSBL('#delistingWorker').html('<img src="' + tornevall_dnsbl_vars.spinner + '">');
+    $T_DNSBL('#delistingWorker').show();
+
     torneDnsblApi("captcha", function (a) {
+        $T_DNSBL('#delistingWorker').html('');
+        $T_DNSBL('#delistingWorker').hide();
         if (typeof a["response"] !== "undefined" && a["response"]["getCaptchaResponse"] !== "undefined") {
             var captchaResponse = a["response"]["getCaptchaResponse"];
             var imageHash = captchaResponse["imageHash"];
             var imageUrl = captchaResponse["imageUrl"];
-            var capForm = '<form onsubmit="return false;">' +
+            var capForm = '<form id="submit_captcha" onsubmit="return false;">' +
                 '<input type="hidden" value="' + imageHash + '" id="meHash">' +
                 '<img src="' + imageUrl + '"><br>' +
                 '<b>' + tornevall_dnsbl_vars.tr_captcha_image + '</b>' +
                 '<input type="text" vaue="" id="meImage"><br>' +
-                '<input type="button" value="Submit" onclick="setDelistCaptcha()">' +
+                '<input id="setDelistAddrBtn" type="button" value="Submit" onclick="setDelistCaptcha()">' +
                 '</form>';
             $T_DNSBL('#dnsbl_ip_flags_' + index).html(capForm);
             $T_DNSBL('#dnsbl_ip_flags_' + index).show();
+            $T_DNSBL('#setDelistAddrBtn').click();
         }
     }, {
         "verb": "getCaptcha",
@@ -194,8 +200,15 @@ function setDelistCaptcha() {
     var meHash = $T_DNSBL('#meHash').val();
     var fIp = $T_DNSBL('#findIpAddr').val();
 
-    if (meString != "" && meHash != "") {
+    // The admin notification is server side controlled, so don't bother (that's why we call it notification - to just
+    // tell the js that empty strings are ok).
+    if ((meString != "" && meHash != "") || tornevall_dnsbl_vars.tornevall_dnsbl_is_admin_notification) {
+        $T_DNSBL('#delistingWorker').html('<img src="' + tornevall_dnsbl_vars.spinner + '">');
+        $T_DNSBL('#delistingWorker').show();
+
         torneDnsblApi("captcha", function (a) {
+            $T_DNSBL('#delistingWorker').html('');
+            $T_DNSBL('#delistingWorker').hide();
             if (typeof a["response"] != "undefined" && typeof a["response"]["testCaptchaResponse"] != "undefined") {
                 if (a["response"]["testCaptchaResponse"] == "1") {
                     torneDnsblApi("dnsbl", function (a) {
