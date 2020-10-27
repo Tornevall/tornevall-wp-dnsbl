@@ -3,7 +3,7 @@
 /** @noinspection CssInvalidPropertyValue */
 
 use Tornevall_WP_DNSBL\MODULE_NETBITS;
-use Tornevall_WP_DNSBL\MODULE_NETWORK;
+use TorneLIB\MODULE_NETWORK;
 
 /**
  * Plugin activation hook

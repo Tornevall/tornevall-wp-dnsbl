@@ -1,19 +1,18 @@
 <?php
 
+use TorneLIB\Utils\Generic;
+
 /**
  * @param $template
+ * @param $assignedVariables
  * @return false|string
+ * @throws Exception
  */
-function tornevall_wp_dnsbl_fetch_template($template)
+function tornevall_wp_dnsbl_fetch_template($template, $assignedVariables)
 {
-    $fullTemplate = TORNEVALL_DNSBL_PLUGIN_DIR . '/templates/' . $template . '.php';
-    $html = '';
-    if (file_exists($fullTemplate)) {
-        ob_start();
-        require_once($fullTemplate);
-        $html = ob_get_clean();
-    }
-    return $html;
+    $generic = new Generic();
+    $generic->setTemplatePath(__DIR__ . '/templates');
+    return $generic->getTemplate($template, $assignedVariables);
 }
 
 
@@ -95,5 +94,16 @@ function tornevall_dnsbl_options()
         $prefApiUrl = "https://api.tornevall.net/3.0/";
     }
 
-    echo tornevall_wp_dnsbl_fetch_template('adminview');
+    $assignedVariables = [
+        'authUrl' => $authUrl,
+        'prefApiUrl' => $prefApiUrl,
+        'redirectUrl' => $redirectUrl,
+        'cacheAgeTest' => $cacheAgeTest,
+        'delistPageOption' => $delistPageOption,
+        'tornevallDnsblFlags' => $tornevallDnsblFlags,
+        'dnsblPermissionArray' => $dnsblPermissionArray,
+        'permissions' => $permissions,
+    ];
+
+    echo tornevall_wp_dnsbl_fetch_template('adminview', $assignedVariables);
 }

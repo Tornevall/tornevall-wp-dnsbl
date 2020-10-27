@@ -1,0 +1,63 @@
+# Guides: https://confluence.atlassian.com/x/e8YWN for more examples.
+#          - apt-add-repository ppa:sergey-dryabzhinsky/php53
+#          - apt-add-repository ppa:sergey-dryabzhinsky/packages
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: NetCURL 6.1/PHP 8.0
+            image: php:8.0-rc
+            caches:
+              - composer
+            script:
+              - apt-get update && apt-get install -y unzip libxml2-dev git
+              - docker-php-ext-install soap
+              - docker-php-ext-enable soap
+              - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              - composer install
+              - composer require phpunit/phpunit
+              - composer require laminas/laminas-feed
+              - vendor/bin/phpunit --configuration ./phpunit.xml
+        - step:
+            name: NetCURL 6.1/PHP 7.4
+            image: php:7.4
+            caches:
+              - composer
+            script:
+              - apt-get update && apt-get install -y unzip libxml2-dev git
+              - docker-php-ext-install soap
+              - docker-php-ext-enable soap
+              - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              - composer install
+              - composer require phpunit/phpunit
+              - composer require laminas/laminas-feed
+              - vendor/bin/phpunit --configuration ./phpunit.xml
+        - step:
+            name: NetCURL 6.1/PHP 7.3
+            image: php:7.3
+            caches:
+              - composer
+            script:
+              - apt-get update && apt-get install -y unzip libxml2-dev git
+              - docker-php-ext-install soap
+              - docker-php-ext-enable soap
+              - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              - composer install
+              - composer require phpunit/phpunit
+              - composer require laminas/laminas-feed
+              - vendor/bin/phpunit --configuration ./phpunit.xml
+        - step:
+            name: NetCURL 6.1/PHP 5.6
+            image: php:5.6
+            caches:
+              - composer
+            script:
+              - apt-get update && apt-get install -y unzip libxml2-dev git ca-certificates openssl libssl-dev
+              - docker-php-ext-install soap
+              - docker-php-ext-enable soap
+              - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+              - composer install
+              - composer require phpunit/phpunit
+              - composer require laminas/laminas-feed
+              - vendor/bin/phpunit --configuration ./phpunit.xml

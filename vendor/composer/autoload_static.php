@@ -6,6 +6,10 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit0b023742dd0dcd29bdac0bc595987951
 {
+    public static $files = array (
+        'bc521b269795605ef2585a7369f0017e' => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src/Network.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         'T' => 
         array (
@@ -16,9 +20,14 @@ class ComposerStaticInit0b023742dd0dcd29bdac0bc595987951
     public static $prefixDirsPsr4 = array (
         'TorneLIB\\' => 
         array (
-            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
-            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
-            2 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            0 => __DIR__ . '/..' . '/tornevall/tornelib-php-crypto/src',
+            1 => __DIR__ . '/..' . '/tornevall/tornelib-php-errorhandler/src',
+            2 => __DIR__ . '/..' . '/tornevall/tornelib-php-flags/src',
+            3 => __DIR__ . '/..' . '/tornevall/tornelib-php-io/src',
+            4 => __DIR__ . '/..' . '/tornevall/tornelib-php-netcurl/src',
+            5 => __DIR__ . '/..' . '/tornevall/tornelib-php-network/src',
+            6 => __DIR__ . '/..' . '/tornevall/tornelib-php-utils/src',
+            7 => __DIR__ . '/..' . '/tornevall/tornelib-php-version/src',
         ),
     );
 

@@ -10,7 +10,6 @@
  * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
-//define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TORNEVALL_DNSBL_VERSION', '2.0.9');
 define('TORNEVALL_DNSBL_DATA_VERSION', '2.0.0');
 define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
@@ -18,7 +17,6 @@ define('TORNEVALL_DNSBL_NONCE_EQUALITY', true);
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/includes/bits.php');
 require_once(__DIR__ . '/includes/api.php');
-require_once(__DIR__ . '/includes/network.php');
 require_once(__DIR__ . '/includes/helpers.php');
 
 load_plugin_textdomain(
@@ -164,7 +162,7 @@ function tornevall_dnsbl_enqueue()
 }
 
 if (is_admin()) {
-    require_once(TORNEVALL_DNSBL_PLUGIN_DIR . 'admin.php');
+    require_once(__DIR__ . '/admin.php');
     add_action('admin_menu', 'tornevall_wp_dnsbl_admin');
     register_activation_hook(__FILE__, 'tornevall_wp_dnsbl_activate_db');
     register_deactivation_hook(__FILE__, 'tornevall_wp_dnsbl_deactivate_db');

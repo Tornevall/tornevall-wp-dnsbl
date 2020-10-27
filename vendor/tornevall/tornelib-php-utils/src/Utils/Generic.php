@@ -11,7 +11,7 @@ use TorneLIB\Exception\ExceptionHandler;
 /**
  * Class Generic Generic functions
  * @package TorneLIB\Utils
- * @version 6.1.5
+ * @version 6.1.8
  */
 class Generic
 {
@@ -332,6 +332,8 @@ class Generic
     private function setTemplatePlain($templatePlain)
     {
         $this->templatePlain = $templatePlain;
+
+        return $this;
     }
 
     /**
@@ -366,6 +368,8 @@ class Generic
     public function setTemplatePath($templatePath)
     {
         $this->templatePath = $templatePath;
+
+        return $this;
     }
 
     /**
