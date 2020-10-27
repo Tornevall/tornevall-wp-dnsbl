@@ -145,7 +145,7 @@ function tornevall_dnsbl_enqueue()
 
     wp_enqueue_script(
         'tornevall_dnsbl_backend',
-        plugin_dir_url(__FILE__) . 'js/api.min.js?t=' . time(),
+        plugin_dir_url(__FILE__) . 'js/api.js?t=' . time(),
         ['jquery'],
         TORNEVALL_DNSBL_VERSION
     );
