@@ -1,0 +1,117 @@
+[
+    {
+        "name": "tornevall/tornelib-php-errorhandler",
+        "version": "6.1.11",
+        "version_normalized": "6.1.11.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Tornevall/tornelib-php-errorhandler.git",
+            "reference": "00414d96f110ea43995fc9c9162bfcc0740a0470"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-errorhandler/zipball/00414d96f110ea43995fc9c9162bfcc0740a0470",
+            "reference": "00414d96f110ea43995fc9c9162bfcc0740a0470",
+            "shasum": ""
+        },
+        "time": "2020-07-24T16:21:15+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "TorneLIB\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://www.tornevall.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "Global exception and errorhandling for TorneLIB, with all errorcodes stored in the same place."
+    },
+    {
+        "name": "tornevall/tornelib-php-flags",
+        "version": "6.1.3",
+        "version_normalized": "6.1.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Tornevall/tornelib-php-flags.git",
+            "reference": "ac1d240729891ef360fa4516013bdd88e3ed6420"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-flags/zipball/ac1d240729891ef360fa4516013bdd88e3ed6420",
+            "reference": "ac1d240729891ef360fa4516013bdd88e3ed6420",
+            "shasum": ""
+        },
+        "time": "2020-04-22T15:51:26+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "TorneLIB\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://tornevall.net",
+                "role": "Developer"
+            }
+        ],
+        "description": "Decentralized special flagsetter. Could be used globally."
+    },
+    {
+        "name": "tornevall/tornelib-php-utils",
+        "version": "6.1.7",
+        "version_normalized": "6.1.7.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Tornevall/tornelib-php-utils.git",
+            "reference": "3e82e1921d667a55c1348c773d5223e16296a6dc"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Tornevall/tornelib-php-utils/zipball/3e82e1921d667a55c1348c773d5223e16296a6dc",
+            "reference": "3e82e1921d667a55c1348c773d5223e16296a6dc",
+            "shasum": ""
+        },
+        "require": {
+            "tornevall/tornelib-php-errorhandler": "^6.1",
+            "tornevall/tornelib-php-flags": "^6.1"
+        },
+        "time": "2020-08-11T09:05:03+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "TorneLIB\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "authors": [
+            {
+                "name": "Tomas Tornevall",
+                "email": "thorne@tornevall.net",
+                "homepage": "https://developer.tornevall.net/",
+                "role": "Developer"
+            }
+        ],
+        "description": "Utils that many of the TorneLIB-based libraries may need."
+    }
+]

@@ -1,0 +1,5 @@
+{
+    "require": {
+        "tornevall/tornelib-php-utils": "^6.1"
+    }
+}

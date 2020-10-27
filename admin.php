@@ -1,19 +1,5 @@
 <?php
 
-$pagelist = get_pages();
-$currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
-$delistPageOption = array();
-if (is_array($pagelist)) {
-    $delistPageOption[] = '<option value="">None</option>';
-    foreach ($pagelist as $pageObject) {
-        $selectedPage = '';
-        if ($pageObject->ID == $currentDelistingPage) {
-            $selectedPage = 'selected=selected';
-        }
-        $delistPageOption[] = '<option value="' . $pageObject->ID . '" ' . $selectedPage . '>' . $pageObject->post_title . '</option>';
-    }
-}
-
 /**
  * @param $template
  * @return false|string
@@ -34,9 +20,16 @@ function tornevall_wp_dnsbl_fetch_template($template)
 function tornevall_wp_dnsbl_admin()
 {
     add_action('admin_init', 'register_dnsbl_settings');
-    add_menu_page("Tornevall DNSBL Options", __("Tornevall DNSBL", 'tornevall-networks-dnsbl-implementation'),
-        "manage_options",
-        "tornevallDnsblMenu", "tornevall_dnsbl_options");
+    add_menu_page(
+        'Tornevall DNSBL Options',
+        __(
+            'Tornevall DNSBL',
+            'tornevall-networks-dnsbl-implementation'
+        ),
+        'manage_options',
+        'tornevallDnsblMenu',
+        'tornevall_dnsbl_options'
+    );
 }
 
 function register_dnsbl_settings()
@@ -54,6 +47,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_getlisted_resolver');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_delistingpage_comments_disabled');
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_wpcf7');
 
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_preferred_api_url');
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_api_id');
@@ -67,8 +61,22 @@ function tornevall_dnsbl_options()
     if (!current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
     }
-    global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions, $delistPageOption;
+    global $tornevallDnsblFlags, $dnsblPermissionArray, $permissions;
 
+    $pagelist = get_pages();
+    $currentDelistingPage = get_option('tornevall_dnsbl_delisting_page');
+    $delistPageOption = [];
+    if (is_array($pagelist)) {
+        $delistPageOption[] = '<option value="">None</option>';
+        foreach ($pagelist as $pageObject) {
+            $selectedPage = '';
+            if ($pageObject->ID == $currentDelistingPage) {
+                $selectedPage = 'selected=selected';
+            }
+            $delistPageOption[] = '<option value="' .
+                $pageObject->ID . '" ' . $selectedPage . '>' . $pageObject->post_title . '</option>';
+        }
+    }
 
     $cacheAgeTest = get_option('tornevall_dnsbl_cache_age');
     if (empty($cacheAgeTest)) {
