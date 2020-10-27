@@ -4,7 +4,7 @@
  * Plugin URI: https://docs.tornevall.net/x/AoA_/
  * Project URI: https://tracker.tornevall.net/projects/DNSBLWP/
  * Description: Implements functions related to Tornevall Networks DNS Blacklist. Adds options to comment functions that will disable comments if an ip is blacklisted etc
- * Version: 2.0.8
+ * Version: 2.0.9
  * Author: Tomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall-networks-dnsbl-implementation
@@ -74,7 +74,9 @@ if (is_object($dnsblClientData)) {
         foreach ($dnsblClientData->API_EXTENDED_PERMISSIONS as $index => $eData) {
             $permission = $eData->permission;
             $tornevallDnsblFlags[] = $eData->permission;
-            $dnsblPermissionArray[] = $permissions[$permission];
+            if (isset($permissions[$permission])) {
+                $dnsblPermissionArray[] = $permissions[$permission];
+            }
         }
     }
 }

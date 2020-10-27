@@ -3,8 +3,8 @@ Contributors: Tornevall
 Donate link: https://auth.tornevall.com/donate/
 Tags: comments, spam, dnsbl, blacklist, dns blacklist, tor, tor exit nodes, proxy, antiproxy, proxy blocking, antispam, wpcf7, contactform, contact-form
 Requires at least: 3.0.1
-Tested up to: 5.2.2
-Stable tag: 2.0.8
+Tested up to: 5.5.1
+Stable tag: 2.0.9
 License: Apach
 
 Tornevall Networks DNS Blacklist support for Wordpress
@@ -61,10 +61,13 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 == Changelog ==
 
+= 2.0.9 =
+
+
+
 = 2.0.8 =
 
     * [DNSBLWP-63] - Support ContactForm7
-
 
 = Recent versions =
 
