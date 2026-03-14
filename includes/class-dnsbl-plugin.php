@@ -30,7 +30,12 @@ class Plugin
         add_filter('the_content', [self::class, 'contentHandler']);
         add_filter('comments_open', [self::class, 'disableComments'], 10, 1);
         add_filter('comments_array', [self::class, 'disableCommentsMessage'], 10, 1);
+        add_filter('preprocess_comment', [self::class, 'preprocessComment'], 10, 1);
         add_filter('pre_comment_approved', [self::class, 'preCommentApproved'], 10, 2);
+        add_action('comment_form_after_fields', [self::class, 'renderCommentTurnstileWidget']);
+        add_action('comment_form_logged_in_after', [self::class, 'renderCommentTurnstileWidget']);
+        add_action('register_form', [self::class, 'renderRegistrationTurnstileWidget']);
+        add_filter('registration_errors', [self::class, 'validateRegistrationErrors'], 10, 3);
     }
 
     public static function defaultOptions(): array
@@ -39,14 +44,24 @@ class Plugin
             'tornevall_dnsbl_cache_age' => self::defaultCacheAge(),
             'tornevall_dnsbl_cache_cleanup_interval' => self::defaultCleanupInterval(),
             'tornevall_dnsbl_filter_types' => self::defaultSelectedFlags(),
+            'tornevall_dnsbl_nocomment' => '0',
+            'tornevall_dnsbl_blockfull' => '0',
+            'tornevall_dnsbl_delisting_page' => 0,
             'tornevall_dnsbl_resolver_hosts' => implode(',', self::defaultResolvers()),
             'tornevall_dnsbl_whitelist' => implode("\n", self::defaultWhitelistEntries()),
             'tornevall_dnsbl_blocked_redirecturl' => self::defaultBlockedRedirectUrl(),
             'tornevall_dnsbl_comments_disabled_style' => self::defaultCommentsDisabledStyle(),
+            'tornevall_dnsbl_delistingpage_comments_disabled' => '0',
             'tornevall_dnsbl_dev_mode' => '0',
             'tornevall_dnsbl_tools_token' => '',
-            'tornevall_dnsbl_tools_mode' => 'auto',
+            'tornevall_dnsbl_tools_mode' => 'prod',
             'tornevall_dnsbl_removal_token' => '',
+            'tornevall_dnsbl_comment_turnstile_enabled' => '0',
+            'tornevall_dnsbl_comment_turnstile_site_key' => '',
+            'tornevall_dnsbl_comment_turnstile_secret_key' => '',
+            'tornevall_dnsbl_comment_turnstile_theme' => 'auto',
+            'tornevall_dnsbl_registration_dnsbl_enabled' => '1',
+            'tornevall_dnsbl_registration_turnstile_enabled' => '1',
             'tornevall_dnsbl_cache_last_cleanup' => 0,
         ];
     }
@@ -172,6 +187,16 @@ class Plugin
         return current_user_can('administrator') || is_admin();
     }
 
+    public static function isPrivilegedUser(): bool
+    {
+        return is_user_logged_in() && current_user_can('manage_options');
+    }
+
+    public static function isAdminBackOfficeRequest(): bool
+    {
+        return is_admin() && self::isPrivilegedUser();
+    }
+
     public static function enqueue($hook = ''): void
     {
         if (!is_admin()) {
@@ -232,6 +257,20 @@ class Plugin
     {
         return [
             'IP_CONFIRMED',
+            'IP_FRAUDCOMMERCE',
+            'IP_SECOND_EXIT',
+            'IP_ABUSE_NO_SMTP',
+            'IP_ANONYMOUS',
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function legacyDefaultSelectedFlags(): array
+    {
+        return [
+            'IP_CONFIRMED',
             'IP_SECOND_EXIT',
             'IP_ABUSE_NO_SMTP',
             'IP_ANONYMOUS',
@@ -278,6 +317,52 @@ class Plugin
         return $style !== '' ? $style : self::defaultCommentsDisabledStyle();
     }
 
+    public static function commentsAreHiddenForListedVisitors(): bool
+    {
+        return get_option('tornevall_dnsbl_nocomment') === '1';
+    }
+
+    public static function commentTurnstileEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_comment_turnstile_enabled') === '1'
+            && self::commentTurnstileSiteKey() !== ''
+            && self::commentTurnstileSecretKey() !== '';
+    }
+
+    public static function registrationDnsblEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_registration_dnsbl_enabled') === '1';
+    }
+
+    public static function registrationTurnstileEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1'
+            && self::commentTurnstileSiteKey() !== ''
+            && self::commentTurnstileSecretKey() !== '';
+    }
+
+    public static function commentTurnstileSiteKey(): string
+    {
+        return trim((string) get_option('tornevall_dnsbl_comment_turnstile_site_key'));
+    }
+
+    public static function commentTurnstileSecretKey(): string
+    {
+        return trim((string) get_option('tornevall_dnsbl_comment_turnstile_secret_key'));
+    }
+
+    public static function normalizeCommentTurnstileTheme($theme): string
+    {
+        $theme = sanitize_key((string) $theme);
+
+        return in_array($theme, ['auto', 'light', 'dark'], true) ? $theme : 'auto';
+    }
+
+    public static function commentTurnstileTheme(): string
+    {
+        return self::normalizeCommentTurnstileTheme(get_option('tornevall_dnsbl_comment_turnstile_theme'));
+    }
+
     public static function currentVisitorIp(): string
     {
         $remoteAddr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
@@ -288,9 +373,7 @@ class Plugin
     public static function isFrontendDryRunAvailable(): bool
     {
         return !is_admin()
-            && is_user_logged_in()
-            && current_user_can('manage_options')
-            && self::toolsBaseUrl() === 'https://tools.tornevall.com';
+            && self::isPrivilegedUser();
     }
 
     public static function isFrontendDryRunEnabled(): bool
@@ -395,7 +478,7 @@ class Plugin
         echo '<strong>' . esc_html__('DNSBL frontend dry run', 'tornevall-networks-dnsbl-implementation') . '</strong><br>';
         echo $enabled
             ? esc_html__('Enabled: the current frontend request is evaluated as 127.0.0.255 so blacklist handling can be tested safely.', 'tornevall-networks-dnsbl-implementation')
-            : esc_html__('Disabled: live visitor IP evaluation is active. Turn this on to simulate a blacklisted visitor in dev mode.', 'tornevall-networks-dnsbl-implementation');
+            : esc_html__('Disabled: live visitor IP evaluation is active. Turn this on to simulate a blacklisted visitor safely on the public site.', 'tornevall-networks-dnsbl-implementation');
         echo '<div style="margin-top:10px;">';
         echo '<a href="' . esc_url($toggleUrl) . '" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:8px 12px;border-radius:6px;">';
         echo esc_html($enabled ? __('Disable dry run', 'tornevall-networks-dnsbl-implementation') : __('Enable dry run', 'tornevall-networks-dnsbl-implementation'));
@@ -649,6 +732,22 @@ class Plugin
         return $normalized;
     }
 
+    public static function maybeUpgradeSelectedFlags(): void
+    {
+        $selected = get_option('tornevall_dnsbl_filter_types');
+        $normalized = self::normalizeSelectedFlags($selected);
+        $legacyDefaults = self::legacyDefaultSelectedFlags();
+        $canonicalDefault = self::defaultSelectedFlags();
+
+        if ($normalized === $legacyDefaults) {
+            $normalized = $canonicalDefault;
+        }
+
+        if (!is_array($selected) || $selected !== $normalized) {
+            update_option('tornevall_dnsbl_filter_types', $normalized);
+        }
+    }
+
     public static function normalizeSelectedFlags($selected): array
     {
         $selected = is_array($selected) ? $selected : [];
@@ -687,17 +786,23 @@ class Plugin
 
     public static function toolsBaseUrl(): string
     {
-        $mode = sanitize_text_field((string) get_option('tornevall_dnsbl_tools_mode'));
+        $rawMode = get_option('tornevall_dnsbl_tools_mode');
+        $mode = self::canonicalToolsMode($rawMode);
+
+        if ((string) $rawMode !== $mode) {
+            update_option('tornevall_dnsbl_tools_mode', $mode);
+        }
+
         if ($mode === 'dev') {
             return 'https://tools.tornevall.com';
         }
-        if ($mode === 'prod') {
-            return 'https://tools.tornevall.net';
-        }
 
-        $devMode = get_option('tornevall_dnsbl_dev_mode') === '1';
+        return 'https://tools.tornevall.net';
+    }
 
-        return $devMode ? 'https://tools.tornevall.com' : 'https://tools.tornevall.net';
+    public static function canonicalToolsMode($mode): string
+    {
+        return sanitize_key((string) $mode) === 'dev' ? 'dev' : 'prod';
     }
 
     public static function toolsToken(): string
@@ -922,7 +1027,7 @@ class Plugin
         $currentDelistingPage = (int) get_option('tornevall_dnsbl_delisting_page');
 
         if ($dnsbl_blacklist_control_status !== 'checked' && $remoteAddr) {
-            $dnsbl_blacklist_status = self::checkBlacklist($remoteAddr, false);
+            $dnsbl_blacklist_status = !empty(self::evaluateBlacklistState($remoteAddr)['blocked']);
         }
 
         if ($post && isset($post->ID) && (int) $post->ID === $currentDelistingPage && get_option('tornevall_dnsbl_delistingpage_comments_disabled') === '1') {
@@ -935,7 +1040,9 @@ class Plugin
                 exit;
             }
 
-            return false;
+            if (self::commentsAreHiddenForListedVisitors()) {
+                return false;
+            }
         }
 
         return $open;
@@ -948,27 +1055,204 @@ class Plugin
             return $comments;
         }
 
-        $isBlocked = self::checkBlacklist($remoteAddr, false, true);
-        if (!$isBlocked) {
+        $evaluation = self::evaluateBlacklistState($remoteAddr, true);
+        if (empty($evaluation['blocked']) || !self::commentsAreHiddenForListedVisitors()) {
             return $comments;
         }
 
         $commentsDisabledStyle = self::getCommentsDisabledStyle();
 
-        if (is_admin() || current_user_can('administrator')) {
-            echo '<div style="' . esc_attr($commentsDisabledStyle) . '">'
-                . esc_html__('Tornevall DNSBL scanner has detected that your current visiting ip address is blacklisted!', 'tornevall-networks-dnsbl-implementation')
-                . ' <a href="' . esc_url(self::getBlockedRedirectUrl()) . '" target="_blank" rel="noopener noreferrer">'
-                . esc_html__('For more information, look here', 'tornevall-networks-dnsbl-implementation')
-                . '</a></div>';
+        if (self::isAdminBackOfficeRequest()) {
             return $comments;
         }
 
         echo '<div style="' . esc_attr($commentsDisabledStyle) . '">'
-            . esc_html__('Comments section is currently unavailable: Your ip address has been flagged as untrusted by a DNS Blacklist', 'tornevall-networks-dnsbl-implementation')
+            . esc_html__('Comments section is currently unavailable because this visitor IP is matched by the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation')
+            . ' <a href="' . esc_url(self::getBlockedRedirectUrl()) . '" target="_blank" rel="noopener noreferrer">'
+            . esc_html__('More information', 'tornevall-networks-dnsbl-implementation')
+            . '</a>'
             . '</div>';
 
         return [];
+    }
+
+    public static function renderCommentTurnstileWidget(): void
+    {
+        if (is_admin() || !self::commentTurnstileEnabled()) {
+            return;
+        }
+
+        self::renderTurnstileWidget(__('Comment verification', 'tornevall-networks-dnsbl-implementation'));
+    }
+
+    public static function renderRegistrationTurnstileWidget(): void
+    {
+        if (is_admin() || !self::registrationTurnstileEnabled()) {
+            return;
+        }
+
+        self::renderTurnstileWidget(__('Account registration verification', 'tornevall-networks-dnsbl-implementation'));
+    }
+
+    private static function renderTurnstileWidget($label): void
+    {
+        if (self::commentTurnstileSiteKey() === '' || self::commentTurnstileSecretKey() === '') {
+            return;
+        }
+
+        static $scriptRendered = false;
+
+        echo '<p class="comment-form-tornevall-turnstile">';
+        echo '<label style="display:block; margin-bottom:6px; font-weight:600;">' . esc_html($label) . '</label>';
+        echo '<div class="cf-turnstile" data-sitekey="' . esc_attr(self::commentTurnstileSiteKey()) . '" data-theme="' . esc_attr(self::commentTurnstileTheme()) . '"></div>';
+        echo '</p>';
+
+        if (!$scriptRendered) {
+            $scriptRendered = true;
+            echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>';
+        }
+    }
+
+    public static function verifyCommentTurnstile($responseToken, $ip): array
+    {
+        if (!self::commentTurnstileEnabled()) {
+            return ['success' => true, 'message' => 'disabled'];
+        }
+
+        return self::verifyTurnstileToken($responseToken, $ip);
+    }
+
+    private static function verifyTurnstileToken($responseToken, $ip): array
+    {
+        if (self::commentTurnstileSiteKey() === '' || self::commentTurnstileSecretKey() === '') {
+            return ['success' => true, 'message' => 'disabled'];
+        }
+
+        $responseToken = trim((string) $responseToken);
+        if ($responseToken === '') {
+            return [
+                'success' => false,
+                'message' => __('Verification failed. Please complete the Turnstile check.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        $response = wp_remote_post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            'timeout' => 8,
+            'body' => [
+                'secret' => self::commentTurnstileSecretKey(),
+                'response' => $responseToken,
+                'remoteip' => filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '',
+            ],
+        ]);
+
+        if (is_wp_error($response)) {
+            return [
+                'success' => false,
+                'message' => __('Verification could not be completed right now. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        $body = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($body) || empty($body['success'])) {
+            return [
+                'success' => false,
+                'message' => __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        return ['success' => true, 'message' => 'ok'];
+    }
+
+    public static function verifyRegistrationTurnstile($responseToken, $ip): array
+    {
+        if (!self::registrationTurnstileEnabled()) {
+            return ['success' => true, 'message' => 'disabled'];
+        }
+
+        return self::verifyTurnstileToken($responseToken, $ip);
+    }
+
+    public static function stopCommentSubmission($message, $statusCode = 403): void
+    {
+        wp_die(
+            wp_kses_post($message),
+            esc_html__('Comment submission blocked', 'tornevall-networks-dnsbl-implementation'),
+            [
+                'response' => (int) $statusCode,
+                'back_link' => true,
+            ]
+        );
+    }
+
+    public static function preprocessComment($commentdata)
+    {
+        $commentdata = is_array($commentdata) ? $commentdata : [];
+
+        if (self::isAdminBackOfficeRequest()) {
+            return $commentdata;
+        }
+
+        $ip = isset($commentdata['comment_author_IP']) ? (string) $commentdata['comment_author_IP'] : self::currentVisitorIp();
+
+        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP)) {
+            $evaluation = self::evaluateBlacklistState($ip, true);
+
+            if (!empty($evaluation['blocked']) && (self::commentsAreHiddenForListedVisitors() || get_option('tornevall_dnsbl_blockfull') === '1')) {
+                self::recordStat($ip, (int) $evaluation['bitmask'], true, 'comment-rejected');
+                self::stopCommentSubmission(
+                    sprintf(
+                        '%s <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+                        esc_html__('Comment submission is blocked for this visitor because the active DNSBL policy marked the request as untrusted.', 'tornevall-networks-dnsbl-implementation'),
+                        esc_url(self::getBlockedRedirectUrl()),
+                        esc_html__('More information', 'tornevall-networks-dnsbl-implementation')
+                    )
+                );
+            }
+        }
+
+        $turnstile = isset($_POST['cf-turnstile-response']) ? sanitize_text_field(wp_unslash($_POST['cf-turnstile-response'])) : '';
+        $turnstileVerification = self::verifyCommentTurnstile($turnstile, $ip);
+        if (empty($turnstileVerification['success'])) {
+            self::stopCommentSubmission((string) $turnstileVerification['message'], 400);
+        }
+
+        return $commentdata;
+    }
+
+    public static function validateRegistrationErrors($errors, $sanitizedUserLogin, $userEmail)
+    {
+        if (!($errors instanceof \WP_Error)) {
+            $errors = new \WP_Error();
+        }
+
+        if (self::isAdminBackOfficeRequest()) {
+            return $errors;
+        }
+
+        $ip = self::currentVisitorIp();
+        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) && self::registrationDnsblEnabled()) {
+            $evaluation = self::evaluateBlacklistState($ip, true);
+            self::recordStat($ip, (int) $evaluation['bitmask'], !empty($evaluation['blocked']), 'registration-attempt');
+
+            if (!empty($evaluation['blocked'])) {
+                self::recordStat($ip, (int) $evaluation['bitmask'], true, 'registration-rejected');
+                $errors->add(
+                    'tornevall_dnsbl_registration_blocked',
+                    __('Account registration is blocked because the current visitor IP matches the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation')
+                );
+
+                return $errors;
+            }
+        }
+
+        $turnstile = isset($_POST['cf-turnstile-response']) ? sanitize_text_field(wp_unslash($_POST['cf-turnstile-response'])) : '';
+        $turnstileVerification = self::verifyRegistrationTurnstile($turnstile, $ip);
+        if (empty($turnstileVerification['success'])) {
+            self::recordStat($ip, 0, true, 'registration-turnstile-failed');
+            $errors->add('tornevall_dnsbl_registration_turnstile', (string) $turnstileVerification['message']);
+        }
+
+        return $errors;
     }
 
     public static function resolveAddr($addr): array
@@ -1032,7 +1316,7 @@ class Plugin
             return $bitMaskResponse;
         }
 
-        if ((is_admin() || current_user_can('administrator')) && !$adminPassThrough) {
+        if (self::isAdminBackOfficeRequest() && !$adminPassThrough) {
             return false;
         }
 
@@ -1203,7 +1487,7 @@ class Plugin
         }
 
         $matchesSelectedFlags = $bitMaskResponse > 0 && self::matchesSelectedFlags($bitMaskResponse);
-        $isProtectedAdmin = (is_admin() || current_user_can('administrator')) && !$adminPassThrough;
+        $isProtectedAdmin = self::isAdminBackOfficeRequest() && !$adminPassThrough;
         $isWhitelisted = !$isDryRun && self::isWhitelistedIp($effectiveAddr);
 
         return [

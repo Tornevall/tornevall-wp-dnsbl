@@ -17,7 +17,8 @@ class Admin
             __('Tornevall DNSBL', 'tornevall-networks-dnsbl-implementation'),
             'manage_options',
             'tornevallDnsblMenu',
-            [self::class, 'renderOptionsPage']
+                [self::class, 'renderOptionsPage'],
+            'dashicons-shield-alt'
         );
     }
 
@@ -84,12 +85,12 @@ class Admin
 
     public static function sanitizeToolsMode($value): string
     {
-        $value = sanitize_text_field((string) $value);
-        if (!in_array($value, ['auto', 'dev', 'prod'], true)) {
-            $value = 'auto';
-        }
+        return Plugin::canonicalToolsMode($value);
+    }
 
-        return $value;
+    public static function sanitizeTurnstileTheme($value): string
+    {
+        return Plugin::normalizeCommentTurnstileTheme($value);
     }
 
     public static function sanitizeWhitelist($value): string
@@ -119,6 +120,12 @@ class Admin
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_tools_token', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_tools_mode', ['sanitize_callback' => [self::class, 'sanitizeToolsMode']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_token', ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_site_key', ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_secret_key', ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_theme', ['sanitize_callback' => [self::class, 'sanitizeTurnstileTheme']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_dnsbl_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
     }
 
     public static function renderCheckboxRow($name, $label, $description, $checked): void
@@ -366,10 +373,7 @@ class Admin
         $delistPageOption = self::buildPageOptions($currentDelistingPage);
         $resolverNames = Plugin::getResolverHosts();
         $currentFlags = Plugin::getCurrentFlagMap();
-        $savedFlags = get_option('tornevall_dnsbl_filter_types');
-        if (!is_array($savedFlags)) {
-            $savedFlags = Plugin::defaultSelectedFlags();
-        }
+        $savedFlags = Plugin::getSelectedFlags();
 
         $flagListSelector = [];
         foreach ($currentFlags as $flag => $bitValue) {
@@ -382,10 +386,13 @@ class Admin
         $commentsStyle = Plugin::getCommentsDisabledStyle();
         $devMode = get_option('tornevall_dnsbl_dev_mode') === '1';
         $toolsTokenSet = trim((string) get_option('tornevall_dnsbl_tools_token')) !== '';
-        $toolsMode = (string) get_option('tornevall_dnsbl_tools_mode');
-        if (!in_array($toolsMode, ['auto', 'dev', 'prod'], true)) {
-            $toolsMode = 'auto';
-        }
+        $toolsMode = Plugin::canonicalToolsMode(get_option('tornevall_dnsbl_tools_mode'));
+        $turnstileEnabled = get_option('tornevall_dnsbl_comment_turnstile_enabled') === '1';
+        $turnstileSiteKey = Plugin::commentTurnstileSiteKey();
+        $turnstileSecretKey = Plugin::commentTurnstileSecretKey();
+        $turnstileTheme = Plugin::commentTurnstileTheme();
+        $registrationDnsblEnabled = Plugin::registrationDnsblEnabled();
+        $registrationTurnstileEnabled = get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1';
         $whitelistEntries = Plugin::getWhitelistEntries();
         $whitelistValue = implode("\n", $whitelistEntries);
         $currentVisitorAddress = Plugin::currentVisitorIp();
@@ -421,6 +428,9 @@ class Admin
                             <li><?php echo esc_html(sprintf(__('Trigger flags selected: %d', 'tornevall-networks-dnsbl-implementation'), count($savedFlags))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Whitelist entries configured: %d', 'tornevall-networks-dnsbl-implementation'), count($whitelistEntries))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Tools token configured: %s', 'tornevall-networks-dnsbl-implementation'), $toolsTokenSet ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Comment Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $turnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Registration DNSBL enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Registration Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Dev mode: %s', 'tornevall-networks-dnsbl-implementation'), $devMode ? __('enabled', 'tornevall-networks-dnsbl-implementation') : __('disabled', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <?php if ($currentVisitorAddress && filter_var($currentVisitorAddress, FILTER_VALIDATE_IP)) { ?>
                                 <li><?php echo esc_html(sprintf(__('Current visitor address is whitelisted: %s', 'tornevall-networks-dnsbl-implementation'), $currentVisitorWhitelisted ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
@@ -500,8 +510,8 @@ class Admin
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('Protection behavior', 'tornevall-networks-dnsbl-implementation'); ?></h2>
                         <?php
-                        self::renderCheckboxRow('tornevall_dnsbl_nocomment', __('Hide comments for listed visitors', 'tornevall-networks-dnsbl-implementation'), __('Hides the comment section when a visitor matches the selected blacklist flags.', 'tornevall-networks-dnsbl-implementation'), (bool) get_option('tornevall_dnsbl_nocomment'));
-                        self::renderCheckboxRow('tornevall_dnsbl_blockfull', __('Redirect listed visitors away from the page', 'tornevall-networks-dnsbl-implementation'), __('Immediately redirects listed visitors away from the page. Logged-in administrators are still protected from lockout.', 'tornevall-networks-dnsbl-implementation'), (bool) get_option('tornevall_dnsbl_blockfull'));
+                        self::renderCheckboxRow('tornevall_dnsbl_nocomment', __('Hide comments for listed visitors', 'tornevall-networks-dnsbl-implementation'), __('Hides the comment section and blocks direct comment submission when a visitor matches the selected blacklist flags.', 'tornevall-networks-dnsbl-implementation'), (bool) get_option('tornevall_dnsbl_nocomment'));
+                        self::renderCheckboxRow('tornevall_dnsbl_blockfull', __('Redirect listed visitors away from the page', 'tornevall-networks-dnsbl-implementation'), __('Immediately redirects listed visitors away from the page. wp-admin sessions are still protected from lockout.', 'tornevall-networks-dnsbl-implementation'), (bool) get_option('tornevall_dnsbl_blockfull'));
                         ?>
                         <p>
                             <label for="tornevall_dnsbl_whitelist"><?php echo esc_html__('Safe IP whitelist', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
@@ -525,11 +535,11 @@ class Admin
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('Tools integration and development', 'tornevall-networks-dnsbl-implementation'); ?></h2>
                         <?php self::renderCheckboxRow('tornevall_dnsbl_dev_mode', __('Show extended diagnostics in the admin panel', 'tornevall-networks-dnsbl-implementation'), __('Shows raw diagnostic responses in the try-test and self-check tools.', 'tornevall-networks-dnsbl-implementation'), $devMode); ?>
+                        <p class="description"><?php echo esc_html__('Frontend dry run is only available on the public site while you are logged in as an administrator. Use the admin-bar toggle there to simulate a blacklisted visitor safely without affecting wp-admin.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                         <p><label for="tornevall_dnsbl_tools_mode"><?php echo esc_html__('Tools environment mode', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
                             <select id="tornevall_dnsbl_tools_mode" name="tornevall_dnsbl_tools_mode">
-                                <option value="auto" <?php selected($toolsMode, 'auto'); ?>><?php echo esc_html__('Auto (from dev mode)', 'tornevall-networks-dnsbl-implementation'); ?></option>
                                 <option value="dev" <?php selected($toolsMode, 'dev'); ?>><?php echo esc_html__('Force dev (tools.tornevall.com)', 'tornevall-networks-dnsbl-implementation'); ?></option>
-                                <option value="prod" <?php selected($toolsMode, 'prod'); ?>><?php echo esc_html__('Force prod (tools.tornevall.net)', 'tornevall-networks-dnsbl-implementation'); ?></option>
+                                <option value="prod" <?php selected($toolsMode, 'prod'); ?>><?php echo esc_html__('Prod default (tools.tornevall.net)', 'tornevall-networks-dnsbl-implementation'); ?></option>
                             </select>
                         </p>
                         <p><label for="tornevall_dnsbl_tools_token"><?php echo esc_html__('Tools token', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
@@ -537,6 +547,31 @@ class Admin
                         <p><label for="tornevall_dnsbl_removal_token_display"><?php echo esc_html__('Removal token', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
                             <input type="hidden" name="tornevall_dnsbl_removal_token" value="<?php echo esc_attr((string) get_option('tornevall_dnsbl_removal_token')); ?>">
                             <input type="text" class="regular-text" id="tornevall_dnsbl_removal_token_display" value="<?php echo esc_attr((string) get_option('tornevall_dnsbl_removal_token')); ?>" placeholder="<?php echo esc_attr__('Coming soon', 'tornevall-networks-dnsbl-implementation'); ?>" disabled></p>
+                    </div></div>
+
+                <div class="postbox" style="margin-top:16px;"><div class="inside">
+                        <h2 style="margin-top:0;"><?php echo esc_html__('Cloudflare Turnstile for comments', 'tornevall-networks-dnsbl-implementation'); ?></h2>
+                        <?php self::renderCheckboxRow('tornevall_dnsbl_comment_turnstile_enabled', __('Require Turnstile on frontend comment submissions', 'tornevall-networks-dnsbl-implementation'), __('Adds a Cloudflare Turnstile widget to the public WordPress comment form and verifies it before accepting a comment.', 'tornevall-networks-dnsbl-implementation'), $turnstileEnabled); ?>
+                        <p><label for="tornevall_dnsbl_comment_turnstile_site_key"><?php echo esc_html__('Turnstile site key', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                            <input type="text" class="regular-text" id="tornevall_dnsbl_comment_turnstile_site_key" name="tornevall_dnsbl_comment_turnstile_site_key" value="<?php echo esc_attr($turnstileSiteKey); ?>"></p>
+                        <p><label for="tornevall_dnsbl_comment_turnstile_secret_key"><?php echo esc_html__('Turnstile secret key', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                            <input type="password" class="regular-text" id="tornevall_dnsbl_comment_turnstile_secret_key" name="tornevall_dnsbl_comment_turnstile_secret_key" value="<?php echo esc_attr($turnstileSecretKey); ?>"></p>
+                        <p><label for="tornevall_dnsbl_comment_turnstile_theme"><?php echo esc_html__('Turnstile theme', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                            <select id="tornevall_dnsbl_comment_turnstile_theme" name="tornevall_dnsbl_comment_turnstile_theme">
+                                <option value="auto" <?php selected($turnstileTheme, 'auto'); ?>><?php echo esc_html__('Auto', 'tornevall-networks-dnsbl-implementation'); ?></option>
+                                <option value="light" <?php selected($turnstileTheme, 'light'); ?>><?php echo esc_html__('Light', 'tornevall-networks-dnsbl-implementation'); ?></option>
+                                <option value="dark" <?php selected($turnstileTheme, 'dark'); ?>><?php echo esc_html__('Dark', 'tornevall-networks-dnsbl-implementation'); ?></option>
+                            </select>
+                        </p>
+                        <p class="description"><?php echo esc_html__('Turnstile runs only on the public comment form. Save both the site key and the secret key before enabling production traffic.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                    </div></div>
+
+                <div class="postbox" style="margin-top:16px;"><div class="inside">
+                        <h2 style="margin-top:0;"><?php echo esc_html__('WordPress account registration protection', 'tornevall-networks-dnsbl-implementation'); ?></h2>
+                        <?php self::renderCheckboxRow('tornevall_dnsbl_registration_dnsbl_enabled', __('Check new account registrations against DNSBL/FraudBL', 'tornevall-networks-dnsbl-implementation'), __('Rejects a new WordPress account registration when the current visitor IP matches the selected blacklist trigger flags.', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled); ?>
+                        <?php self::renderCheckboxRow('tornevall_dnsbl_registration_turnstile_enabled', __('Require Turnstile on new account registrations', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to the public wp-login registration form as an extra anti-bot and anti-abuse sales argument.', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled); ?>
+                        <p class="description"><?php echo esc_html__('Registration Turnstile reuses the same site key, secret key and theme configured above for comments.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                        <p class="description"><?php echo esc_html__('These controls apply to public WordPress account registration forms and do nothing when user registration is disabled in WordPress.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                     </div></div>
 
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
