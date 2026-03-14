@@ -18,6 +18,10 @@ define('TORNEVALL_DNSBL_PLUGIN_FILE', __FILE__);
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(TORNEVALL_DNSBL_PLUGIN_FILE));
 define('TORNEVALL_DNSBL_PLUGIN_URL', plugin_dir_url(TORNEVALL_DNSBL_PLUGIN_FILE));
 define('TORNEVALL_DNSBL_PLUGIN_VERSION', '3.1.0');
+define('TORNEVALL_DNSBL_PUBLIC_DOCS_URL', 'https://tools.tornevall.net/docs/dnsbl-api');
+define('TORNEVALL_DNSBL_CHANGELOG_URL', 'https://github.com/Tornevall/tornevall-wp-dnsbl/blob/master/CHANGELOG.md');
+define('TORNEVALL_DNSBL_HISTORY_URL', 'https://github.com/Tornevall/tornevall-wp-dnsbl/commits/master');
+define('TORNEVALL_DNSBL_ISSUES_URL', 'https://github.com/Tornevall/tornevall-wp-dnsbl/issues');
 
 foreach ([
     'includes/class-dnsbl-plugin.php',

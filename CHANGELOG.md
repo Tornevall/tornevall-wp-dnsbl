@@ -8,7 +8,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Added a visitor statistics summary to the admin dashboard.
 - Added counters for resolved checks, blacklist hits, blocked requests, unique visitor addresses, and cached blacklist entries.
 - Added changelog and source-history links to the admin help card.
-- Added public documentation for the plugin under `tools.tornevall.net/docs/dnsbl-plugin`.
+- Added public documentation for the plugin/API under `tools.tornevall.net/docs/dnsbl-api`.
 - Added a safe IP whitelist for dry-run testing and lockout prevention.
 - Added automatic seeding of the activating user's IP into the whitelist when available.
 

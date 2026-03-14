@@ -21,7 +21,7 @@ Current admin features include manual DNS lookup tools, self-check tools, and a 
 
 Report issues and feedback: https://github.com/Tornevall/tornevall-wp-dnsbl/issues
 Plugin URL: https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/
-Documentation: https://tools.tornevall.net/docs/dnsbl-plugin
+Documentation: https://tools.tornevall.net/docs/dnsbl-api
 
 
 = Support and feedback =
@@ -29,7 +29,7 @@ Documentation: https://tools.tornevall.net/docs/dnsbl-plugin
 Bug reports and feedback can currently be submitted via GitHub:
 https://github.com/Tornevall/tornevall-wp-dnsbl/issues
 
-Full API Documentation: https://tools.tornevall.net/docs/dnsbl-plugin
+Full Documentation: https://tools.tornevall.net/docs/dnsbl-api
 
 Translations can be contributed via https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation.
 
@@ -79,7 +79,7 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 * Added a visitor statistics summary in the admin dashboard.
 * Added counters for resolved checks, blacklist hits, blocked requests, total cached entries, and cached non-listed entries.
-* Restored public DNSBL plugin documentation under `tools.tornevall.net/docs/dnsbl-plugin`.
+* Restored public DNSBL plugin/API documentation under `tools.tornevall.net/docs/dnsbl-api`.
 * Added a dedicated `CHANGELOG.md` to the plugin root.
 * Added changelog and source-history links to the admin help panel.
 * Added configurable cache cleanup intervals and automatic expiry cleanup.

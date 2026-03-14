@@ -470,11 +470,10 @@ class Admin
                     </div></div>
                 <div class="postbox"><div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('Plugin information and help', 'tornevall-networks-dnsbl-implementation'); ?></h2>
-                        <p><a href="https://tools.tornevall.net/docs/dnsbl-plugin" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('DNSBL plugin documentation', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
-                        <p><a href="https://tools.tornevall.net/docs/dnsbl-v3" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('DNSBL / FraudBL endpoint documentation', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
-                        <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Plugin changelog', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
-                        <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/commits/master" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Source history and diff trail', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
-                        <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/issues" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('GitHub issue tracker', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                        <p><a href="<?php echo esc_url(TORNEVALL_DNSBL_PUBLIC_DOCS_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('DNSBL plugin and endpoint documentation', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                        <p><a href="<?php echo esc_url(TORNEVALL_DNSBL_CHANGELOG_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Plugin changelog', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                        <p><a href="<?php echo esc_url(TORNEVALL_DNSBL_HISTORY_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Source history and diff trail', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                        <p><a href="<?php echo esc_url(TORNEVALL_DNSBL_ISSUES_URL); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('GitHub issue tracker', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
                     </div></div>
             </div>
 

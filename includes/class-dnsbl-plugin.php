@@ -8,6 +8,9 @@ if (!defined('ABSPATH')) {
 
 class Plugin
 {
+    private const FRONTEND_DRY_RUN_USER_META = 'tornevall_dnsbl_frontend_dry_run';
+    private const FRONTEND_DRY_RUN_IP = '127.0.0.255';
+
     public static function registerHooks(): void
     {
         add_filter('cron_schedules', [self::class, 'cronSchedules']);
@@ -17,9 +20,12 @@ class Plugin
         add_action('init', [self::class, 'checkpoint']);
         add_action('wp_ajax_tornevall_dnsbl_admin_tools', [\Tornevall\Networks\DNSBL\Admin::class, 'ajaxTools']);
         add_action('admin_post_tornevall_dnsbl_whitelist_current_visitor', [self::class, 'handleWhitelistCurrentVisitorAction']);
+        add_action('admin_post_tornevall_dnsbl_toggle_frontend_dry_run', [self::class, 'handleFrontendDryRunToggle']);
         add_action('admin_notices', [self::class, 'renderActionNotice']);
         add_action('admin_notices', [self::class, 'renderProtectedUserNotice']);
+        add_action('admin_bar_menu', [self::class, 'addFrontendDryRunAdminBarMenu'], 100);
         add_action('tornevall_dnsbl_cache_cleanup', [self::class, 'purgeExpiredCache']);
+        add_action('wp_footer', [self::class, 'renderFrontendDryRunBanner']);
 
         add_filter('the_content', [self::class, 'contentHandler']);
         add_filter('comments_open', [self::class, 'disableComments'], 10, 1);
@@ -208,8 +214,8 @@ class Plugin
         }
 
         $evaluation = self::evaluateBlacklistState($remoteAddr);
-        $source = is_admin() ? 'admin-request' : 'request';
-        self::recordStat($remoteAddr, (int) $evaluation['bitmask'], !empty($evaluation['blocked']), $source);
+        $source = is_admin() ? 'admin-request' : (!empty($evaluation['dry_run']) ? 'dry-run-request' : 'request');
+        self::recordStat((string) ($evaluation['evaluated_ip'] ?? $remoteAddr), (int) $evaluation['bitmask'], !empty($evaluation['blocked']), $source);
         $dnsbl_blacklist_status = !empty($evaluation['blocked']);
         $dnsbl_blacklist_control_status = 'checked';
     }
@@ -261,6 +267,134 @@ class Plugin
         $remoteAddr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
         return ($remoteAddr && filter_var($remoteAddr, FILTER_VALIDATE_IP)) ? $remoteAddr : '';
+    }
+
+    public static function isFrontendDryRunAvailable(): bool
+    {
+        return !is_admin()
+            && is_user_logged_in()
+            && current_user_can('manage_options')
+            && self::toolsBaseUrl() === 'https://tools.tornevall.com';
+    }
+
+    public static function isFrontendDryRunEnabled(): bool
+    {
+        if (!self::isFrontendDryRunAvailable()) {
+            return false;
+        }
+
+        return get_user_meta(get_current_user_id(), self::FRONTEND_DRY_RUN_USER_META, true) === '1';
+    }
+
+    public static function getFrontendDryRunIp(): string
+    {
+        return self::FRONTEND_DRY_RUN_IP;
+    }
+
+    public static function getEffectiveEvaluationIp($addr): string
+    {
+        $addr = (string) $addr;
+        if ($addr === '' || !filter_var($addr, FILTER_VALIDATE_IP)) {
+            return '';
+        }
+
+        if (!is_admin() && self::isFrontendDryRunEnabled() && self::currentVisitorIp() === $addr) {
+            return self::getFrontendDryRunIp();
+        }
+
+        return $addr;
+    }
+
+    public static function getFrontendDryRunToggleUrl($enable = true, $redirectUrl = ''): string
+    {
+        if ($redirectUrl === '') {
+            $redirectUrl = self::currentUrl();
+        }
+
+        $url = add_query_arg([
+            'action' => 'tornevall_dnsbl_toggle_frontend_dry_run',
+            'enable' => $enable ? '1' : '0',
+            'redirect_to' => rawurlencode((string) $redirectUrl),
+        ], admin_url('admin-post.php'));
+
+        return wp_nonce_url($url, 'tornevall_dnsbl_toggle_frontend_dry_run');
+    }
+
+    public static function handleFrontendDryRunToggle(): void
+    {
+        if (!is_user_logged_in() || !current_user_can('manage_options')) {
+            wp_die(__('You do not have permission to perform this action.', 'tornevall-networks-dnsbl-implementation'));
+        }
+
+        check_admin_referer('tornevall_dnsbl_toggle_frontend_dry_run');
+
+        $enable = isset($_GET['enable']) && sanitize_key(wp_unslash($_GET['enable'])) === '1';
+        update_user_meta(get_current_user_id(), self::FRONTEND_DRY_RUN_USER_META, $enable ? '1' : '0');
+
+        $redirectUrl = isset($_GET['redirect_to']) ? rawurldecode(sanitize_text_field(wp_unslash($_GET['redirect_to']))) : '';
+        if ($redirectUrl === '') {
+            $redirectUrl = home_url('/');
+        }
+
+        $redirectUrl = remove_query_arg(['tornevall_dnsbl_notice', 'tornevall_dnsbl_notice_type'], $redirectUrl);
+
+        wp_safe_redirect(add_query_arg([
+            'tornevall_dnsbl_notice' => $enable ? 'dry-run-enabled' : 'dry-run-disabled',
+            'tornevall_dnsbl_notice_type' => 'success',
+        ], $redirectUrl));
+        exit;
+    }
+
+    public static function addFrontendDryRunAdminBarMenu($adminBar): void
+    {
+        if (!self::isFrontendDryRunAvailable() || !is_admin_bar_showing()) {
+            return;
+        }
+
+        $enabled = self::isFrontendDryRunEnabled();
+        $adminBar->add_node([
+            'id' => 'tornevall-dnsbl-dry-run',
+            'title' => $enabled
+                ? __('DNSBL Dry Run: ON (127.0.0.255)', 'tornevall-networks-dnsbl-implementation')
+                : __('DNSBL Dry Run: OFF', 'tornevall-networks-dnsbl-implementation'),
+            'href' => self::getFrontendDryRunToggleUrl(!$enabled),
+            'meta' => [
+                'title' => $enabled
+                    ? __('Disable frontend dry run', 'tornevall-networks-dnsbl-implementation')
+                    : __('Enable frontend dry run', 'tornevall-networks-dnsbl-implementation'),
+            ],
+        ]);
+    }
+
+    public static function renderFrontendDryRunBanner(): void
+    {
+        if (!self::isFrontendDryRunAvailable()) {
+            return;
+        }
+
+        $enabled = self::isFrontendDryRunEnabled();
+        $toggleUrl = self::getFrontendDryRunToggleUrl(!$enabled);
+
+        echo '<div style="position:fixed;right:16px;bottom:16px;z-index:99999;max-width:340px;background:#111827;color:#f9fafb;padding:14px 16px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.25);font-size:13px;line-height:1.5;">';
+        echo '<strong>' . esc_html__('DNSBL frontend dry run', 'tornevall-networks-dnsbl-implementation') . '</strong><br>';
+        echo $enabled
+            ? esc_html__('Enabled: the current frontend request is evaluated as 127.0.0.255 so blacklist handling can be tested safely.', 'tornevall-networks-dnsbl-implementation')
+            : esc_html__('Disabled: live visitor IP evaluation is active. Turn this on to simulate a blacklisted visitor in dev mode.', 'tornevall-networks-dnsbl-implementation');
+        echo '<div style="margin-top:10px;">';
+        echo '<a href="' . esc_url($toggleUrl) . '" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:8px 12px;border-radius:6px;">';
+        echo esc_html($enabled ? __('Disable dry run', 'tornevall-networks-dnsbl-implementation') : __('Enable dry run', 'tornevall-networks-dnsbl-implementation'));
+        echo '</a>';
+        echo '</div>';
+        echo '</div>';
+    }
+
+    private static function currentUrl(): string
+    {
+        $scheme = is_ssl() ? 'https://' : 'http://';
+        $host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
+        $requestUri = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])) : '/';
+
+        return $scheme . $host . $requestUri;
     }
 
     public static function defaultWhitelistEntries(): array
@@ -949,6 +1083,8 @@ class Plugin
             'whitelisted' => __('The current visitor address has been added to the DNSBL whitelist.', 'tornevall-networks-dnsbl-implementation'),
             'already-whitelisted' => __('The current visitor address is already present in the DNSBL whitelist.', 'tornevall-networks-dnsbl-implementation'),
             'invalid-ip' => __('The current visitor address could not be determined, so no whitelist change was made.', 'tornevall-networks-dnsbl-implementation'),
+            'dry-run-enabled' => __('Frontend dry run is enabled. This session is now evaluated as 127.0.0.255 on the public site.', 'tornevall-networks-dnsbl-implementation'),
+            'dry-run-disabled' => __('Frontend dry run is disabled. Live visitor IP evaluation is active again.', 'tornevall-networks-dnsbl-implementation'),
         ];
 
         if (!isset($messages[$notice])) {
@@ -1008,10 +1144,18 @@ class Plugin
 
     public static function evaluateBlacklistState($addr, $adminPassThrough = false): array
     {
-        $bitMaskResponse = (int) self::checkBlacklistCache($addr);
+        $effectiveAddr = self::getEffectiveEvaluationIp($addr);
+        $isDryRun = $effectiveAddr !== '' && $effectiveAddr !== (string) $addr;
+
+        if ($isDryRun && $effectiveAddr === self::getFrontendDryRunIp()) {
+            $bitMaskResponse = (int) (self::getCurrentFlagMap()['IP_CONFIRMED'] ?? 2);
+        } else {
+            $bitMaskResponse = (int) self::checkBlacklistCache($effectiveAddr);
+        }
+
         $matchesSelectedFlags = $bitMaskResponse > 0 && self::matchesSelectedFlags($bitMaskResponse);
         $isProtectedAdmin = (is_admin() || current_user_can('administrator')) && !$adminPassThrough;
-        $isWhitelisted = self::isWhitelistedIp($addr);
+        $isWhitelisted = !$isDryRun && self::isWhitelistedIp($effectiveAddr);
 
         return [
             'bitmask' => $bitMaskResponse,
@@ -1020,6 +1164,9 @@ class Plugin
             'blocked' => $matchesSelectedFlags && !$isProtectedAdmin && !$isWhitelisted,
             'admin_protected' => $isProtectedAdmin,
             'whitelisted' => $isWhitelisted,
+            'original_ip' => (string) $addr,
+            'evaluated_ip' => $effectiveAddr,
+            'dry_run' => $isDryRun,
         ];
     }
 
