@@ -1,23 +1,23 @@
-=== Tornevall Networks AntiSpam and Fraud Blacklist (DNSBL w/FraudBL) implementation ===
+=== Tornevall Networks DNSBL Implementation ===
 Contributors: Tornevall
-Tags: spam, antispam, dnsbl, fraudbl, blacklist, dns blacklist, proxy, tor, tor exit nodes, comments, comment spam, abuse prevention
+Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 
-Tornevall Networks DNS Blacklist and FraudBL support for WordPress
+Tornevall Networks DNSBL implementation with FraudBL support for WordPress
 
 == Description ==
 
 Tornevall Networks DNSBL and FraudBL protection for WordPress. The plugin helps block comment activity, account registrations and other unwanted submissions from addresses flagged by Tornevall Networks DNSBL and FraudBL.
 
-FraudBL is part of the protection layer used by the plugin and is available at https://www.fraudbl.org/.
+FraudBL is part of the protection layer used by the plugin and is available at https://www.fraudbl.org/. For general discovery, broader search terms like fraud, blacklist, comment spam and user registration are usually easier to find than niche technical acronyms alone.
 
 The plugin is intended to provide a lightweight anti-spam and anti-abuse layer for WordPress, with support for local caching to reduce repeated lookups and unnecessary load against blacklist services.
 
-Current admin features include manual DNS lookup tools, self-check tools, visitor statistics, safe IP whitelisting, frontend dry-run support for administrators, Cloudflare Turnstile for comments, and DNSBL plus Turnstile protection for new WordPress account registrations.
+Current admin features include manual DNS lookup tools, self-check tools, visitor statistics, safe IP whitelisting, frontend dry-run support for administrators, Cloudflare Turnstile for comments, and DNSBL plus Turnstile protection for new WordPress account registrations. WooCommerce-oriented protection is a planned next step rather than part of the current release.
 
 Report issues and feedback: https://github.com/Tornevall/tornevall-wp-dnsbl/issues
 Plugin URL: https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/
@@ -60,20 +60,29 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 == Screenshots ==
 
-Current screenshots from the plugin interface.
+1. Try-tests and self-check: direct DNS lookups for a specific IP plus a self-check of the current server and visitor address.
 
-1. Screenshot that shows custom CSS, when comments section is disabled due to blacklisted address
+2. At a glance and visitor statistics: resolver status, selected trigger flags, whitelist state, Turnstile/registration protection status, and recorded DNSBL activity.
 
-https://www.tornevall.net/wp-content/uploads/2018/07/commentsDisabledCustomCSS.png
+3. Core DNS lookup settings: preferred resolver hosts, cache age, cleanup interval, and the active blacklist trigger-flag profile including FraudBL-related flags.
 
-2. A part of the new DNSBL configuration interface
+4. Protection behavior: comment hiding, redirect handling, safe IP whitelisting, blocked-visitor redirect URL, and admin notice styling.
 
-https://www.tornevall.net/wp-content/uploads/2018/07/dnsbl_config.png
+5. Tools integration and development: diagnostics mode, frontend dry-run guidance, production/dev Tools mode selection, and token configuration.
 
-The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOptions.jpg
+6. Cloudflare Turnstile and registration protection: Turnstile settings for comments plus DNSBL/FraudBL and Turnstile protection for new WordPress account registrations.
+
+7. Frontend dry run in action: admin-bar dry-run indicator, blocked-comments notice on the public site, and the floating dry-run status banner used for safe live testing.
 
 
 == Changelog ==
+
+= 3.0.1 =
+
+* Simplified and aligned the public plugin name so it better matches the WordPress.org slug.
+* Corrected the author metadata spelling to Thomas Tornevall.
+* Reduced the WordPress.org tags to five broader discovery terms with better general search value.
+* Refreshed the readme wording for FraudBL/fraud discovery and noted planned WooCommerce-oriented follow-up work.
 
 = 3.0.0 =
 
@@ -98,6 +107,10 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 
 == Upgrade Notice ==
+
+= 3.0.1 =
+
+Maintenance packaging release. Cleans up readme metadata, tag usage, author spelling and plugin naming before distribution.
 
 = 3.0.0 =
 
