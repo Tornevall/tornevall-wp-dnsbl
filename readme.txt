@@ -4,7 +4,7 @@ Tags: spam, antispam, dnsbl, fraudbl, blacklist, dns blacklist, proxy, tor, tor 
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 3.0.0
+Stable tag: 3.1.0
 License: GPLv2 or later
 
 Tornevall Networks DNS Blacklist support for WordPress
@@ -29,6 +29,8 @@ Documentation: https://tools.tornevall.net/docs/dnsbl-plugin
 Bug reports and feedback can currently be submitted via GitHub:
 https://github.com/Tornevall/tornevall-wp-dnsbl/issues
 
+Full API Documentation: https://tools.tornevall.net/docs/dnsbl-plugin
+
 Translations can be contributed via https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation.
 
 
@@ -38,7 +40,7 @@ Translations can be contributed via https://translate.wordpress.org/projects/wp-
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Configure the plugin via admin control panel
 
-The installation creates a cache table in the WordPress database. This reduces repeated DNS lookups and helps avoid unnecessary load against blacklist services. The default cache lifetime is 900 seconds.
+The installation creates a cache table in the WordPress database. This reduces repeated DNS lookups and helps avoid unnecessary load against blacklist services. Both blacklisted and non-listed lookups are cached. The default cache lifetime is 600 seconds and the cleanup interval is 300 seconds.
 
 The plugin also supports a safe IP whitelist. Whitelisted IP addresses are still checked and can appear in statistics, but they are not blocked, redirected or marked as spam. When possible, the activating visitor IP is seeded into that whitelist automatically during first-time setup.
 
@@ -76,10 +78,20 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 = Unreleased =
 
 * Added a visitor statistics summary in the admin dashboard.
-* Added counters for resolved checks, blacklist hits, blocked requests and cached blacklist entries.
+* Added counters for resolved checks, blacklist hits, blocked requests, total cached entries, and cached non-listed entries.
 * Restored public DNSBL plugin documentation under `tools.tornevall.net/docs/dnsbl-plugin`.
 * Added a dedicated `CHANGELOG.md` to the plugin root.
 * Added changelog and source-history links to the admin help panel.
+* Added configurable cache cleanup intervals and automatic expiry cleanup.
+* Added a one-click current-visitor whitelist action and a protected-admin notice.
+
+= 3.1.0 =
+
+* Cache now stores both listed and non-listed lookups, reducing repeat DNS traffic.
+* Added configurable cache TTL and configurable cleanup interval with automatic purging.
+* Added a plugin-owned admin notice for protected administrators whose IP matches active DNSBL flags.
+* Added a one-click action to add the current visitor IP to the whitelist.
+* Refactored the plugin internals behind namespaced classes while keeping the historical callback names for compatibility.
 
 = 3.0.0 =
 
@@ -96,6 +108,11 @@ The old interface: https://www.tornevall.com/wp-content/uploads/2018/07/dnsblOpt
 
 
 == Upgrade Notice ==
+
+
+= 3.1.0 =
+
+Update recommended for the new cache management controls, total cache statistics, one-click whitelist flow and namespaced internal refactor.
 
 = 3.0.0 =
 

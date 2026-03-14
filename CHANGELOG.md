@@ -22,6 +22,23 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Reconnected the previously unused statistics table to real admin-visible metrics.
 - Prevented whitelisted visitor IPs from being blocked while still allowing them to be checked and counted in statistics.
 
+## 3.1.0
+
+### Added
+- Added cache cleanup scheduling with a configurable interval and a recorded last-cleanup timestamp.
+- Added a plugin-owned protected-admin notice with a one-click current-visitor whitelist action.
+- Added totals for all cached entries, cached blacklisted entries, and cached non-listed entries in the admin dashboard.
+- Added a dedicated Markdown version of the DNSBL API v3 documentation under `tools.tornevall.net/docs/dnsbl-v3`.
+
+### Changed
+- Lowered the default DNSBL cache TTL to 10 minutes and now cache both blacklisted and non-listed lookup results.
+- Refactored the plugin internals behind namespaced classes while keeping the historical global callback names as compatibility wrappers.
+- Added a cache-table index for faster expiry cleanup queries.
+
+### Fixed
+- Prevented repeated DNS traffic for known non-listed visitors by preserving negative lookup cache rows.
+- Ensured cache cleanup can be triggered both by scheduled events and by throttled request-time maintenance.
+
 ## 3.0.0
 
 ### Added
