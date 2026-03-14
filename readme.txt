@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -76,6 +76,10 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 == Changelog ==
 
+= 3.0.3 =
+
+* Fixed frontend dry-run availability so the public banner and toggle only appear when DNSBL dev mode is enabled and Tools environment mode is set to dev.
+
 = 3.0.2 =
 
 * Repackaged the release so updated screenshots and other WordPress.org assets can be picked up properly.
@@ -111,6 +115,10 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 
 == Upgrade Notice ==
+
+= 3.0.3 =
+
+Fixes the public frontend dry-run popup so it stays hidden in production Tools mode.
 
 = 3.0.2 =
 

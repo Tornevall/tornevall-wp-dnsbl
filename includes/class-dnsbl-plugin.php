@@ -197,6 +197,16 @@ class Plugin
         return is_admin() && self::isPrivilegedUser();
     }
 
+    public static function isDevModeEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_dev_mode') === '1';
+    }
+
+    public static function isToolsDevMode(): bool
+    {
+        return self::canonicalToolsMode(get_option('tornevall_dnsbl_tools_mode')) === 'dev';
+    }
+
     public static function enqueue($hook = ''): void
     {
         if (!is_admin()) {
@@ -373,6 +383,8 @@ class Plugin
     public static function isFrontendDryRunAvailable(): bool
     {
         return !is_admin()
+            && self::isDevModeEnabled()
+            && self::isToolsDevMode()
             && self::isPrivilegedUser();
     }
 
@@ -423,6 +435,10 @@ class Plugin
     {
         if (!is_user_logged_in() || !current_user_can('manage_options')) {
             wp_die(__('You do not have permission to perform this action.', 'tornevall-networks-dnsbl-implementation'));
+        }
+
+        if (!self::isDevModeEnabled() || !self::isToolsDevMode()) {
+            wp_die(__('Frontend dry run is only available when DNSBL dev mode is enabled and Tools environment mode is set to dev.', 'tornevall-networks-dnsbl-implementation'));
         }
 
         check_admin_referer('tornevall_dnsbl_toggle_frontend_dry_run');

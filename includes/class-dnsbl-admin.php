@@ -535,7 +535,7 @@ class Admin
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('Tools integration and development', 'tornevall-networks-dnsbl-implementation'); ?></h2>
                         <?php self::renderCheckboxRow('tornevall_dnsbl_dev_mode', __('Show extended diagnostics in the admin panel', 'tornevall-networks-dnsbl-implementation'), __('Shows raw diagnostic responses in the try-test and self-check tools.', 'tornevall-networks-dnsbl-implementation'), $devMode); ?>
-                        <p class="description"><?php echo esc_html__('Frontend dry run is only available on the public site while you are logged in as an administrator. Use the admin-bar toggle there to simulate a blacklisted visitor safely without affecting wp-admin.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                        <p class="description"><?php echo esc_html__('Frontend dry run is only available when dev mode is enabled, Tools environment mode is set to dev, and you are logged in as an administrator on the public site. Use the admin-bar toggle there to simulate a blacklisted visitor safely without affecting wp-admin.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                         <p><label for="tornevall_dnsbl_tools_mode"><?php echo esc_html__('Tools environment mode', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
                             <select id="tornevall_dnsbl_tools_mode" name="tornevall_dnsbl_tools_mode">
                                 <option value="dev" <?php selected($toolsMode, 'dev'); ?>><?php echo esc_html__('Force dev (tools.tornevall.com)', 'tornevall-networks-dnsbl-implementation'); ?></option>

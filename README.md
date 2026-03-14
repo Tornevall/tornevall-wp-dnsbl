@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.0.2`
+- **Release:** `3.0.3`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -13,9 +13,9 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 - **Documentation:** <https://tools.tornevall.net/docs/dnsbl-api>
 
-## What 3.0.2 ships
+## What 3.0.3 ships
 
-This `3.0.2` package keeps the current codebase intact while republishing the release so updated WordPress.org screenshots/assets and readme presentation fixes are picked up properly.
+This `3.0.3` package fixes the frontend dry-run availability logic so the public dry-run popup and toggle are hidden when Tools environment mode is set to production.
 
 The current release line includes:
 
@@ -33,7 +33,7 @@ The current release line includes:
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.2` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.3` release yet.
 
 ## Description
 
@@ -74,6 +74,10 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.0.3 highlights
+
+- Fixed frontend dry-run availability so the public banner and toggle only appear when DNSBL dev mode is enabled and Tools mode is set to `dev`
 
 ### 3.0.2 highlights
 

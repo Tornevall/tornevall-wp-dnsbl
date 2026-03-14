@@ -2,6 +2,11 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.0.3 - 2026-03-15
+
+### Fixed
+- Frontend dry-run availability now requires both DNSBL dev mode and Tools environment mode set to `dev`, so the public popup and admin-bar toggle stay hidden in production mode.
+
 ## 3.0.2 - 2026-03-14
 
 ### Changed
