@@ -121,12 +121,18 @@ function tornevall_dnsbl_admin_sanitize_tools_mode($value)
     return $value;
 }
 
+function tornevall_dnsbl_admin_sanitize_whitelist($value)
+{
+    return implode("\n", tornevall_dnsbl_parse_whitelist_entries($value));
+}
+
 function tornevall_dnsbl_admin_ensure_defaults()
 {
     $defaults = [
         'tornevall_dnsbl_cache_age' => 900,
         'tornevall_dnsbl_filter_types' => tornevall_dnsbl_admin_get_default_filter_flags(),
         'tornevall_dnsbl_resolver_hosts' => implode(',', tornevall_dnsbl_admin_get_default_resolvers()),
+        'tornevall_dnsbl_whitelist' => implode("\n", tornevall_dnsbl_default_whitelist_entries()),
         'tornevall_dnsbl_blocked_redirecturl' => tornevall_dnsbl_default_blocked_redirect_url(),
         'tornevall_dnsbl_comments_disabled_style' => tornevall_dnsbl_default_comments_disabled_style(),
         'tornevall_dnsbl_dev_mode' => '0',
@@ -150,6 +156,7 @@ function register_dnsbl_settings()
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blockfull', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_checkbox']);
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_delisting_page', ['sanitize_callback' => 'absint']);
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_resolver_hosts', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_resolver_hosts']);
+    register_setting('dnsblOptions-group', 'tornevall_dnsbl_whitelist', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_whitelist']);
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_redirect_url']);
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_comments_style']);
     register_setting('dnsblOptions-group', 'tornevall_dnsbl_delistingpage_comments_disabled', ['sanitize_callback' => 'tornevall_dnsbl_admin_sanitize_checkbox']);
@@ -431,9 +438,15 @@ function tornevall_dnsbl_options()
     if (!in_array($toolsMode, ['auto', 'dev', 'prod'], true)) {
         $toolsMode = 'auto';
     }
+    $whitelistEntries = tornevall_dnsbl_get_whitelist_entries();
+    $whitelistValue = implode("\n", $whitelistEntries);
+    $currentVisitorAddress = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
+    $currentVisitorWhitelisted = $currentVisitorAddress && tornevall_dnsbl_is_whitelisted_ip($currentVisitorAddress);
 
     $resolvedToolsBase = tornevall_dnsbl_tools_base_url();
     $toolResults = tornevall_dnsbl_admin_handle_tools_request();
+    $statsSummary = tornevall_dnsbl_get_stats_summary();
+    $statsSummary24h = tornevall_dnsbl_get_stats_summary(24);
     ?>
     <div class="wrap">
         <h1><?php echo esc_html__('DNS Blacklist Configurator', 'tornevall-networks-dnsbl-implementation'); ?></h1>
@@ -453,13 +466,35 @@ function tornevall_dnsbl_options()
                     <ul style="margin:0; padding-left:18px;">
                         <li><?php echo esc_html(sprintf(__('Resolver count: %d', 'tornevall-networks-dnsbl-implementation'), count($resolverNames))); ?></li>
                         <li><?php echo esc_html(sprintf(__('Trigger flags selected: %d', 'tornevall-networks-dnsbl-implementation'), count($savedFlags))); ?></li>
+                        <li><?php echo esc_html(sprintf(__('Whitelist entries configured: %d', 'tornevall-networks-dnsbl-implementation'), count($whitelistEntries))); ?></li>
                         <li><?php echo esc_html(sprintf(__('Tools token configured: %s', 'tornevall-networks-dnsbl-implementation'), $toolsTokenSet ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                         <li><?php echo esc_html(sprintf(__('Dev mode: %s', 'tornevall-networks-dnsbl-implementation'), $devMode ? __('enabled', 'tornevall-networks-dnsbl-implementation') : __('disabled', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                        <?php if ($currentVisitorAddress && filter_var($currentVisitorAddress, FILTER_VALIDATE_IP)) { ?>
+                            <li><?php echo esc_html(sprintf(__('Current visitor address is whitelisted: %s', 'tornevall-networks-dnsbl-implementation'), $currentVisitorWhitelisted ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                        <?php } ?>
                     </ul>
+                </div></div>
+            <div class="postbox"><div class="inside">
+                    <h2 style="margin-top:0;"><?php echo esc_html__('Visitor statistics', 'tornevall-networks-dnsbl-implementation'); ?></h2>
+                    <?php if (!empty($statsSummary['has_stats_table'])) { ?>
+                        <ul style="margin:0; padding-left:18px;">
+                            <li><?php echo esc_html(sprintf(__('Resolved visitor checks recorded: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['total_checks'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Unique visitor addresses seen: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['unique_visitors'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Blacklist hits recorded: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['blacklist_hits'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Blocked requests recorded: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['blocked_requests'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Unique blocked visitor addresses: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['blocked_unique_visitors'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Last 24 hours: %d checks / %d blocked', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary24h['total_checks'], (int)$statsSummary24h['blocked_requests'])); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Cached blacklist entries currently stored: %d', 'tornevall-networks-dnsbl-implementation'), (int)$statsSummary['cached_blacklist_entries'])); ?></li>
+                        </ul>
+                    <?php } else { ?>
+                        <p class="description"><?php echo esc_html__('The statistics table has not been created yet. Deactivate and reactivate the plugin if this persists after upgrade.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                    <?php } ?>
                 </div></div>
             <div class="postbox"><div class="inside">
                     <h2 style="margin-top:0;"><?php echo esc_html__('Plugin information and help', 'tornevall-networks-dnsbl-implementation'); ?></h2>
                     <p><a href="https://tools.tornevall.net/docs/dnsbl-plugin" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('DNSBL plugin documentation', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                    <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Plugin changelog', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
+                    <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/commits/master" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('Source history and diff trail', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
                     <p><a href="https://github.com/Tornevall/tornevall-wp-dnsbl/issues" target="_blank" rel="noopener noreferrer"><?php echo esc_html__('GitHub issue tracker', 'tornevall-networks-dnsbl-implementation'); ?></a></p>
                 </div></div>
         </div>
@@ -505,6 +540,14 @@ function tornevall_dnsbl_options()
                     tornevall_dnsbl_admin_render_checkbox_row('tornevall_dnsbl_nocomment', __('Hide comments for listed visitors', 'tornevall-networks-dnsbl-implementation'), __('Hides the comment section when a visitor matches the selected blacklist flags.', 'tornevall-networks-dnsbl-implementation'), (bool)get_option('tornevall_dnsbl_nocomment'));
                     tornevall_dnsbl_admin_render_checkbox_row('tornevall_dnsbl_blockfull', __('Redirect listed visitors away from the page', 'tornevall-networks-dnsbl-implementation'), __('Immediately redirects listed visitors away from the page. Logged-in administrators are still protected from lockout.', 'tornevall-networks-dnsbl-implementation'), (bool)get_option('tornevall_dnsbl_blockfull'));
                     ?>
+                    <p>
+                        <label for="tornevall_dnsbl_whitelist"><?php echo esc_html__('Safe IP whitelist', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                        <textarea class="large-text code" rows="5" id="tornevall_dnsbl_whitelist" name="tornevall_dnsbl_whitelist" placeholder="203.0.113.10&#10;198.51.100.0/24"><?php echo esc_textarea($whitelistValue); ?></textarea>
+                        <span class="description" style="display:block; margin-top:6px;"><?php echo esc_html__('Whitelisted IP addresses or CIDR ranges are still checked and can appear in statistics, but they will not be blocked, redirected or marked as spam. This is the safest way to dry-run DNSBL behaviour in a live WordPress environment.', 'tornevall-networks-dnsbl-implementation'); ?></span>
+                        <?php if ($currentVisitorAddress && filter_var($currentVisitorAddress, FILTER_VALIDATE_IP)) { ?>
+                            <span class="description" style="display:block; margin-top:4px;"><?php echo esc_html(sprintf(__('Current visitor address: %s', 'tornevall-networks-dnsbl-implementation'), $currentVisitorAddress)); ?></span>
+                        <?php } ?>
+                    </p>
                     <p><label><?php echo esc_html__('Blocked visitor redirect URL', 'tornevall-networks-dnsbl-implementation'); ?><br><input type="url" class="regular-text" name="tornevall_dnsbl_blocked_redirecturl" value="<?php echo esc_attr($redirectUrl); ?>"></label></p>
                     <p><label><?php echo esc_html__('Admin notice style for comment blocking', 'tornevall-networks-dnsbl-implementation'); ?><br><input type="text" class="regular-text" name="tornevall_dnsbl_comments_disabled_style" value="<?php echo esc_attr($commentsStyle); ?>"></label></p>
                 </div></div>

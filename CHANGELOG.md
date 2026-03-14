@@ -9,6 +9,8 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Added counters for resolved checks, blacklist hits, blocked requests, unique visitor addresses, and cached blacklist entries.
 - Added changelog and source-history links to the admin help card.
 - Added public documentation for the plugin under `tools.tornevall.net/docs/dnsbl-plugin`.
+- Added a safe IP whitelist for dry-run testing and lockout prevention.
+- Added automatic seeding of the activating user's IP into the whitelist when available.
 
 ### Changed
 - DNSBL request checks are now written to the existing `dnsblstats` table so the statistics view reflects live traffic.
@@ -18,6 +20,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Restored the missing `CHANGELOG.md` in the plugin root.
 - Restored the missing public DNSBL plugin documentation page in Tools.
 - Reconnected the previously unused statistics table to real admin-visible metrics.
+- Prevented whitelisted visitor IPs from being blocked while still allowing them to be checked and counted in statistics.
 
 ## 3.0.0
 

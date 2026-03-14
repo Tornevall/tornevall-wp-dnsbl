@@ -105,6 +105,172 @@ function tornevall_dnsbl_default_comments_disabled_style()
 }
 
 /**
+ * Get the default whitelist entries.
+ *
+ * Seeds the activating/owning IP when available so site owners do not
+ * accidentally lock themselves out during first-time setup.
+ *
+ * @return string[]
+ */
+function tornevall_dnsbl_default_whitelist_entries()
+{
+    $remoteAddr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
+    if ($remoteAddr && filter_var($remoteAddr, FILTER_VALIDATE_IP)) {
+        return [$remoteAddr];
+    }
+
+    return [];
+}
+
+/**
+ * Validate an IP or CIDR whitelist token.
+ *
+ * @param string $value Raw whitelist token.
+ *
+ * @return string
+ */
+function tornevall_dnsbl_normalize_whitelist_token($value)
+{
+    $value = strtolower(trim((string)$value));
+    if ($value === '') {
+        return '';
+    }
+
+    if (filter_var($value, FILTER_VALIDATE_IP)) {
+        return $value;
+    }
+
+    if (strpos($value, '/') === false) {
+        return '';
+    }
+
+    [$ip, $prefix] = array_pad(explode('/', $value, 2), 2, '');
+    $ip = trim($ip);
+    $prefix = trim($prefix);
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP) || $prefix === '' || !ctype_digit($prefix)) {
+        return '';
+    }
+
+    $maxPrefix = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? 128 : 32;
+    $prefix = (int)$prefix;
+    if ($prefix < 0 || $prefix > $maxPrefix) {
+        return '';
+    }
+
+    return $ip . '/' . $prefix;
+}
+
+/**
+ * Parse and normalize whitelist entries from a stored option or request.
+ *
+ * @param mixed $value Raw whitelist value.
+ *
+ * @return string[]
+ */
+function tornevall_dnsbl_parse_whitelist_entries($value)
+{
+    if (is_array($value)) {
+        $value = implode("\n", $value);
+    }
+
+    $parts = preg_split('/[\s,]+/', (string)$value);
+    $entries = [];
+    foreach ((array)$parts as $part) {
+        $normalized = tornevall_dnsbl_normalize_whitelist_token($part);
+        if ($normalized !== '') {
+            $entries[] = $normalized;
+        }
+    }
+
+    return array_values(array_unique($entries));
+}
+
+/**
+ * Get the configured DNSBL whitelist entries.
+ *
+ * @return string[]
+ */
+function tornevall_dnsbl_get_whitelist_entries()
+{
+    $entries = tornevall_dnsbl_parse_whitelist_entries(get_option('tornevall_dnsbl_whitelist'));
+    if (!count($entries)) {
+        $entries = tornevall_dnsbl_default_whitelist_entries();
+    }
+
+    return array_values(array_unique($entries));
+}
+
+/**
+ * Determine whether an IP address belongs to a CIDR range.
+ *
+ * @param string $ip   IP address.
+ * @param string $cidr CIDR expression.
+ *
+ * @return bool
+ */
+function tornevall_dnsbl_ip_matches_cidr($ip, $cidr)
+{
+    [$rangeIp, $prefixLength] = array_pad(explode('/', $cidr, 2), 2, '');
+    if (!filter_var($ip, FILTER_VALIDATE_IP) || !filter_var($rangeIp, FILTER_VALIDATE_IP) || $prefixLength === '' || !ctype_digit($prefixLength)) {
+        return false;
+    }
+
+    $ipBinary = inet_pton($ip);
+    $rangeBinary = inet_pton($rangeIp);
+    if ($ipBinary === false || $rangeBinary === false || strlen($ipBinary) !== strlen($rangeBinary)) {
+        return false;
+    }
+
+    $prefixLength = (int)$prefixLength;
+    $bytesLength = strlen($ipBinary);
+    $maxPrefix = $bytesLength * 8;
+    if ($prefixLength < 0 || $prefixLength > $maxPrefix) {
+        return false;
+    }
+
+    $fullBytes = intdiv($prefixLength, 8);
+    $remainingBits = $prefixLength % 8;
+
+    if ($fullBytes > 0 && substr($ipBinary, 0, $fullBytes) !== substr($rangeBinary, 0, $fullBytes)) {
+        return false;
+    }
+
+    if ($remainingBits === 0) {
+        return true;
+    }
+
+    $mask = (0xFF << (8 - $remainingBits)) & 0xFF;
+
+    return (ord($ipBinary[$fullBytes]) & $mask) === (ord($rangeBinary[$fullBytes]) & $mask);
+}
+
+/**
+ * Check whether an IP is present in the configured whitelist.
+ *
+ * @param string $ip IP address.
+ *
+ * @return bool
+ */
+function tornevall_dnsbl_is_whitelisted_ip($ip)
+{
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        return false;
+    }
+
+    foreach (tornevall_dnsbl_get_whitelist_entries() as $entry) {
+        if ($entry === $ip) {
+            return true;
+        }
+        if (strpos($entry, '/') !== false && tornevall_dnsbl_ip_matches_cidr($ip, $entry)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Get the currently configured resolver hosts.
  *
  * @return string[]
@@ -726,10 +892,10 @@ function dnsbl_check_blacklist($addr, $getIsListed = false, $adminPassThrough = 
         return $bitMaskResponse;
     }
 
-    $isListedByRequirements = !empty($evaluation['matches_selected_flags']);
+    $isListedByRequirements = !empty($evaluation['blocked']);
 
     if ((is_admin() || current_user_can('administrator')) && !$adminPassThrough) {
-        if ($isListedByRequirements) {
+        if (!empty($evaluation['matches_selected_flags']) && empty($evaluation['whitelisted'])) {
             add_action('admin_notices', 'dnsbl_is_protected_user');
         }
 
@@ -815,13 +981,15 @@ function tornevall_dnsbl_evaluate_blacklist_state($addr, $adminPassThrough = fal
     $bitMaskResponse = (int)dnsbl_check_blacklist_cache($addr);
     $matchesSelectedFlags = $bitMaskResponse > 0 && tornevall_dnsbl_matches_selected_flags($bitMaskResponse);
     $isProtectedAdmin = (is_admin() || current_user_can('administrator')) && !$adminPassThrough;
+    $isWhitelisted = tornevall_dnsbl_is_whitelisted_ip($addr);
 
     return [
         'bitmask' => $bitMaskResponse,
         'listed' => $bitMaskResponse > 0,
         'matches_selected_flags' => $matchesSelectedFlags,
-        'blocked' => $matchesSelectedFlags && !$isProtectedAdmin,
+        'blocked' => $matchesSelectedFlags && !$isProtectedAdmin && !$isWhitelisted,
         'admin_protected' => $isProtectedAdmin,
+        'whitelisted' => $isWhitelisted,
     ];
 }
 

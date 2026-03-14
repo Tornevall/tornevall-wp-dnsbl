@@ -111,6 +111,7 @@ function tornevall_dnsbl_migration_run()
     $defaults = [
         'tornevall_dnsbl_cache_age' => 900,
         'tornevall_dnsbl_resolver_hosts' => 'dnsbl.tornevall.org,bl.fraudbl.org',
+        'tornevall_dnsbl_whitelist' => implode("\n", tornevall_dnsbl_default_whitelist_entries()),
         'tornevall_dnsbl_tools_mode' => 'auto',
     ];
 
@@ -186,6 +187,7 @@ function tornevall_dnsbl_migration_uninstall()
         'tornevall_dnsbl_delisting_page',
         'tornevall_dnsbl_update_timestamp',
         'tornevall_dnsbl_resolver_hosts',
+        'tornevall_dnsbl_whitelist',
         'tornevall_dnsbl_blocked_redirecturl',
         'tornevall_dnsbl_comments_disabled_style',
         'tornevall_dnsbl_delistingpage_comments_disabled',

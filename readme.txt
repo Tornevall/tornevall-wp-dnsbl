@@ -40,6 +40,8 @@ Translations can be contributed via https://translate.wordpress.org/projects/wp-
 
 The installation creates a cache table in the WordPress database. This reduces repeated DNS lookups and helps avoid unnecessary load against blacklist services. The default cache lifetime is 900 seconds.
 
+The plugin also supports a safe IP whitelist. Whitelisted IP addresses are still checked and can appear in statistics, but they are not blocked, redirected or marked as spam. When possible, the activating visitor IP is seeded into that whitelist automatically during first-time setup.
+
 If the database schema becomes out of sync after an upgrade or a manual source-based install, deactivate and reactivate the plugin to recreate the required tables.
 
 == Frequently Asked Questions ==
@@ -47,6 +49,10 @@ If the database schema becomes out of sync after an upgrade or a manual source-b
 * Can I get delisted?
 
 Yes. If you are blacklisted in Tornevall DNSBL, you can via https://dnsbl.tornevall.org - otherwise, you can't.
+
+* How do I test DNSBL without locking myself out?
+
+Use the Safe IP whitelist in the plugin settings. Keep your own IP address there, then use the built-in lookup and self-check tools to verify behaviour. Requests from whitelisted IPs are still evaluated and counted in statistics, but they are not blocked.
 
 
 
