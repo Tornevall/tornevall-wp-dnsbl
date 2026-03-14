@@ -34,9 +34,135 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ## 2.1.9
 
+### Changed
+- Language update (based on the historical Git tag commit message).
+
 ### Notes
-- `2.1.9` is the latest historical tag visible in the repository before the current `3.x` codebase cleanup.
-- Use the repository commit history for a line-by-line diff trail across the older 2.x series and the current working tree.
+- `2.1.9` is the latest historical Git tag before the current root `3.0.0` release line.
+- The repository does not preserve a fuller local readme changelog block for this release.
+
+## 2.0.8
+
+### Added
+- Added Contact Form 7 support (`DNSBLWP-63`).
+
+## 2.0.7
+
+### Fixed
+- Fixed false positives shown with FraudBL (`DNSBLWP-60`).
+- Fixed a WordPress 5 compatibility error (`DNSBLWP-52`).
+- Fixed the spinner behaviour on delist click (`DNSBLWP-59`).
+- Allowed admin handling without captcha in the relevant flow (`DNSBLWP-61`).
+
+### Changed
+- General code inspection and cleanup pass (`DNSBLWP-56`).
+
+## 2.0.6
+
+### Fixed
+- Minor fix for open versus closed comments handling on the delisting page.
+
+## 2.0.5
+
+### Added
+- Added the ability to disable comments on the removal page.
+- Added an admin-facing notice when the current administrator is also blacklisted.
+
+### Fixed
+- Fixed URL text in the readme.
+
+## 2.0.4
+
+### Fixed
+- Fixed the text domain in the translation layer.
+
+## 2.0.3
+
+### Changed
+- Text and translation refresh.
+
+## 2.0.2
+
+### Fixed
+- Fixed duplicate-index reporting issues.
+- Improved compatibility for systems where `MODULE_NETWORK` and `MODULE_NETBITS` were not present.
+
+## 2.0.1
+
+### Notes
+- The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/>
+
+## 2.0.0
+
+### Notes
+- The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/>
+
+## 1.1.1
+
+### Fixed
+- Fixed incorrect index handling on table alteration (`DNSBLWP-17`).
+- Fixed database issues causing background notices.
+
+### Changed
+- Added a stricter check to ensure cURL is active before use, with a notice when unavailable.
+- Reformatted code.
+- Moved the location of the menus.
+- Initialized parts of FraudBLv2.
+
+## 1.1.0
+
+### Fixed
+- Fixed activation failures (`DNSBLWP-16`).
+
+### Changed
+- Synced with the current bitmask set (`DNSBLWP-14`).
+- Updated the resolver class.
+
+## 1.0.5
+
+### Fixed
+- Fixed an unclosed HTML tag that slipped into the translated 1.0.4 release.
+
+## 1.0.4
+
+### Added
+- Added Swedish language support (`TSDWP-13`).
+
+## 1.0.3
+
+### Changed
+- Switched the issue tracker to JIRA.
+
+## 1.0.3.0
+
+### Notes
+- Git-only alias tag for the `1.0.3` WordPress trunk state (`1.0.3 as shown in WP trunk`).
+
+## 1.0.2
+
+### Fixed
+- Fixed table-name handling.
+
+## 1.0.1
+
+### Added
+- Added minimal statistics (`TSDWP-7`).
+
+### Changed
+- Updated timestamps before expiry (`TSDWP-6`).
+- Avoided direct internal MySQL calls (`TSDWP-2`).
+
+### Fixed
+- Fixed duplicate-key problems (`TSDWP-1`).
+
+## 1.0.0
+
+### Added
+- Initial plugin release (`TSDWP-9`, `TSDWP-5`).
+- Added the admin control panel.
+- Added host detection on bitmask level.
 
 ## Historical source trail
 

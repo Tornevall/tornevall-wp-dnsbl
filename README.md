@@ -67,7 +67,7 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 
 ## Changelog
 
-See [`CHANGELOG.md`](./CHANGELOG.md).
+See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
 
 ### 3.0.0 highlights
 
