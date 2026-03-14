@@ -64,32 +64,12 @@ class Admin
 
     public static function sanitizeFilterTypes($value): array
     {
-        $value = is_array($value) ? $value : [];
-        $availableFlags = array_keys(Plugin::getCurrentFlagMap());
-        $clean = [];
-        foreach ($value as $flag) {
-            $flag = sanitize_text_field((string) $flag);
-            if (in_array($flag, $availableFlags, true)) {
-                $clean[] = $flag;
-            }
-        }
-
-        $clean = array_values(array_unique($clean));
-        if (!count($clean)) {
-            $clean = Plugin::defaultSelectedFlags();
-        }
-
-        return $clean;
+        return Plugin::normalizeSelectedFlags($value);
     }
 
     public static function sanitizeRedirectUrl($value): string
     {
-        $value = esc_url_raw(trim((string) $value));
-        if ($value === '') {
-            $value = Plugin::defaultBlockedRedirectUrl();
-        }
-
-        return $value;
+        return Plugin::canonicalBlockedRedirectUrl(esc_url_raw(trim((string) $value)));
     }
 
     public static function sanitizeCommentsStyle($value): string

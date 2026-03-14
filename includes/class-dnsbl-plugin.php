@@ -240,14 +240,30 @@ class Plugin
 
     public static function defaultBlockedRedirectUrl(): string
     {
-        return 'https://dnsbl.tornevall.org/removal?redirected';
+        return 'https://www.tornevall.net/removal/';
+    }
+
+    public static function canonicalBlockedRedirectUrl($redirectUrl): string
+    {
+        $redirectUrl = trim((string) $redirectUrl);
+
+        if ($redirectUrl === '' || $redirectUrl === 'https://dnsbl.tornevall.org/removal?redirected') {
+            return self::defaultBlockedRedirectUrl();
+        }
+
+        return $redirectUrl;
     }
 
     public static function getBlockedRedirectUrl(): string
     {
         $redirectUrl = (string) get_option('tornevall_dnsbl_blocked_redirecturl');
+        $normalized = self::canonicalBlockedRedirectUrl($redirectUrl);
 
-        return $redirectUrl !== '' ? $redirectUrl : self::defaultBlockedRedirectUrl();
+        if ($redirectUrl !== $normalized) {
+            update_option('tornevall_dnsbl_blocked_redirecturl', $normalized);
+        }
+
+        return $normalized;
     }
 
     public static function defaultCommentsDisabledStyle(): string
@@ -533,13 +549,22 @@ class Plugin
             'FREE_SLOT_1_PREVIOUSLY_REPORTED' => 1,
             'IP_CONFIRMED' => 2,
             'IP_PHISHING' => 4,
-            'FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT' => 8,
+            'IP_FRAUDCOMMERCE' => 8,
             'IP_MAILSERVER_SPAM' => 16,
             'IP_SECOND_EXIT' => 32,
             'IP_ABUSE_NO_SMTP' => 64,
             'IP_ANONYMOUS' => 128,
             'BIT_256' => 256,
         ];
+    }
+
+    public static function canonicalFlagName($flagName): string
+    {
+        $flagName = strtoupper(preg_replace('/[^A-Z0-9_]+/i', '', (string) $flagName));
+
+        return [
+            'FREE_SLOT_8_PREVIOUSLY_PROXYTIMEOUT' => 'IP_FRAUDCOMMERCE',
+        ][$flagName] ?? $flagName;
     }
 
     public static function isPowerOfTwo($value): bool
@@ -554,7 +579,7 @@ class Plugin
         $normalized = [];
 
         foreach ((array) $structure as $flagName => $bitValue) {
-            $flagName = strtoupper(preg_replace('/[^A-Z0-9_]+/i', '', (string) $flagName));
+            $flagName = self::canonicalFlagName($flagName);
             $bitValue = (int) $bitValue;
 
             if ($flagName === '' || !self::isPowerOfTwo($bitValue)) {
@@ -615,12 +640,36 @@ class Plugin
     public static function getSelectedFlags(): array
     {
         $selected = get_option('tornevall_dnsbl_filter_types');
-        if (!is_array($selected) || !count($selected)) {
-            $selected = self::defaultSelectedFlags();
-            update_option('tornevall_dnsbl_filter_types', $selected);
+        $normalized = self::normalizeSelectedFlags($selected);
+
+        if (!is_array($selected) || $selected !== $normalized) {
+            update_option('tornevall_dnsbl_filter_types', $normalized);
         }
 
-        return array_values(array_unique(array_map('strval', $selected)));
+        return $normalized;
+    }
+
+    public static function normalizeSelectedFlags($selected): array
+    {
+        $selected = is_array($selected) ? $selected : [];
+        $availableFlags = array_keys(self::getCurrentFlagMap());
+        $normalized = [];
+
+        foreach ($selected as $flagName) {
+            $flagName = self::canonicalFlagName($flagName);
+
+            if ($flagName !== '' && in_array($flagName, $availableFlags, true)) {
+                $normalized[] = $flagName;
+            }
+        }
+
+        $normalized = array_values(array_unique($normalized));
+
+        if (!count($normalized)) {
+            $normalized = self::defaultSelectedFlags();
+        }
+
+        return $normalized;
     }
 
     public static function matchesSelectedFlags($bitmask): bool
