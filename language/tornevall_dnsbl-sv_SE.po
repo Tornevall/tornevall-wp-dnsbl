@@ -787,3 +787,304 @@ msgstr "https://www.tornevalls.se/"
 #~ "Tornevall Networks is offering some ways to get information about the "
 #~ "ongoing projects. You can always go there for support, help and updates."
 #~ msgstr "Tornevall Networks erbjuder några sätt att "
+
+msgid "None"
+msgstr "Ingen"
+
+msgid "The plugin now prioritizes direct DNS lookups. Basic protection works with the public resolvers below and does not require API credentials."
+msgstr "Tillägget prioriterar nu direkta DNS-uppslag. Grundskyddet fungerar med de publika resolverna nedan och kräver inga API-uppgifter."
+
+msgid "Supported resolvers in active use: %s"
+msgstr "Resolver som används aktivt: %s"
+
+msgid "At a glance"
+msgstr "Översikt"
+
+msgid "Resolver count: %d"
+msgstr "Antal resolvers: %d"
+
+msgid "Trigger flags selected: %d"
+msgstr "Valda triggerflaggor: %d"
+
+msgid "API credentials configured: %s"
+msgstr "API-uppgifter konfigurerade: %s"
+
+msgid "yes"
+msgstr "ja"
+
+msgid "no"
+msgstr "nej"
+
+msgid "Dev mode: %s"
+msgstr "Utvecklarläge: %s"
+
+msgid "enabled"
+msgstr "aktiverat"
+
+msgid "disabled"
+msgstr "inaktiverat"
+
+msgid "Try-tests and self-check"
+msgstr "Testverktyg och självkoll"
+
+msgid "Use these tools to test direct DNS lookups without changing your saved settings."
+msgstr "Använd dessa verktyg för att testa direkta DNS-uppslag utan att ändra dina sparade inställningar."
+
+msgid "Lookup a specific IP address"
+msgstr "Slå upp en specifik IP-adress"
+
+msgid "IP address to test"
+msgstr "IP-adress att testa"
+
+msgid "Enter an IPv4 or IPv6 address to test it against the configured DNS resolvers."
+msgstr "Ange en IPv4- eller IPv6-adress för att testa den mot de konfigurerade DNS-resolverna."
+
+msgid "Run DNS lookup"
+msgstr "Kör DNS-uppslag"
+
+msgid "Check this server environment"
+msgstr "Kontrollera denna servermiljö"
+
+msgid "Runs lookup checks for the server address, the resolved site host, and your current visitor address when available."
+msgstr "Kör uppslag för serveradressen, webbplatsens uppslagna värdadress och din nuvarande besöksadress när de finns tillgängliga."
+
+msgid "Run self-check"
+msgstr "Kör självkoll"
+
+msgid "Core DNS lookup settings"
+msgstr "Grundinställningar för DNS-uppslag"
+
+msgid "Preferred resolver hosts"
+msgstr "Föredragna resolvervärdar"
+
+msgid "Comma-separated hostnames used for direct DNS lookups. The public defaults are dnsbl.tornevall.org and bl.fraudbl.org."
+msgstr "Kommaseparerade värdnamn som används för direkta DNS-uppslag. De publika standardvärdena är dnsbl.tornevall.org och bl.fraudbl.org."
+
+msgid "Time to live in the local cache in seconds. The minimum allowed value is 900 seconds."
+msgstr "Hur länge poster ligger kvar i den lokala cachen, i sekunder. Minsta tillåtna värde är 900 sekunder."
+
+msgid "Trigger on blacklist flags"
+msgstr "Trigga på blacklist-flaggor"
+
+msgid "Select which DNSBL/FraudBL flags should trigger blocking behavior on this site."
+msgstr "Välj vilka DNSBL-/FraudBL-flaggor som ska utlösa blockering på denna webbplats."
+
+msgid "See full description of the blacklist flags"
+msgstr "Se fullständig beskrivning av blacklist-flaggorna"
+
+msgid "Protection behavior"
+msgstr "Skyddsbeteende"
+
+msgid "Hide comments for listed visitors"
+msgstr "Dölj kommentarer för listade besökare"
+
+msgid "Hides the comment section when a visitor matches the selected blacklist flags."
+msgstr "Döljer kommentarsfältet när en besökare matchar de valda blacklist-flaggorna."
+
+msgid "Redirect listed visitors away from the page"
+msgstr "Omdirigera listade besökare bort från sidan"
+
+msgid "Immediately redirects listed visitors away from the page. Logged-in administrators are still protected from lockout."
+msgstr "Omdirigerar omedelbart listade besökare bort från sidan. Inloggade administratörer skyddas fortfarande från att låsas ute."
+
+msgid "Enable Contact Form 7 protection"
+msgstr "Aktivera skydd för Contact Form 7"
+
+msgid "Blocks Contact Form 7 submissions when the visitor matches the selected blacklist flags."
+msgstr "Blockerar skickningar via Contact Form 7 när besökaren matchar de valda blacklist-flaggorna."
+
+msgid "Include remotely resolved hostnames in requests"
+msgstr "Inkludera fjärrupplösta värdnamn i förfrågningar"
+
+msgid "When supported, include the resolved hostname of the checked IP address in diagnostic/API requests."
+msgstr "När det stöds inkluderas det uppslagna värdnamnet för den kontrollerade IP-adressen i diagnostik-/API-förfrågningar."
+
+msgid "Blocked visitor redirect URL"
+msgstr "Omdirigerings-URL för blockerade besökare"
+
+msgid "Used when full-page blocking is enabled."
+msgstr "Används när blockering av hela sidan är aktiverad."
+
+msgid "Admin notice style for comment blocking"
+msgstr "Stil för adminnotis vid blockerade kommentarer"
+
+msgid "Inline CSS used for the warning shown when comments are disabled for a blacklisted address."
+msgstr "Inline-CSS som används för varningen som visas när kommentarer stängs av för en svartlistad adress."
+
+msgid "Diagnostics and development"
+msgstr "Diagnostik och utveckling"
+
+msgid "Dev mode"
+msgstr "Utvecklarläge"
+
+msgid "Show extended diagnostics in the admin panel"
+msgstr "Visa utökad diagnostik i adminpanelen"
+
+msgid "Shows raw diagnostic responses in the try-test and self-check tools. Intended for administrators only."
+msgstr "Visar råa diagnostiksvar i test- och självkollsverktygen. Endast avsett för administratörer."
+
+msgid "Removal token"
+msgstr "Removal token"
+
+msgid "Coming soon"
+msgstr "Kommer snart"
+
+msgid "Reserved for future removal-token workflows. Coming soon."
+msgstr "Reserverad för framtida arbetsflöden med removal token. Kommer snart."
+
+msgid "Delisting page integration"
+msgstr "Integration för avlistningssida"
+
+msgid "Delisting behavior"
+msgstr "Avlistningsbeteende"
+
+msgid "Useful if the delisting page attracts a large number of support comments."
+msgstr "Användbart om avlistningssidan drar till sig många supportkommentarer."
+
+msgid "Prefer the plain delisting form"
+msgstr "Föredra det enkla avlistningsformuläret"
+
+msgid "Uses the non-AJAX removal form instead of the responsive AJAX version."
+msgstr "Använder formuläret utan AJAX i stället för den responsiva AJAX-versionen."
+
+msgid "Advanced and optional API integration"
+msgstr "Avancerad och valfri API-integration"
+
+msgid "Basic blacklist checks work over DNS only. Keep this section for optional flag refreshes, permission-aware features, and future delisting workflows."
+msgstr "Grundläggande blacklist-kontroller fungerar enbart via DNS. Behåll denna sektion för valfri uppdatering av flaggor, behörighetsstyrda funktioner och framtida avlistningsflöden."
+
+msgid "Quick API tests"
+msgstr "Snabba API-tester"
+
+msgid "Refresh available flag list"
+msgstr "Uppdatera tillgänglig flagglista"
+
+msgid "API tests are optional and mainly useful when you use extended permissions or want to refresh the current flag structure."
+msgstr "API-tester är valfria och mest användbara när du använder utökade behörigheter eller vill uppdatera den aktuella flaggstrukturen."
+
+msgid "Discovered permissions"
+msgstr "Upptäckta behörigheter"
+
+msgid "View available permissions"
+msgstr "Visa tillgängliga behörigheter"
+
+msgid "API mode"
+msgstr "API-läge"
+
+msgid "Prefer API requests over DNS lookups when possible"
+msgstr "Föredra API-förfrågningar framför DNS-uppslag när det är möjligt"
+
+msgid "Useful for extended integrations. For normal blocking and comment protection, DNS-only mode is enough."
+msgstr "Användbart för utökade integrationer. För vanlig blockering och kommentarskydd räcker DNS-läge."
+
+msgid "Save the settings before running optional API tests if you changed any API-related values."
+msgstr "Spara inställningarna innan du kör valfria API-tester om du har ändrat API-relaterade värden."
+
+msgid "Save settings"
+msgstr "Spara inställningar"
+
+msgid "Server address"
+msgstr "Serveradress"
+
+msgid "Resolved site host"
+msgstr "Uppslagen webbplatsvärd"
+
+msgid "Current visitor address"
+msgstr "Nuvarande besöksadress"
+
+msgid "Security check failed. Please try again."
+msgstr "Säkerhetskontrollen misslyckades. Försök igen."
+
+msgid "Manual DNS lookup result"
+msgstr "Resultat för manuellt DNS-uppslag"
+
+msgid "Requested address"
+msgstr "Efterfrågad adress"
+
+msgid "Self-check result"
+msgstr "Resultat för självkoll"
+
+msgid "No valid local addresses were available for self-check."
+msgstr "Inga giltiga lokala adresser var tillgängliga för självkollen."
+
+msgid "Resolvers used for this check: %s"
+msgstr "Resolvers som användes för denna kontroll: %s"
+
+msgid "Check"
+msgstr "Kontroll"
+
+msgid "Address"
+msgstr "Adress"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Details"
+msgstr "Detaljer"
+
+msgid "Matched flags: %s"
+msgstr "Matchade flaggor: %s"
+
+msgid "Bitmask: %d"
+msgstr "Bitmask: %d"
+
+msgid "No blacklist flags returned for this address."
+msgstr "Inga blacklist-flaggor returnerades för denna adress."
+
+msgid "Raw diagnostic response"
+msgstr "Rått diagnossvar"
+
+msgid "Unknown permission from service: %s"
+msgstr "Okänd behörighet från tjänsten: %s"
+
+msgid "Legacy DNSBL API endpoint is retired. Use Tools integration and DNS lookups."
+msgstr "Legacy DNSBL-API-endpoint är avvecklad. Använd Tools-integration och DNS-uppslag."
+
+msgid "Legacy APIv3 client has been removed from this plugin."
+msgstr "Legacy APIv3-klienten har tagits bort från detta plugin."
+
+msgid "Removal tools are being migrated to Tornevall Tools."
+msgstr "Borttagningsverktygen migreras till Tornevall Tools."
+
+msgid "DNS lookup checks continue to work. Token-based removal flow is coming soon."
+msgstr "DNS-uppslagskontroller fortsätter fungera. Tokenbaserat borttagningsflöde kommer snart."
+
+msgid "The plugin prioritizes direct DNS lookups. Optional Tools integration is used for enhanced comment risk assessment."
+msgstr "Pluginet prioriterar direkta DNS-uppslag. Valfri Tools-integration används för förbättrad riskbedömning av kommentarer."
+
+msgid "Current Tools base URL: %s"
+msgstr "Nuvarande Tools-bas-URL: %s"
+
+msgid "Tools token configured: %s"
+msgstr "Tools-token konfigurerad: %s"
+
+msgid "Tools integration and development"
+msgstr "Tools-integration och utveckling"
+
+msgid "Shows raw diagnostic responses in the try-test and self-check tools."
+msgstr "Visar råa diagnossvar i test- och självkollsverktygen."
+
+msgid "Tools environment mode"
+msgstr "Tools-miljöläge"
+
+msgid "Auto (from dev mode)"
+msgstr "Auto (från utvecklarläge)"
+
+msgid "Force dev (tools.tornevall.com)"
+msgstr "Tvinga dev (tools.tornevall.com)"
+
+msgid "Force prod (tools.tornevall.net)"
+msgstr "Tvinga prod (tools.tornevall.net)"
+
+msgid "Tools token"
+msgstr "Tools-token"
+
+msgid "When supported, include the resolved hostname of the checked IP address in diagnostics."
+msgstr "När det stöds inkluderas det uppslagna värdnamnet för kontrollerad IP-adress i diagnostiken."
+
+msgid "Useful if the delisting page attracts many support comments."
+msgstr "Användbart om avlistningssidan drar till sig många supportkommentarer."
+
+msgid "Reserved for compatibility while removal workflows are migrated."
+msgstr "Reserverat för kompatibilitet medan borttagningsflöden migreras."
+
