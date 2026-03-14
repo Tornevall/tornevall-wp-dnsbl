@@ -2,6 +2,12 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.0.2 - 2026-03-14
+
+### Changed
+- Repackaged the release so updated screenshots and other WordPress.org assets can be picked up properly.
+- Restored Markdown-style links in the WordPress readme after the previous plain-URL formatting pass.
+
 ## 3.0.1 - 2026-03-14
 
 ### Changed

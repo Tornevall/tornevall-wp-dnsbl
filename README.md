@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.0.1`
+- **Release:** `3.0.2`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -13,9 +13,9 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 - **Documentation:** <https://tools.tornevall.net/docs/dnsbl-api>
 
-## What 3.0.1 ships
+## What 3.0.2 ships
 
-This `3.0.1` package keeps the current codebase intact while polishing the public metadata and release documentation.
+This `3.0.2` package keeps the current codebase intact while republishing the release so updated WordPress.org screenshots/assets and readme presentation fixes are picked up properly.
 
 The current release line includes:
 
@@ -33,7 +33,7 @@ The current release line includes:
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.1` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.2` release yet.
 
 ## Description
 
@@ -74,6 +74,11 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.0.2 highlights
+
+- Repackaged the release so updated screenshots and other WordPress.org assets can be picked up properly
+- Restored Markdown-style links in the WordPress readme after the previous plain-URL formatting pass
 
 ### 3.0.1 highlights
 
