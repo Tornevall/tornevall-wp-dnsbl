@@ -13,25 +13,25 @@ Tornevall Networks DNSBL implementation with FraudBL support for WordPress
 
 Tornevall Networks DNSBL and FraudBL protection for WordPress. The plugin helps block comment activity, account registrations and other unwanted submissions from addresses flagged by Tornevall Networks DNSBL and FraudBL.
 
-FraudBL is part of the protection layer used by the plugin and is available at https://www.fraudbl.org/. For general discovery, broader search terms like fraud, blacklist, comment spam and user registration are usually easier to find than niche technical acronyms alone.
+FraudBL is part of the protection layer used by the plugin and is available at <https://www.fraudbl.org/>. For general discovery, broader search terms like fraud, blacklist, comment spam and user registration are usually easier to find than niche technical acronyms alone.
 
 The plugin is intended to provide a lightweight anti-spam and anti-abuse layer for WordPress, with support for local caching to reduce repeated lookups and unnecessary load against blacklist services.
 
 Current admin features include manual DNS lookup tools, self-check tools, visitor statistics, safe IP whitelisting, frontend dry-run support for administrators, Cloudflare Turnstile for comments, and DNSBL plus Turnstile protection for new WordPress account registrations. WooCommerce-oriented protection is a planned next step rather than part of the current release.
 
-Report issues and feedback: https://github.com/Tornevall/tornevall-wp-dnsbl/issues
-Plugin URL: https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/
-Documentation: https://tools.tornevall.net/docs/dnsbl-api
+Report issues and feedback: <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
+Plugin URL: <https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/>
+Documentation: <https://tools.tornevall.net/docs/dnsbl-api>
 
 
 = Support and feedback =
 
 Bug reports and feedback can currently be submitted via GitHub:
-https://github.com/Tornevall/tornevall-wp-dnsbl/issues
+<https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 
-Full Documentation: https://tools.tornevall.net/docs/dnsbl-api
+Full Documentation: <https://tools.tornevall.net/docs/dnsbl-api>
 
-Translations can be contributed via https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation.
+Translations can be contributed via <https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation>.
 
 
 == Installation ==
@@ -50,7 +50,7 @@ If the database schema becomes out of sync after an upgrade or a manual source-b
 
 * Can I get delisted?
 
-Yes. If you are blacklisted in Tornevall DNSBL, you can use https://www.tornevall.net/removal/ - otherwise, you can't.
+Yes. If you are blacklisted in Tornevall DNSBL, you can use <https://www.tornevall.net/removal/> - otherwise, you can't.
 
 * How do I test DNSBL without locking myself out?
 
@@ -99,7 +99,7 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 * Tightened comment blocking so hidden comment forms also reject direct submissions.
 * Restricted dry-run simulation to the public site for logged-in administrators.
 * Switched Tools integration default mode to production.
-* Updated removal and delisting references to https://www.tornevall.net/removal/.
+* Updated removal and delisting references to <https://www.tornevall.net/removal/>.
 
 = 2.1.9 =
 
