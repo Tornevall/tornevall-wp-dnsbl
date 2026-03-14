@@ -2,6 +2,15 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.0.1 - 2026-03-14
+
+### Changed
+- Simplified and aligned the public plugin name so it better matches the WordPress.org slug.
+- Corrected the author metadata spelling to Thomas Tornevall.
+- Reduced the WordPress.org tags to five broader discovery terms with better general search value.
+- Refreshed the readme wording around FraudBL/fraud discoverability.
+- Added a note that WooCommerce-oriented protection is planned follow-up work, not part of the packaged release.
+
 ## 3.0.0 - 2026-03-14
 
 ### Added

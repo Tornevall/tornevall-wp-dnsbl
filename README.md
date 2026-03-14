@@ -1,10 +1,10 @@
-# Tornevall Networks DNSBL and FraudBL for WordPress
+# Tornevall Networks DNSBL Implementation
 
 WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations and other abuse-prone submission flows.
 
 ## Release metadata
 
-- **Release:** `3.0.0`
+- **Release:** `3.0.1`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -13,9 +13,11 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 - **Documentation:** <https://tools.tornevall.net/docs/dnsbl-api>
 
-## What 3.0.0 ships
+## What 3.0.1 ships
 
-This first public `3.0.0` release of the current codebase includes:
+This `3.0.1` package keeps the current codebase intact while polishing the public metadata and release documentation.
+
+The current release line includes:
 
 - WordPress-native DNSBL/FraudBL checking
 - admin AJAX lookup and self-check tools
@@ -28,6 +30,10 @@ This first public `3.0.0` release of the current codebase includes:
 - Cloudflare Turnstile for WordPress account registrations
 - `IP_FRAUDCOMMERCE` included in the default trigger-flag profile
 - updated delisting flow via <https://www.tornevall.net/removal/>
+
+FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
+
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.1` release yet.
 
 ## Description
 
@@ -68,6 +74,13 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.0.1 highlights
+
+- Simplified and aligned the public plugin name to better match the slug
+- Corrected the author metadata spelling to Thomas Tornevall
+- Reduced the WordPress.org tags to the five most relevant discovery terms
+- Refreshed the readme wording around FraudBL/fraud discoverability and planned WooCommerce follow-up work
 
 ### 3.0.0 highlights
 
