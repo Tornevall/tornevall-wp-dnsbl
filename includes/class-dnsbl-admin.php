@@ -88,6 +88,75 @@ class Admin
         return Plugin::canonicalToolsMode($value);
     }
 
+    public static function sanitizeDelistingPageSelection($value): string
+    {
+        $selection = Plugin::canonicalDelistingPageSelection($value);
+        if ($selection === '') {
+            return '';
+        }
+
+        $currentSelection = Plugin::configuredDelistingPageSelection();
+        $currentToken = Plugin::writeToken();
+        $currentMode = Plugin::toolsMode();
+
+        $postedToken = isset($_POST['tornevall_dnsbl_write_token'])
+            ? self::sanitizeDnsblWriteToken(wp_unslash($_POST['tornevall_dnsbl_write_token']))
+            : $currentToken;
+        $postedMode = isset($_POST['tornevall_dnsbl_tools_mode'])
+            ? self::sanitizeToolsMode(wp_unslash($_POST['tornevall_dnsbl_tools_mode']))
+            : $currentMode;
+
+        $selectionChanged = $selection !== $currentSelection;
+        $tokenChanged = $postedToken !== $currentToken;
+        $modeChanged = $postedMode !== $currentMode;
+
+        if (!$selectionChanged && !$tokenChanged && !$modeChanged) {
+            return $selection;
+        }
+
+        $baseUrl = $postedMode === 'dev'
+            ? 'https://tools.tornevall.com'
+            : 'https://tools.tornevall.net';
+        $permissionSummary = Plugin::getWritePermissionSummary(true, $postedToken, $baseUrl);
+
+        if (!empty($permissionSummary['can_delete'])) {
+            return $selection;
+        }
+
+        add_settings_error(
+            'dnsblOptions-group',
+            'tornevall_dnsbl_delisting_page_permission',
+            self::buildDelistingPagePermissionMessage($permissionSummary, $baseUrl),
+            'warning'
+        );
+
+        // Hard gate: keep the page rendering active but warn that live removal is unavailable.
+        return $selection;
+    }
+
+    public static function sanitizeInternalDelistSlug($value): string
+    {
+        $current = Plugin::internalDelistSlug();
+        $sanitized = Plugin::sanitizeInternalDelistSlug($value);
+
+        if ($sanitized !== $current) {
+            Plugin::refreshInternalDelistRewriteRules(false);
+        }
+
+        return $sanitized;
+    }
+
+    private static function buildDelistingPagePermissionMessage(array $permissionSummary, string $baseUrl): string
+    {
+        $detail = trim((string) ($permissionSummary['message'] ?? ''));
+        $prefix = sprintf(
+            __('The selected delisting page was saved, but this site cannot offer live removal right now because Tornevall Networks/FraudBL delete permission is missing on %s.', 'tornevall-networks-dnsbl-implementation'),
+            $baseUrl
+        );
+
+        return $detail !== '' ? $prefix . ' ' . $detail : $prefix;
+    }
+
     public static function sanitizeTurnstileTheme($value): string
     {
         return Plugin::normalizeCommentTurnstileTheme($value);
@@ -110,22 +179,48 @@ class Admin
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_filter_types', ['sanitize_callback' => [self::class, 'sanitizeFilterTypes']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_nocomment', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_blockfull', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
-        register_setting('dnsblOptions-group', 'tornevall_dnsbl_delisting_page', ['sanitize_callback' => 'absint']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_delisting_page', ['sanitize_callback' => [self::class, 'sanitizeDelistingPageSelection']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_internal_delist_slug', ['sanitize_callback' => [self::class, 'sanitizeInternalDelistSlug']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_resolver_hosts', ['sanitize_callback' => [self::class, 'sanitizeResolverHosts']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_whitelist', ['sanitize_callback' => [self::class, 'sanitizeWhitelist']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_blocked_redirecturl', ['sanitize_callback' => [self::class, 'sanitizeRedirectUrl']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comments_disabled_style', ['sanitize_callback' => [self::class, 'sanitizeCommentsStyle']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_delistingpage_comments_disabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_dev_mode', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
-        register_setting('dnsblOptions-group', 'tornevall_dnsbl_tools_token', ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_tools_token', ['sanitize_callback' => [self::class, 'sanitizeToolsBearerToken']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_tools_mode', ['sanitize_callback' => [self::class, 'sanitizeToolsMode']]);
-        register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_token', ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_write_token', ['sanitize_callback' => [self::class, 'sanitizeDnsblWriteToken']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_auto_report_spam', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_site_key', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_secret_key', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_theme', ['sanitize_callback' => [self::class, 'sanitizeTurnstileTheme']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_dnsbl_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
+    }
+
+    public static function sanitizeToolsBearerToken($value): string
+    {
+        return trim(sanitize_text_field((string) $value));
+    }
+
+    public static function sanitizeDnsblWriteToken($value): string
+    {
+        $token = trim(sanitize_text_field((string) $value));
+
+        // Accept common copy/paste formats from docs/tools, e.g.
+        // "Bearer <token>" or quoted token strings.
+        if (stripos($token, 'bearer ') === 0) {
+            $token = trim(substr($token, 7));
+        }
+
+        $len = strlen($token);
+        if ($len >= 2 && ((substr($token, 0, 1) === '"' && substr($token, -1) === '"')
+            || (substr($token, 0, 1) === "'" && substr($token, -1) === "'"))) {
+            $token = trim(substr($token, 1, -1));
+        }
+
+        return $token;
     }
 
     public static function renderCheckboxRow($name, $label, $description, $checked): void
@@ -142,11 +237,14 @@ class Admin
 
     public static function buildPageOptions($currentDelistingPage): array
     {
-        $options = ['<option value="">' . esc_html__('None', 'tornevall-networks-dnsbl-implementation') . '</option>'];
+        $currentSelection = Plugin::canonicalDelistingPageSelection($currentDelistingPage);
+        $options = ['<option value="" ' . selected($currentSelection, '', false) . '>' . esc_html__('None', 'tornevall-networks-dnsbl-implementation') . '</option>'];
+        $options[] = '<option value="' . esc_attr(Plugin::internalDelistSelectionValue()) . '" ' . selected($currentSelection, Plugin::internalDelistSelectionValue(), false) . '>' . esc_html__('Internal integration', 'tornevall-networks-dnsbl-implementation') . '</option>';
         $pages = get_pages();
         if (is_array($pages)) {
             foreach ($pages as $pageObject) {
-                $options[] = '<option value="' . esc_attr($pageObject->ID) . '" ' . selected((int) $pageObject->ID, (int) $currentDelistingPage, false) . '>' . esc_html($pageObject->post_title) . '</option>';
+                $value = 'page:' . (int) $pageObject->ID;
+                $options[] = '<option value="' . esc_attr($value) . '" ' . selected($currentSelection, $value, false) . '>' . esc_html($pageObject->post_title) . '</option>';
             }
         }
 
@@ -244,6 +342,336 @@ class Admin
         ob_start();
         self::renderToolResults($toolResults, $devMode, $resolverNames);
         return trim((string) ob_get_clean());
+    }
+
+    public static function ajaxTokenInfo(): void
+    {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Permission denied.', 'tornevall-networks-dnsbl-implementation')], 403);
+        }
+
+        check_ajax_referer('tornevall_dnsbl_tools_action', 'tornevall_dnsbl_tools_nonce');
+
+        $postedToken = isset($_POST['tornevall_dnsbl_write_token'])
+            ? trim(sanitize_text_field(wp_unslash($_POST['tornevall_dnsbl_write_token'])))
+            : '';
+        $postedMode = isset($_POST['tornevall_dnsbl_tools_mode'])
+            ? Plugin::canonicalToolsMode(sanitize_text_field(wp_unslash($_POST['tornevall_dnsbl_tools_mode'])))
+            : '';
+
+        $token = $postedToken !== '' ? $postedToken : Plugin::writeToken();
+        $currentMode = $postedMode !== '' ? $postedMode : Plugin::toolsMode();
+        $currentBaseUrl = $currentMode === 'dev'
+            ? 'https://tools.tornevall.com'
+            : 'https://tools.tornevall.net';
+
+        if ($token === '') {
+            $summary = ApiClient::emptyTokenPermissionSummary(__('No token configured.', 'tornevall-networks-dnsbl-implementation'));
+            wp_send_json_success([
+                'verified' => false,
+                'summary' => $summary,
+                'message' => $summary['message'],
+                'checked_host' => $currentBaseUrl,
+                'checked_mode' => $currentMode,
+                'rendered_status_html' => self::renderTokenPermissionStatusMarkup($summary, $currentBaseUrl),
+            ]);
+        }
+
+        $client = new ApiClient($token, $currentBaseUrl);
+
+        $result = $client->getTokenInfo();
+        $summary = ApiClient::normalizeTokenInfoResult($result, true);
+
+        if (!$result['ok']) {
+            if ((int) ($result['status'] ?? 0) === 404 && $token !== '') {
+                $alternateMode = $currentMode === 'dev' ? 'prod' : 'dev';
+                $alternateBaseUrl = $alternateMode === 'dev'
+                    ? 'https://tools.tornevall.com'
+                    : 'https://tools.tornevall.net';
+                $alternateClient = new ApiClient($token, $alternateBaseUrl);
+                $alternateResult = $alternateClient->getTokenInfo();
+
+                if (!empty($alternateResult['ok'])) {
+                    $alternateSummary = ApiClient::normalizeTokenInfoResult($alternateResult, true);
+                    $message = self::buildTokenEnvironmentMismatchMessage($currentMode, $currentBaseUrl, $alternateMode, $alternateBaseUrl);
+                    $alternateSummary['message'] = $message;
+
+                    wp_send_json_success([
+                        'verified' => true,
+                        'summary' => $alternateSummary,
+                        'message' => $message,
+                        'checked_host' => $currentBaseUrl,
+                        'checked_mode' => $currentMode,
+                        'resolved_host' => $alternateBaseUrl,
+                        'resolved_mode' => $alternateMode,
+                        'environment_mismatch' => true,
+                        'rendered_status_html' => self::renderTokenPermissionStatusMarkup($alternateSummary, $alternateBaseUrl),
+                    ]);
+                }
+
+                $summary['message'] = self::buildTokenNotFoundMessage($currentMode, $currentBaseUrl);
+                $summary['error'] = $summary['message'];
+            }
+        }
+
+        $body = is_array($result['body'] ?? null) ? $result['body'] : [];
+        $reason = (string) ($body['reason'] ?? '');
+
+        wp_send_json_success([
+            'verified' => !empty($summary['ok']),
+            'summary' => $summary,
+            'message' => (string) ($summary['message'] ?? __('Could not retrieve token info.', 'tornevall-networks-dnsbl-implementation')),
+            'checked_host' => $currentBaseUrl,
+            'checked_mode' => $currentMode,
+            'wrong_token_type' => $reason === 'wrong_token_type',
+            'raw_body' => $body,
+            'rendered_status_html' => self::renderTokenPermissionStatusMarkup($summary, $currentBaseUrl),
+        ]);
+    }
+
+    private static function buildTokenEnvironmentMismatchMessage(string $currentMode, string $currentBaseUrl, string $alternateMode, string $alternateBaseUrl): string
+    {
+        return sprintf(
+            __('Token not found on the currently selected Tools environment (%1$s / %2$s), but it was found on the other environment (%3$s / %4$s). Switch Tools environment mode to %3$s, save the settings, and try again.', 'tornevall-networks-dnsbl-implementation'),
+            strtoupper($currentMode),
+            $currentBaseUrl,
+            strtoupper($alternateMode),
+            $alternateBaseUrl
+        );
+    }
+
+    private static function buildTokenNotFoundMessage(string $currentMode, string $currentBaseUrl): string
+    {
+        return sprintf(
+            __('Token not found on the selected Tools environment (%1$s / %2$s). Check that you pasted the full token value and that you selected the same Tools host where the token was created.', 'tornevall-networks-dnsbl-implementation'),
+            strtoupper($currentMode),
+            $currentBaseUrl
+        );
+    }
+
+    /**
+     * @param array{has_token?:bool,ok?:bool,can_add?:bool,can_delete?:bool,can_update?:bool,message?:string,token?:array,is_active?:bool} $summary
+     * @return array{label:string,color:string,detail:string,badge:string}
+     */
+    private static function describeTokenPermissionSummary(array $summary): array
+    {
+        $token = is_array($summary['token'] ?? null) ? $summary['token'] : [];
+        $scopeLabel = trim((string) ($token['scope_label'] ?? ''));
+        $statusLabel = trim((string) ($token['status'] ?? ''));
+        $baseDetail = trim((string) ($summary['message'] ?? ''));
+        $badge = '';
+
+        if (!empty($token['resolved_via']) && (string) $token['resolved_via'] === 'admin_api_key_passthrough') {
+            $badge = __('Admin passthrough', 'tornevall-networks-dnsbl-implementation');
+        } elseif (!empty($token['is_admin_token'])) {
+            $badge = __('Admin token', 'tornevall-networks-dnsbl-implementation');
+        }
+
+        if (empty($summary['has_token'])) {
+            return [
+                'label' => __('No DNSBL / Tools API token configured yet.', 'tornevall-networks-dnsbl-implementation'),
+                'color' => '#b45309',
+                'detail' => $baseDetail,
+                'badge' => $badge,
+            ];
+        }
+
+        if (!empty($summary['can_delete'])) {
+            return [
+                'label' => __('Live delisting is available for this site.', 'tornevall-networks-dnsbl-implementation'),
+                'color' => '#15803d',
+                'detail' => $scopeLabel !== ''
+                    ? sprintf(__('Delete / delist confirmed. Scope: %s', 'tornevall-networks-dnsbl-implementation'), $scopeLabel)
+                    : __('Delete / delist confirmed for the configured token.', 'tornevall-networks-dnsbl-implementation'),
+                'badge' => $badge,
+            ];
+        }
+
+        if (!empty($summary['ok']) && !empty($summary['can_add'])) {
+            $detail = __('The token is verified, but only add / list access is active right now.', 'tornevall-networks-dnsbl-implementation');
+            if ($scopeLabel !== '') {
+                $detail .= ' ' . sprintf(__('Scope: %s', 'tornevall-networks-dnsbl-implementation'), $scopeLabel);
+            }
+
+            return [
+                'label' => __('Token verified, but delisting is not allowed yet.', 'tornevall-networks-dnsbl-implementation'),
+                'color' => '#b45309',
+                'detail' => $detail,
+                'badge' => $badge,
+            ];
+        }
+
+        if (!empty($summary['ok'])) {
+            return [
+                'label' => __('Delisting is still locked for this site.', 'tornevall-networks-dnsbl-implementation'),
+                'color' => '#b45309',
+                'detail' => $baseDetail !== ''
+                    ? $baseDetail
+                    : ($statusLabel !== ''
+                        ? sprintf(__('The token is currently %s and does not expose delete / delist access.', 'tornevall-networks-dnsbl-implementation'), $statusLabel)
+                        : __('The token was checked, but delete / delist access is still unavailable.', 'tornevall-networks-dnsbl-implementation')),
+                'badge' => $badge,
+            ];
+        }
+
+        return [
+            'label' => __('Token permissions have not been confirmed yet.', 'tornevall-networks-dnsbl-implementation'),
+            'color' => '#b91c1c',
+            'detail' => $baseDetail !== '' ? $baseDetail : __('Run the permission check to confirm whether this token can delist through Tools.', 'tornevall-networks-dnsbl-implementation'),
+            'badge' => $badge,
+        ];
+    }
+
+    /**
+     * @param array{has_token?:bool,ok?:bool,can_add?:bool,can_delete?:bool,can_update?:bool,message?:string,token?:array,is_active?:bool} $summary
+     */
+    private static function renderTokenPermissionStatusMarkup(array $summary, string $toolsBaseUrl): string
+    {
+        $status = self::describeTokenPermissionSummary($summary);
+        $detail = trim((string) ($status['detail'] ?? ''));
+        $badge = trim((string) ($status['badge'] ?? ''));
+
+        ob_start();
+        ?>
+        <div id="tornevall-dnsbl-token-status" data-can-delete="<?php echo !empty($summary['can_delete']) ? '1' : '0'; ?>" style="margin-top:8px; padding:.7rem .8rem; border-radius:8px; border:1px solid #d1d5db; background:#f8fafc;">
+            <div style="display:flex; flex-wrap:wrap; gap:.45rem .65rem; align-items:center;">
+                <strong style="color:<?php echo esc_attr((string) $status['color']); ?>;">
+                    <?php echo esc_html((string) $status['label']); ?>
+                </strong>
+                <?php if ($badge !== '') { ?>
+                    <span style="display:inline-block; padding:.12rem .5rem; border-radius:999px; background:#e2e8f0; color:#334155; font-size:12px; font-weight:600;">
+                        <?php echo esc_html($badge); ?>
+                    </span>
+                <?php } ?>
+            </div>
+            <?php if ($detail !== '') { ?>
+                <div style="margin-top:.35rem; color:#475569;">
+                    <?php echo esc_html($detail); ?>
+                </div>
+            <?php } ?>
+            <div style="margin-top:.45rem; color:#64748b; font-size:12px;">
+                <?php echo esc_html(sprintf(__('Current Tools host: %s', 'tornevall-networks-dnsbl-implementation'), $toolsBaseUrl)); ?>
+            </div>
+            <?php if (!empty($summary['ok']) || !empty($summary['has_token'])) { ?>
+                <div style="margin-top:.45rem; color:#475569; font-size:12px;">
+                    <?php echo esc_html(sprintf(
+                        __('Permissions: add %1$s · delete %2$s · update %3$s', 'tornevall-networks-dnsbl-implementation'),
+                        !empty($summary['can_add']) ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'),
+                        !empty($summary['can_delete']) ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'),
+                        !empty($summary['can_update']) ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation')
+                    )); ?>
+                </div>
+            <?php } ?>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * @param list<string> $resolverNames
+     * @param array<string,mixed> $statsSummary
+     * @param array<string,mixed> $permissionSummary
+     * @return array{type:string,message:string,details:list<string>}|null
+     */
+    private static function buildSettingsOverviewNotice(
+        array $resolverNames,
+        string $toolsBaseUrl,
+        string $toolsMode,
+        bool $apiTokenSet,
+        array $permissionSummary,
+        bool $delistingAccessConfirmed,
+        array $statsSummary
+    ): ?array {
+        $details = [];
+
+        if (!empty($statsSummary) && empty($statsSummary['has_stats_table'])) {
+            $details[] = __('The statistics table has not been created yet. Deactivate and reactivate the plugin if this persists after upgrade.', 'tornevall-networks-dnsbl-implementation');
+        }
+
+        if ($toolsMode === 'dev') {
+            $details[] = sprintf(__('Tools environment mode is currently set to dev: %s', 'tornevall-networks-dnsbl-implementation'), $toolsBaseUrl);
+        }
+
+        if ($apiTokenSet && empty($permissionSummary['ok'])) {
+            $details[] = trim((string) ($permissionSummary['message'] ?? __('The configured DNSBL / Tools API token could not be verified right now.', 'tornevall-networks-dnsbl-implementation')));
+
+            return [
+                'type' => 'warning',
+                'message' => __('Tools integration needs attention before this site can use permission-aware DNSBL features.', 'tornevall-networks-dnsbl-implementation'),
+                'details' => array_values(array_filter(array_merge($details, [
+                    sprintf(__('Current Tools base URL: %s', 'tornevall-networks-dnsbl-implementation'), $toolsBaseUrl),
+                    sprintf(__('Supported resolvers in active use: %s', 'tornevall-networks-dnsbl-implementation'), implode(', ', $resolverNames)),
+                ]))),
+            ];
+        }
+
+        if ($apiTokenSet && !$delistingAccessConfirmed) {
+            $details[] = trim((string) ($permissionSummary['message'] ?? __('The token was checked, but delete / delist access is still unavailable.', 'tornevall-networks-dnsbl-implementation')));
+
+            return [
+                'type' => 'warning',
+                'message' => __('The configured token is limited, so live delisting is still unavailable on this site.', 'tornevall-networks-dnsbl-implementation'),
+                'details' => array_values(array_filter(array_merge($details, [
+                    sprintf(__('Current Tools base URL: %s', 'tornevall-networks-dnsbl-implementation'), $toolsBaseUrl),
+                    sprintf(__('Supported resolvers in active use: %s', 'tornevall-networks-dnsbl-implementation'), implode(', ', $resolverNames)),
+                ]))),
+            ];
+        }
+
+        if (!$apiTokenSet && Plugin::configuredDelistingPageSelection() !== '') {
+            return [
+                'type' => 'warning',
+                'message' => __('A delisting page is selected, but no DNSBL / Tools API token is configured yet.', 'tornevall-networks-dnsbl-implementation'),
+                'details' => array_values(array_filter(array_merge($details, [
+                    sprintf(__('Current Tools base URL: %s', 'tornevall-networks-dnsbl-implementation'), $toolsBaseUrl),
+                ]))),
+            ];
+        }
+
+        if (count($details)) {
+            return [
+                'type' => 'info',
+                'message' => __('There are environment details worth reviewing for this plugin configuration.', 'tornevall-networks-dnsbl-implementation'),
+                'details' => $details,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{type:string,message:string,details:list<string>} $notice
+     */
+    private static function renderSettingsOverviewNotice(array $notice): string
+    {
+        $type = in_array((string) ($notice['type'] ?? 'info'), ['error', 'warning', 'success', 'info'], true)
+            ? (string) $notice['type']
+            : 'info';
+        $message = trim((string) ($notice['message'] ?? ''));
+        $details = array_values(array_filter(array_map('strval', (array) ($notice['details'] ?? []))));
+
+        if ($message === '' && !count($details)) {
+            return '';
+        }
+
+        ob_start();
+        ?>
+        <div class="notice notice-<?php echo esc_attr($type); ?> is-dismissible inline">
+            <?php if ($message !== '') { ?>
+                <p><strong><?php echo esc_html($message); ?></strong></p>
+            <?php } ?>
+            <?php if (count($details)) { ?>
+                <ul style="margin:.2rem 0 .6rem 1.2rem; list-style:disc;">
+                    <?php foreach ($details as $detail) { ?>
+                        <li><?php echo esc_html($detail); ?></li>
+                    <?php } ?>
+                </ul>
+            <?php } ?>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
     }
 
     public static function ajaxTools(): void
@@ -369,8 +797,10 @@ class Admin
 
         self::ensureDefaults();
 
-        $currentDelistingPage = (int) get_option('tornevall_dnsbl_delisting_page');
+        $currentDelistingPage = Plugin::configuredDelistingPageSelection();
         $delistPageOption = self::buildPageOptions($currentDelistingPage);
+        $internalDelistSlug = Plugin::internalDelistSlug();
+        $internalDelistUrl = Plugin::internalDelistUrl();
         $resolverNames = Plugin::getResolverHosts();
         $currentFlags = Plugin::getCurrentFlagMap();
         $savedFlags = Plugin::getSelectedFlags();
@@ -385,8 +815,10 @@ class Admin
         $redirectUrl = Plugin::getBlockedRedirectUrl();
         $commentsStyle = Plugin::getCommentsDisabledStyle();
         $devMode = get_option('tornevall_dnsbl_dev_mode') === '1';
-        $toolsTokenSet = trim((string) get_option('tornevall_dnsbl_tools_token')) !== '';
+        $apiToken = Plugin::apiToken();
         $toolsMode = Plugin::canonicalToolsMode(get_option('tornevall_dnsbl_tools_mode'));
+        $apiTokenSet = $apiToken !== '';
+        $autoReportSpam = Plugin::autoReportSpamEnabled();
         $turnstileEnabled = get_option('tornevall_dnsbl_comment_turnstile_enabled') === '1';
         $turnstileSiteKey = Plugin::commentTurnstileSiteKey();
         $turnstileSecretKey = Plugin::commentTurnstileSecretKey();
@@ -398,6 +830,18 @@ class Admin
         $currentVisitorAddress = Plugin::currentVisitorIp();
         $currentVisitorWhitelisted = $currentVisitorAddress && Plugin::isWhitelistedIp($currentVisitorAddress);
         $resolvedToolsBase = Plugin::toolsBaseUrl();
+        $tokenPermissionSummary = Plugin::getWritePermissionSummary();
+        $delistingAccessConfirmed = !empty($tokenPermissionSummary['can_delete']);
+        $tokenStatusHtml = self::renderTokenPermissionStatusMarkup($tokenPermissionSummary, $resolvedToolsBase);
+        $settingsOverviewNotice = self::buildSettingsOverviewNotice(
+            $resolverNames,
+            $resolvedToolsBase,
+            $toolsMode,
+            $apiTokenSet,
+            $tokenPermissionSummary,
+            $delistingAccessConfirmed,
+            Plugin::getStatsSummary()
+        );
         $toolResults = self::handleToolsRequest();
         $statsSummary = Plugin::getStatsSummary();
         $statsSummary24h = Plugin::getStatsSummary(24);
@@ -410,15 +854,13 @@ class Admin
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('DNS Blacklist Configurator', 'tornevall-networks-dnsbl-implementation'); ?></h1>
-            <p class="description"><?php echo esc_html__('The plugin prioritizes direct DNS lookups. Optional Tools integration is used for enhanced comment risk assessment.', 'tornevall-networks-dnsbl-implementation'); ?></p>
 
             <?php settings_errors(); ?>
             <?php settings_errors('tornevall_dnsbl_admin_tools'); ?>
 
-            <div class="notice notice-info inline">
-                <p><?php echo esc_html(sprintf(__('Supported resolvers in active use: %s', 'tornevall-networks-dnsbl-implementation'), implode(', ', Plugin::defaultResolvers()))); ?></p>
-                <p><?php echo esc_html(sprintf(__('Current Tools base URL: %s', 'tornevall-networks-dnsbl-implementation'), $resolvedToolsBase)); ?></p>
-            </div>
+            <?php if ($settingsOverviewNotice !== null) {
+                echo self::renderSettingsOverviewNotice($settingsOverviewNotice); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Generated by helper with escaped content.
+            } ?>
 
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:16px 0;">
                 <div class="postbox"><div class="inside">
@@ -427,7 +869,8 @@ class Admin
                             <li><?php echo esc_html(sprintf(__('Resolver count: %d', 'tornevall-networks-dnsbl-implementation'), count($resolverNames))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Trigger flags selected: %d', 'tornevall-networks-dnsbl-implementation'), count($savedFlags))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Whitelist entries configured: %d', 'tornevall-networks-dnsbl-implementation'), count($whitelistEntries))); ?></li>
-                            <li><?php echo esc_html(sprintf(__('Tools token configured: %s', 'tornevall-networks-dnsbl-implementation'), $toolsTokenSet ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('DNSBL / Tools API token configured: %s', 'tornevall-networks-dnsbl-implementation'), $apiTokenSet ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Delete / delist permission confirmed: %s', 'tornevall-networks-dnsbl-implementation'), $delistingAccessConfirmed ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Comment Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $turnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration DNSBL enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
@@ -542,11 +985,153 @@ class Admin
                                 <option value="prod" <?php selected($toolsMode, 'prod'); ?>><?php echo esc_html__('Prod default (tools.tornevall.net)', 'tornevall-networks-dnsbl-implementation'); ?></option>
                             </select>
                         </p>
-                        <p><label for="tornevall_dnsbl_tools_token"><?php echo esc_html__('Tools token', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
-                            <input type="password" class="regular-text" id="tornevall_dnsbl_tools_token" name="tornevall_dnsbl_tools_token" value="<?php echo esc_attr((string) get_option('tornevall_dnsbl_tools_token')); ?>"></p>
-                        <p><label for="tornevall_dnsbl_removal_token_display"><?php echo esc_html__('Removal token', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
-                            <input type="hidden" name="tornevall_dnsbl_removal_token" value="<?php echo esc_attr((string) get_option('tornevall_dnsbl_removal_token')); ?>">
-                            <input type="text" class="regular-text" id="tornevall_dnsbl_removal_token_display" value="<?php echo esc_attr((string) get_option('tornevall_dnsbl_removal_token')); ?>" placeholder="<?php echo esc_attr__('Coming soon', 'tornevall-networks-dnsbl-implementation'); ?>" disabled></p>
+                        <div><label for="tornevall_dnsbl_write_token"><?php echo esc_html__('DNSBL / Tools API token', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                            <input type="password" class="regular-text" id="tornevall_dnsbl_write_token" name="tornevall_dnsbl_write_token"
+                                value="<?php echo esc_attr($apiToken); ?>">
+                            <span class="description" style="display:block; margin-top:4px;"><?php echo esc_html__('Single token used by the plugin for DNSBL/Tools API flows. The live checker asks Tools directly. If the token belongs to a Tools admin, automatic DNSBL access is reported. Non-admin tokens need DNSBL permissions approved on the Tools side.', 'tornevall-networks-dnsbl-implementation'); ?></span>
+                            <button type="button" id="tornevall-dnsbl-check-token-btn"
+                                class="button button-secondary"
+                                style="margin-top:8px; vertical-align:middle;"
+                                data-nonce="<?php echo esc_attr(wp_create_nonce('tornevall_dnsbl_tools_action')); ?>">
+                                <?php echo esc_html__('Check token permissions', 'tornevall-networks-dnsbl-implementation'); ?>
+                            </button>
+                            <?php echo $tokenStatusHtml; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Generated by admin helper with escaped content. ?>
+                            <div id="tornevall-dnsbl-token-info-result" style="margin-top:10px; display:none;"></div>
+                            <?php if (!$apiTokenSet): ?>
+                                <span style="display:block; margin-top:4px; color:#b45309;">
+                                    <?php echo esc_html__('No token configured. ', 'tornevall-networks-dnsbl-implementation'); ?>
+                                    <a href="<?php echo esc_url(Plugin::toolsBaseUrl() . '/dnsbl/token/request'); ?>" target="_blank" rel="noopener noreferrer">
+                                        <?php echo esc_html__('Request or manage a token at Tools →', 'tornevall-networks-dnsbl-implementation'); ?>
+                                    </a>
+                                </span>
+                            <?php endif; ?>
+                            <script>
+                            (function () {
+                                var btn = document.getElementById('tornevall-dnsbl-check-token-btn');
+                                var box = document.getElementById('tornevall-dnsbl-token-info-result');
+                                var tokenStatus = document.getElementById('tornevall-dnsbl-token-status');
+                                var delistingPageSelect = document.getElementById('tornevall_dnsbl_delisting_page');
+                                var delistingPageMirror = document.getElementById('tornevall_dnsbl_delisting_page_mirror');
+                                var internalSlugInput = document.getElementById('tornevall_dnsbl_internal_delist_slug');
+                                var internalSlugMirror = document.getElementById('tornevall_dnsbl_internal_delist_slug_mirror');
+                                var delistingCommentsCheckbox = document.getElementById('tornevall_dnsbl_delistingpage_comments_disabled');
+                                var ajaxUrl = <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>;
+                                if (!btn || !box) return;
+
+                                function setDelistingControlsLocked(canDelete) {
+                                    var disabled = !canDelete;
+                                    [delistingPageSelect, internalSlugInput, delistingCommentsCheckbox].forEach(function (field) {
+                                        if (!field) return;
+                                        field.disabled = disabled;
+                                        field.readOnly = disabled;
+                                    });
+                                    [delistingPageMirror, internalSlugMirror].forEach(function (field) {
+                                        if (!field) return;
+                                        field.disabled = !disabled;
+                                    });
+                                }
+
+                                function renderResultBox(payload) {
+                                    var summary = payload && payload.summary ? payload.summary : {};
+                                    var message = payload && payload.message ? payload.message : '';
+                                    var checkedHost = payload && payload.checked_host ? payload.checked_host : '';
+                                    var resolvedHost = payload && payload.resolved_host ? payload.resolved_host : '';
+                                    var rawBody = payload && payload.raw_body ? payload.raw_body : {};
+                                    var html = '';
+
+                                    if (message) {
+                                        html += '<div class="notice notice-' + (summary.can_delete ? 'success' : (payload.verified ? 'warning' : 'error')) + ' inline"><p>' + esc(message) + '<\/p><\/div>';
+                                    }
+
+                                    if (checkedHost) {
+                                        html += '<p><strong><?php echo esc_js(__('Checked host', 'tornevall-networks-dnsbl-implementation')); ?>:<\/strong> ' + esc(checkedHost) + '<\/p>';
+                                    }
+                                    if (resolvedHost) {
+                                        html += '<p><strong><?php echo esc_js(__('Resolved host', 'tornevall-networks-dnsbl-implementation')); ?>:<\/strong> ' + esc(resolvedHost) + '<\/p>';
+                                    }
+
+                                    if (summary && (summary.has_token || summary.ok)) {
+                                        var rows = '';
+                                        if (summary.token && summary.token.name) {
+                                            rows += '<tr><th><?php echo esc_js(__('Name', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + esc(summary.token.name) + '<\/td><\/tr>';
+                                        }
+                                        if (summary.token && summary.token.status) {
+                                            rows += '<tr><th><?php echo esc_js(__('Status', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + esc(summary.token.status) + '<\/td><\/tr>';
+                                        }
+                                        if (summary.token && summary.token.scope_label) {
+                                            rows += '<tr><th><?php echo esc_js(__('Scope', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + esc(summary.token.scope_label) + '<\/td><\/tr>';
+                                        }
+                                        if (summary.token && summary.token.resolved_via) {
+                                            rows += '<tr><th><?php echo esc_js(__('Resolved via', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + esc(summary.token.resolved_via) + '<\/td><\/tr>';
+                                        }
+                                        rows += '<tr><th><?php echo esc_js(__('Can add (list IP)', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_add ? '✓' : '✗') + '<\/td><\/tr>';
+                                        rows += '<tr><th><?php echo esc_js(__('Can delete (delist IP)', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_delete ? '✓' : '✗') + '<\/td><\/tr>';
+                                        rows += '<tr><th><?php echo esc_js(__('Can update', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_update ? '✓' : '✗') + '<\/td><\/tr>';
+                                        html += '<table class="widefat striped" style="margin-top:8px;"><tbody>' + rows + '<\/tbody><\/table>';
+                                    } else if (rawBody && rawBody.reason === 'wrong_token_type') {
+                                        html += '<div class="notice notice-warning inline"><p><?php echo esc_js(__('The supplied token was recognized by Tools, but it is not currently exposing DNSBL delete permissions for this site.', 'tornevall-networks-dnsbl-implementation')); ?><\/p><\/div>';
+                                    }
+
+                                    return html || '<div class="notice notice-error inline"><p><?php echo esc_js(__('Unknown error.', 'tornevall-networks-dnsbl-implementation')); ?><\/p><\/div>';
+                                }
+
+                                setDelistingControlsLocked(!!(tokenStatus && tokenStatus.dataset && tokenStatus.dataset.canDelete === '1'));
+
+                                btn.addEventListener('click', function () {
+                                    var tokenInput = document.getElementById('tornevall_dnsbl_write_token');
+                                    var modeInput = document.getElementById('tornevall_dnsbl_tools_mode');
+                                    btn.disabled = true;
+                                    btn.textContent = '<?php echo esc_js(__('Checking…', 'tornevall-networks-dnsbl-implementation')); ?>';
+                                    box.style.display = 'none';
+                                    box.innerHTML = '';
+                                    var data = new FormData();
+                                    data.append('action', 'tornevall_dnsbl_token_info');
+                                    data.append('tornevall_dnsbl_tools_nonce', btn.dataset.nonce);
+                                    if (tokenInput) {
+                                        data.append('tornevall_dnsbl_write_token', tokenInput.value || '');
+                                    }
+                                    if (modeInput) {
+                                        data.append('tornevall_dnsbl_tools_mode', modeInput.value || '');
+                                    }
+                                    fetch(ajaxUrl, {method: 'POST', body: data, credentials: 'same-origin'})
+                                        .then(function (r) { return r.json(); })
+                                        .then(function (res) {
+                                            btn.disabled = false;
+                                            btn.textContent = '<?php echo esc_js(__('Check token permissions', 'tornevall-networks-dnsbl-implementation')); ?>';
+                                            box.style.display = 'block';
+                                            var payload = res && res.data ? res.data : {};
+                                            box.innerHTML = renderResultBox(payload);
+                                            if (payload.rendered_status_html) {
+                                                if (tokenStatus) {
+                                                    tokenStatus.outerHTML = payload.rendered_status_html;
+                                                } else {
+                                                    btn.insertAdjacentHTML('afterend', payload.rendered_status_html);
+                                                }
+                                                tokenStatus = document.getElementById('tornevall-dnsbl-token-status');
+                                            }
+                                            setDelistingControlsLocked(!!(payload.summary && payload.summary.can_delete));
+                                        })
+                                        .catch(function (e) {
+                                            btn.disabled = false;
+                                            btn.textContent = '<?php echo esc_js(__('Check token permissions', 'tornevall-networks-dnsbl-implementation')); ?>';
+                                            box.style.display = 'block';
+                                            box.innerHTML = '<div class="notice notice-error inline"><p><?php echo esc_js(__('Request failed. Check console for details.', 'tornevall-networks-dnsbl-implementation')); ?></p></div>';
+                                            setDelistingControlsLocked(false);
+                                            console.error('[DNSBL] token info error', e);
+                                        });
+                                });
+                                function esc(s) {
+                                    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                                }
+                            }());
+                            </script>
+                        </div>
+                        <?php self::renderCheckboxRow(
+                            'tornevall_dnsbl_auto_report_spam',
+                            __('Auto-report detected spam IPs via DNSBL / Tools API token', 'tornevall-networks-dnsbl-implementation'),
+                            __('When a DNSBL / Tools API token with DNSBL write access is configured and a comment is marked as spam by DNSBL or Akismet, the IP is queued for addition to the DNSBL. Operations are batched and sent in bulk at the end of the request.', 'tornevall-networks-dnsbl-implementation'),
+                            $autoReportSpam
+                        ); ?>
                     </div></div>
 
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
@@ -576,11 +1161,41 @@ class Admin
 
                 <div class="postbox" style="margin-top:16px;"><div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('Delisting page integration', 'tornevall-networks-dnsbl-implementation'); ?></h2>
+                        <?php if (!$delistingAccessConfirmed) { ?>
+                            <div class="notice notice-warning inline"><p><?php echo esc_html__('These delisting-page controls stay read-only until delete / delist permission has been confirmed for the configured token.', 'tornevall-networks-dnsbl-implementation'); ?></p></div>
+                        <?php } ?>
                         <p><label for="tornevall_dnsbl_delisting_page"><?php echo esc_html__('Delisting page', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
-                            <select id="tornevall_dnsbl_delisting_page" name="tornevall_dnsbl_delisting_page"><?php echo implode("\n", $delistPageOption); ?></select></p>
+                            <select id="tornevall_dnsbl_delisting_page" name="tornevall_dnsbl_delisting_page" <?php disabled(!$delistingAccessConfirmed, true); ?>><?php echo implode("\n", $delistPageOption); ?></select>
+                            <?php if (!$delistingAccessConfirmed) { ?><input type="hidden" id="tornevall_dnsbl_delisting_page_mirror" name="tornevall_dnsbl_delisting_page" value="<?php echo esc_attr($currentDelistingPage); ?>"><?php } ?></p>
+                        <p><label for="tornevall_dnsbl_internal_delist_slug"><?php echo esc_html__('Internal integration slug', 'tornevall-networks-dnsbl-implementation'); ?></label><br>
+                            <input type="text" class="regular-text" id="tornevall_dnsbl_internal_delist_slug" name="tornevall_dnsbl_internal_delist_slug" value="<?php echo esc_attr($internalDelistSlug); ?>" <?php disabled(!$delistingAccessConfirmed, true); ?>>
+                            <?php if (!$delistingAccessConfirmed) { ?><input type="hidden" id="tornevall_dnsbl_internal_delist_slug_mirror" name="tornevall_dnsbl_internal_delist_slug" value="<?php echo esc_attr($internalDelistSlug); ?>"><?php } ?>
+                            <span class="description" style="display:block; margin-top:4px;"><?php echo esc_html__('Used only when "Internal integration" is selected. Default: delist.', 'tornevall-networks-dnsbl-implementation'); ?></span>
+                            <span class="description" style="display:block; margin-top:4px;"><?php echo esc_html(sprintf(__('Internal integration URL: %s', 'tornevall-networks-dnsbl-implementation'), $internalDelistUrl)); ?></span>
+                        </p>
+                        <p class="description" style="max-width:820px; margin-top:-4px;">
+                            <?php echo esc_html__('Saving an internal delisting integration or custom delisting page performs a live DNSBL token check. If delete permission is missing, the page still renders with a warning and live removal stays unavailable until Tornevall Networks/FraudBL permissions are granted.', 'tornevall-networks-dnsbl-implementation'); ?>
+                        </p>
+                        <p class="description" style="max-width:820px;">
+                            <?php echo esc_html__('Select "Internal integration" to let the plugin serve its own built-in delisting page on the configured slug. If you choose a normal WordPress page instead, place [dnsbl_delist_form] in that page content where the DNSBL form should appear. Legacy shortcode aliases remain available, but the new canonical shortcode is [dnsbl_delist_form].', 'tornevall-networks-dnsbl-implementation'); ?>
+                        </p>
                         <?php
                         self::renderCheckboxRow('tornevall_dnsbl_delistingpage_comments_disabled', __('Disable comments on the delisting page', 'tornevall-networks-dnsbl-implementation'), __('Useful if the delisting page attracts many support comments.', 'tornevall-networks-dnsbl-implementation'), (bool) get_option('tornevall_dnsbl_delistingpage_comments_disabled'));
                         ?>
+                        <?php if (!$delistingAccessConfirmed) { ?>
+                            <script>
+                            (function () {
+                                var checkbox = document.getElementById('tornevall_dnsbl_delistingpage_comments_disabled');
+                                var hidden = document.querySelector('input[type="hidden"][name="tornevall_dnsbl_delistingpage_comments_disabled"]');
+                                if (checkbox) {
+                                    checkbox.disabled = true;
+                                }
+                                if (hidden) {
+                                    hidden.value = <?php echo (bool) get_option('tornevall_dnsbl_delistingpage_comments_disabled') ? '"1"' : '"0"'; ?>;
+                                }
+                            }());
+                            </script>
+                        <?php } ?>
                     </div></div>
 
                 <?php submit_button(__('Save settings', 'tornevall-networks-dnsbl-implementation')); ?>

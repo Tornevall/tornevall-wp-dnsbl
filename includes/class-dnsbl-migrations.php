@@ -10,7 +10,7 @@ class Migrations
 {
     public static function schemaVersion(): string
     {
-        return '3.2.0';
+        return '3.1.0';
     }
 
     /**
@@ -62,6 +62,7 @@ class Migrations
         return [
             'tornevall_dnsbl_form_noajax',
             'tornevall_dnsbl_getlisted_resolver',
+            'tornevall_dnsbl_removal_token', // replaced by tornevall_dnsbl_write_token in 3.1.0
         ];
     }
 
@@ -80,7 +81,50 @@ class Migrations
             }
         }
 
+        // Migrate legacy removal_token -> write_token on first upgrade.
+        $legacy = trim((string) get_option('tornevall_dnsbl_removal_token'));
+        if ($legacy !== '' && trim((string) get_option('tornevall_dnsbl_write_token')) === '') {
+            update_option('tornevall_dnsbl_write_token', $legacy);
+        }
+
+        // Older plugin builds exposed a separate hidden Tools token option.
+        // Migrate any visible legacy value into the single current API token field.
+        $writeToken = trim((string) get_option('tornevall_dnsbl_write_token'));
+        $toolsToken = trim((string) get_option('tornevall_dnsbl_tools_token'));
+        if ($writeToken === '' && $toolsToken !== '') {
+            update_option('tornevall_dnsbl_write_token', $toolsToken);
+            $writeToken = $toolsToken;
+        }
+
         Plugin::maybeUpgradeSelectedFlags();
+        self::maybeAddMissingResolverHosts();
+    }
+
+    /**
+     * Ensure all four canonical DNSBL zones are present in the stored resolver hosts option.
+     * Adds any missing default hosts without removing custom hosts the admin may have added.
+     */
+    public static function maybeAddMissingResolverHosts(): void
+    {
+        $stored = trim((string) get_option('tornevall_dnsbl_resolver_hosts'));
+        if ($stored === '') {
+            // Empty: ensureDefaultOptions() will have already added the default via add_option.
+            return;
+        }
+
+        $current = array_values(array_filter(array_map('trim', explode(',', $stored))));
+        $changed = false;
+
+        foreach (Plugin::defaultResolvers() as $host) {
+            if (!in_array($host, $current, true)) {
+                $current[] = $host;
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            update_option('tornevall_dnsbl_resolver_hosts', implode(',', $current));
+        }
     }
 
     public static function run(): void
@@ -106,6 +150,10 @@ class Migrations
         self::ensureDefaultOptions();
 
         update_option('tornevall_dnsbl_database_version', self::schemaVersion());
+        Plugin::registerInternalDelistRewrite();
+        if (function_exists('flush_rewrite_rules')) {
+            flush_rewrite_rules(false);
+        }
         Plugin::syncCacheCleanupSchedule();
         Plugin::purgeExpiredCache();
     }
@@ -131,6 +179,9 @@ class Migrations
     public static function deactivate(): void
     {
         Plugin::clearCacheCleanupSchedule();
+        if (function_exists('flush_rewrite_rules')) {
+            flush_rewrite_rules(false);
+        }
     }
 
     public static function uninstall(): void
@@ -167,6 +218,8 @@ class Migrations
             'tornevall_dnsbl_dev_mode',
             'tornevall_dnsbl_tools_token',
             'tornevall_dnsbl_tools_mode',
+            'tornevall_dnsbl_write_token',
+            'tornevall_dnsbl_auto_report_spam',
             'tornevall_dnsbl_removal_token',
             'tornevall_dnsbl_comment_turnstile_enabled',
             'tornevall_dnsbl_comment_turnstile_site_key',

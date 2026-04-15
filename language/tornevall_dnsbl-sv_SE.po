@@ -24,6 +24,127 @@ msgstr ""
 msgid "Tornevall DNSBL"
 msgstr "Tornevall DNSBL"
 
+msgid "DNSBL removal access is not active for this site."
+msgstr "DNSBL-avlistningsåtkomst är inte aktiv för denna sajt."
+
+msgid "This site cannot offer live DNSBL/FraudBL removals because no DNSBL / Tools API token is configured."
+msgstr "Denna sajt kan inte erbjuda live-avlistning i DNSBL/FraudBL eftersom ingen DNSBL / Tools API-token är konfigurerad."
+
+msgid "This site cannot offer live DNSBL/FraudBL removals because the configured token is missing delete / delist permission."
+msgstr "Denna sajt kan inte erbjuda live-avlistning i DNSBL/FraudBL eftersom den konfigurerade tokenen saknar delete-/delist-behörighet."
+
+msgid "This site cannot offer live DNSBL/FraudBL removals because Tools could not verify the configured token permissions right now."
+msgstr "Denna sajt kan inte erbjuda live-avlistning i DNSBL/FraudBL eftersom Tools inte kunde verifiera den konfigurerade tokenens behörigheter just nu."
+
+#, php-format
+msgid "Current Tools host: %s"
+msgstr "Aktuell Tools-värd: %s"
+
+msgid "Request DNSBL access via Tools"
+msgstr "Begär DNSBL-behörighet via Tools"
+
+msgid "Admin passthrough"
+msgstr "Admin-passthrough"
+
+msgid "Admin token"
+msgstr "Admin-token"
+
+msgid "No DNSBL / Tools API token configured yet."
+msgstr "Ingen DNSBL / Tools API-token är konfigurerad ännu."
+
+msgid "Live delisting is available for this site."
+msgstr "Live-avlistning är tillgänglig för denna sajt."
+
+#, php-format
+msgid "Delete / delist confirmed. Scope: %s"
+msgstr "Delete-/delist-behörighet bekräftad. Omfång: %s"
+
+msgid "Delete / delist confirmed for the configured token."
+msgstr "Delete-/delist-behörighet är bekräftad för den konfigurerade tokenen."
+
+msgid "The token is verified, but only add / list access is active right now."
+msgstr "Tokenen är verifierad, men endast add-/list-behörighet är aktiv just nu."
+
+#, php-format
+msgid "Scope: %s"
+msgstr "Omfång: %s"
+
+msgid "Token verified, but delisting is not allowed yet."
+msgstr "Tokenen är verifierad, men avlistning är ännu inte tillåten."
+
+msgid "Delisting is still locked for this site."
+msgstr "Avlistning är fortfarande låst för denna sajt."
+
+#, php-format
+msgid "The token is currently %s and does not expose delete / delist access."
+msgstr "Tokenen är för närvarande %s och exponerar inte delete-/delist-behörighet."
+
+msgid "The token was checked, but delete / delist access is still unavailable."
+msgstr "Tokenen kontrollerades, men delete-/delist-behörighet är fortfarande inte tillgänglig."
+
+msgid "Token permissions have not been confirmed yet."
+msgstr "Tokenens behörigheter har ännu inte bekräftats."
+
+msgid "Run the permission check to confirm whether this token can delist through Tools."
+msgstr "Kör behörighetskontrollen för att bekräfta om denna token kan avlista via Tools."
+
+#, php-format
+msgid "Permissions: add %1$s · delete %2$s · update %3$s"
+msgstr "Behörigheter: add %1$s · delete %2$s · update %3$s"
+
+#, php-format
+msgid "Delete / delist permission confirmed: %s"
+msgstr "Delete-/delist-behörighet bekräftad: %s"
+
+msgid "No token configured."
+msgstr "Ingen token är konfigurerad."
+
+msgid "Checked host"
+msgstr "Kontrollerad värd"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "Scope"
+msgstr "Omfång"
+
+msgid "Resolved via"
+msgstr "Löst via"
+
+msgid "Can add (list IP)"
+msgstr "Kan lägga till (lista IP)"
+
+msgid "Can delete (delist IP)"
+msgstr "Kan ta bort (avlista IP)"
+
+msgid "Resolved host"
+msgstr "Löst värdnamn"
+
+msgid "Can update"
+msgstr "Kan uppdatera"
+
+msgid "The supplied token was recognized by Tools, but it is not currently exposing DNSBL delete permissions for this site."
+msgstr "Den angivna tokenen känns igen av Tools, men exponerar för närvarande inte DNSBL delete-behörighet för denna sajt."
+
+msgid "These delisting-page controls stay read-only until delete / delist permission has been confirmed for the configured token."
+msgstr "Dessa kontroller för avlistningssidan förblir skrivskyddade tills delete-/delist-behörighet har bekräftats för den konfigurerade tokenen."
+
+#, php-format
+msgid "Tools environment mode is currently set to dev: %s"
+msgstr "Tools-miljöläget är för närvarande satt till dev: %s"
+
+msgid "Tools integration needs attention before this site can use permission-aware DNSBL features."
+msgstr "Tools-integrationen behöver ses över innan denna sajt kan använda behörighetsstyrda DNSBL-funktioner."
+
+msgid "The configured token is limited, so live delisting is still unavailable on this site."
+msgstr "Den konfigurerade tokenen är begränsad, så live-avlistning är fortfarande inte tillgänglig på denna sajt."
+
+msgid "A delisting page is selected, but no DNSBL / Tools API token is configured yet."
+msgstr "En avlistningssida är vald, men ingen DNSBL / Tools API-token är konfigurerad ännu."
+
+msgid "There are environment details worth reviewing for this plugin configuration."
+msgstr "Det finns miljödetaljer som bör granskas för denna plugin-konfiguration."
+
 #: admin.php:61
 msgid "You do not have sufficient permissions to access this page."
 msgstr "Du har inte tillräckliga behörigheter för att nå denna sidan."
