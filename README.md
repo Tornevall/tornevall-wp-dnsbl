@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.0.3`
+- **Release:** `3.1.0`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -13,9 +13,9 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 - **Documentation:** <https://tools.tornevall.net/docs/dnsbl-api>
 
-## What 3.0.3 ships
+## What the current codebase includes
 
-This `3.0.3` package fixes the frontend dry-run availability logic so the public dry-run popup and toggle are hidden when Tools environment mode is set to production.
+The current code line keeps the DNSBL API integration on the intended public release line and presents one visible DNSBL / Tools API token flow in the WordPress admin UI. The live permission checker asks Tools directly, reports environment mismatches clearly, and shows automatic DNSBL access when the configured token belongs to an active Tools admin.
 
 The current release line includes:
 
@@ -28,12 +28,18 @@ The current release line includes:
 - Cloudflare Turnstile for WordPress comments
 - DNSBL/FraudBL protection for WordPress account registrations
 - Cloudflare Turnstile for WordPress account registrations
-- `IP_FRAUDCOMMERCE` included in the default trigger-flag profile
-- updated delisting flow via <https://www.tornevall.net/removal/>
+- one visible DNSBL / Tools API token field in the WordPress settings UI, plus live **Check token permissions** diagnostics and permission-aware token status for delete / delist work
+- dashboard/settings warnings when live DNSBL delete / delist access is missing, together with gating for the configured main delisting page
+- built-in main removal-page template plus shortcode-based custom removal pages that only expose the operations allowed by the current token
+- checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, and safer disabled-state submit handling
+- optional advanced CIDR delist mode for permitted tokens, with guarded ranges, chunked bulk handling, and explicit approval guidance when CIDR removal is not allowed
+- Turnstile-protected live removal submits, more tolerant checker follow-up handling on slower hosts, and frontend cache-busting so delist-flow fixes reach browsers promptly
+- AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
+- the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.0.3` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.0` release yet.
 
 ## Description
 
@@ -49,6 +55,9 @@ Current admin features include:
 - safe IP whitelisting
 - protected-admin notices and quick whitelist actions
 - Turnstile settings for comments and registrations
+- live DNSBL token permission checks before the main delisting page is activated
+- dashboard/settings warnings when the current token cannot offer live removals yet
+- built-in removal-page template plus shortcode-based custom page support
 
 ## Installation
 
@@ -67,6 +76,29 @@ Yes. If you are blacklisted in Tornevall DNSBL, use:
 
 <https://www.tornevall.net/removal/>
 
+You can also add the built-in shortcode form to a custom WordPress page:
+
+```text
+[dnsbl_removal_form]
+```
+
+Alias shortcode:
+
+```text
+[tornevall_dnsbl_removal_form]
+```
+
+If you select a **Delisting page** in the plugin settings and that page does **not** already contain one of those shortcodes, the plugin now renders its built-in main template from `templates/removal-page.php` automatically.
+
+Important behaviour:
+
+- saving a main delisting page now performs a live permission check against `GET /api/dnsbl/token/info`
+- the selected page is saved even without delete permission, but WordPress warns that live removal stays unavailable until Tornevall Networks/FraudBL access is granted
+- custom shortcode pages continue to work even when the built-in main page is not used
+- shortcode forms now only expose the DNSBL operations that the configured token is actually allowed to perform
+- the managed internal/public delist page keeps the UX minimal (IP only), gives an immediate local DNS statement first, and when a token exists it then runs a background Tools follow-up before sending delist; success messages note that propagation can take a little while
+- when delist is ready the IP input is locked and a dedicated Delist action is shown; the advanced CIDR section opens only in that ready state
+
 ### How do I test the plugin without locking myself out?
 
 Use the safe IP whitelist and the frontend dry-run support for administrators. Whitelisted IPs are still checked and counted in statistics, but they are not blocked.
@@ -74,6 +106,13 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.0 highlights
+
+- Added the Tools-backed DNSBL write-token flow for add/delete/update/bulk operations
+- Added the shortcode-based delisting/removal form with AJAX proxy and dry-run support
+- The live token checker now reports automatic DNSBL access for active admin-owned Tools tokens and no longer frames that case as a separate token model in the plugin UI
+- 3.1.0 also covers the current checker-style public delist flow, including the Tools-backed follow-up lookup, main removal-page template/permission gating, and the current Delist-button submit/captcha handling fixes
 
 ### 3.0.3 highlights
 
@@ -98,4 +137,3 @@ See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0
 - Added visitor statistics and safer whitelist-based admin testing
 - Added `IP_FRAUDCOMMERCE` to the default protection profile
 - Tightened comment blocking and updated the public removal flow
-

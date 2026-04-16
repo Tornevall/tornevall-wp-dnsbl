@@ -2,6 +2,36 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.0
+
+### Added
+- Added the Tools-backed DNSBL write flow around one visible **Write token** field (`tornevall_dnsbl_write_token`) plus `DnsblApiClient`, `DnsblWriteQueue`, bulk queueing, dry-run support, and auto-reporting of spam IPs.
+- Added the shortcode-based removal tool (`[dnsbl_removal_form]` / `[tornevall_dnsbl_removal_form]`) together with the WordPress AJAX proxy for DNSBL add/delete/update requests.
+- Added the checker/removal follow-up against `POST /api/dnsbl/check-ip`, so the public delist flow can confirm live delist candidates after the first local DNS answer.
+- Added the built-in main removal-page template, live delisting-page permission gating, and admin/dashboard warnings when the configured token still lacks delete / delist access.
+- Added advanced optional CIDR delist support for permitted tokens together with Cloudflare Turnstile protection for live removal-form submissions.
+
+### Changed
+- Renamed the old removal-token concept to one functional **Write token** flow, migrated legacy saved values, and consolidated the settings UI around one visible DNSBL / Tools token field.
+- The live **Check token permissions** flow now always asks Tools directly, explains environment mismatches, and reports effective DNSBL access for both dedicated write tokens and eligible admin-owned Tools tokens.
+- Resolver defaults now cover all four canonical DNSBL/FraudBL zones, and migrations merge missing defaults into existing installs without removing custom hosts.
+- The public delist flow now uses a checker-style UX with separate **Check if listed** / **Delist** steps, local-first listing confirmation, background Tools follow-up, and permission-aware shortcode/main-page behavior.
+- The plugin-managed main removal page stays delete-focused, while custom shortcode pages remain supported but only expose the operations allowed by the current token.
+- Delisting-page controls, token status panels, admin warnings, rewrite handling, and settings copy were all tightened so delete / delist availability is clearer and 404-prone internal routing is avoided.
+- Advanced CIDR mode now sits behind an explicit **Advanced** toggle, stays permission-aware, and auto-fills safer defaults when opened from a confirmed checker result.
+
+### Fixed
+- Delist request no longer fails with `Invalid IP address format.` when the checker flow has locked the IP field before submit; the confirmed IP is now re-posted explicitly.
+- Background Tools follow-up no longer misreports remote `POST /api/dnsbl/check-ip` auth/CSRF failures as a local WordPress “419 / session expired” problem.
+- `POST /api/dnsbl/*` endpoints on the Tools backend are now excluded from CSRF verification for token-backed server-to-server calls, which fixes checker follow-up `419` failures.
+- DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
+- Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
+
+### Technical
+- `class-dnsbl-migrations.php`: `tornevall_dnsbl_removal_token` moved to `retiredOptions()`; migration transfers its value to `tornevall_dnsbl_write_token` if the latter is empty.
+- New PHP classes follow the `Tornevall\Networks\DNSBL` namespace.
+- Legacy hidden `tornevall_dnsbl_tools_token` values are now migrated into the single visible API-token field when needed.
+
 ## 3.0.3 - 2026-03-15
 
 ### Fixed
