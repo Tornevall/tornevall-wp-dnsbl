@@ -67,6 +67,7 @@ Important behaviour:
 * The selected page is saved even when delete / delist permission is missing, but WordPress warns that live removal remains unavailable until Tornevall Networks/FraudBL access is granted
 * Custom shortcode pages continue to work even when the built-in main page is not used
 * Shortcode forms only expose the DNSBL operations that the configured token is actually allowed to perform
+* The checker can now be reused immediately after any completed lookup, and a dedicated **Reset** button clears checker/CIDR/background state without reloading the page
 
 * How do I test DNSBL without locking myself out?
 
@@ -98,13 +99,15 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 * Added the plugin-side DNSBL write integration (`add`, `delete`, `update`, `bulk`) around one visible **Write token** field, bulk queueing, and optional dry-run acknowledgement through the Tools DNSBL endpoints.
 * Added the shortcode-based removal form (`[dnsbl_removal_form]`) with AJAX backend proxy support, built-in main removal-page templating, and live delisting-page permission gating.
 * Added the Tools-backed checker/removal follow-up via `POST /api/dnsbl/check-ip`, together with the checker-style public delist flow and dashboard/settings warnings when live delete / delist access is still missing.
-* Added advanced optional CIDR removal flow for permitted tokens, including safe `/24`..`/32` validation, chunked bulk handling, and Cloudflare Turnstile verification for live removal-form submissions.
+* Added advanced optional CIDR removal flow for permitted tokens, including safe `/24`..`/32` validation, plugin-local scan progress, a visible hit list of listed addresses, listed-hit-only delete targeting, sequential per-IP delete requests, and Cloudflare Turnstile verification for live removal-form submissions.
 * The plugin UI now uses one visible **DNSBL / Tools API token** field, and the **Check token permissions** tool now always asks Tools for a live answer and reports effective DNSBL access more clearly.
 * Preferred resolver hosts now cover all four canonical DNSBL/FraudBL zones, and migrations merge any missing defaults into existing installs without removing custom hosts.
 * Shortcode/custom removal pages now expose only the operations allowed by the current token, while the plugin-managed main removal page stays delete-focused.
 * Token status panels, delisting-page controls, and checker submits now better reflect real delete capability, including explicit IP reposting when the checker has locked the field before submit.
 * Checker follow-up failures now report clearer backend/API errors for remote `419` cases, and write/check diagnostics now distinguish true invalid DNSBL tokens from wrong-token-type or inactive admin-key cases.
-* Checker-mode Turnstile stays hidden during pre-check/background steps, is enforced on actual write submissions, and the Delist button now carries the in-flight submit state itself.
+* Checker-mode Turnstile stays hidden during pre-check/background steps, is enforced on actual write submissions, the Delist button now carries the in-flight submit state itself, and checker/delist requests now also show a dedicated busy spinner row.
+* CIDR scanning now stays inside WordPress in small local batches so the resolver side is not flooded, while the final delete still goes through the DNSBL write endpoint after the block scan has found at least one listed address and only for the IPs the local scan actually marked as listed, one IP at a time.
+* If the user clicks **Check if listed** while a valid CIDR is still entered in the first checker IP field, the plugin now opens Advanced automatically, moves the CIDR there, and keeps that Advanced CIDR value as the authoritative range for the later scan/delete flow instead of requiring a separate single-IP anchor.
 
 = 3.0.3 =
 
@@ -148,7 +151,7 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 = 3.1.0 =
 
-Adds the public DNSBL API token flow, AJAX-backed delisting tooling, the checker-style public removal flow, and the final single-token permission-checker wording for the current release line.
+Adds the public DNSBL API token flow, AJAX-backed delisting tooling, the checker-style public removal flow, and the current local CIDR progress/hit-list/listed-target scan for the 3.1.0 release line.
 
 
 = 3.0.3 =

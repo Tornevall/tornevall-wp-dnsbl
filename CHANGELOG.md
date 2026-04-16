@@ -18,7 +18,11 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - The public delist flow now uses a checker-style UX with separate **Check if listed** / **Delist** steps, local-first listing confirmation, background Tools follow-up, and permission-aware shortcode/main-page behavior.
 - The plugin-managed main removal page stays delete-focused, while custom shortcode pages remain supported but only expose the operations allowed by the current token.
 - Delisting-page controls, token status panels, admin warnings, rewrite handling, and settings copy were all tightened so delete / delist availability is clearer and 404-prone internal routing is avoided.
-- Advanced CIDR mode now sits behind an explicit **Advanced** toggle, stays permission-aware, and auto-fills safer defaults when opened from a confirmed checker result.
+- Advanced CIDR mode now sits behind an explicit **Advanced** toggle, stays permission-aware, auto-fills safer defaults when opened from a confirmed checker result, and runs its `/24`-`/32` lookup locally inside WordPress instead of using Tools for the block scan itself.
+- The advanced CIDR UI now walks the requested block in small local batches, shows scan progress live, and keeps a visible hit list of listed IPs found in the block while the scan runs.
+- Checker and delist submits now also show a dedicated busy spinner/status row below the buttons, so it is clearer that a live request is still running even before the result box updates.
+- CIDR delete now targets only the IPs that the local CIDR scan actually found as listed, and those delete calls are now sent sequentially one IP at a time instead of in chunked bulk batches.
+- If a user clicks **Check if listed** while a valid CIDR is still sitting in the first checker IP field, the plugin now opens **Advanced** at that point, moves the CIDR there automatically, and treats that Advanced CIDR scope as the authoritative range for the later local scan and delist submit.
 
 ### Fixed
 - Delist request no longer fails with `Invalid IP address format.` when the checker flow has locked the IP field before submit; the confirmed IP is now re-posted explicitly.
@@ -26,6 +30,9 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - `POST /api/dnsbl/*` endpoints on the Tools backend are now excluded from CSRF verification for token-backed server-to-server calls, which fixes checker follow-up `419` failures.
 - DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
 - Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
+- CIDR delist no longer depends on the originally checked single IP being the only anchor for the requested block; the final submit now accepts a completed local CIDR scan ticket for the exact Advanced-range scope instead.
+- CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic “failed chunk” message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
+- The public checker can now be reused immediately after a completed lookup: the IP field no longer stays terminally locked after a listed result, and a dedicated **Reset** button now clears checker/CIDR/background state so users can start over without refreshing the page.
 
 ### Technical
 - `class-dnsbl-migrations.php`: `tornevall_dnsbl_removal_token` moved to `retiredOptions()`; migration transfers its value to `tornevall_dnsbl_write_token` if the latter is empty.

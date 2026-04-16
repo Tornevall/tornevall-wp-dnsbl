@@ -36,7 +36,9 @@ class WriteQueue
     /** @var bool */
     private $flushed = false;
 
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     public static function getInstance(): self
     {
@@ -50,68 +52,15 @@ class WriteQueue
     // ─── Queue operations ─────────────────────────────────────────────────────
 
     /**
-     * Queue an IP add / listing request.
-     *
-     * Upgrade-only is enforced server-side: the new bitmask must be strictly
-     * greater than the current DNS value for the IP.
+     * Flush callback used for the WordPress shutdown action.
      */
-    public function queueAdd(string $ip, int $bitmask, string $publicationType = 'dnsbl', int $ttl = 300): void
+    public static function shutdownFlush(): void
     {
-        if (!$this->isValidIp($ip) || $bitmask <= 0) {
-            return;
+        $instance = self::$instance;
+        if ($instance && !empty($instance->operations) && !$instance->flushed) {
+            $instance->flush();
         }
-
-        $this->enqueue([
-            'action' => 'add',
-            'ip' => $ip,
-            'bitmask' => $bitmask,
-            'publication_type' => $publicationType,
-            'ttl' => max(300, $ttl),
-        ]);
     }
-
-    /**
-     * Queue an IP delete / delist request.
-     */
-    public function queueDelete(string $ip, int $bitmask, string $publicationType = 'dnsbl'): void
-    {
-        if (!$this->isValidIp($ip)) {
-            return;
-        }
-
-        $this->enqueue([
-            'action' => 'delete',
-            'ip' => $ip,
-            'bitmask' => $bitmask,
-            'publication_type' => $publicationType,
-        ]);
-    }
-
-    /**
-     * Queue an IP update (bitmask change, can increase or decrease).
-     */
-    public function queueUpdate(
-        string $ip,
-        int $oldBitmask,
-        int $newBitmask,
-        string $publicationType = 'dnsbl',
-        int $ttl = 300
-    ): void {
-        if (!$this->isValidIp($ip)) {
-            return;
-        }
-
-        $this->enqueue([
-            'action' => 'update',
-            'ip' => $ip,
-            'bitmask' => $newBitmask,
-            'old_bitmask' => $oldBitmask,
-            'publication_type' => $publicationType,
-            'ttl' => max(300, $ttl),
-        ]);
-    }
-
-    // ─── Flush ────────────────────────────────────────────────────────────────
 
     /**
      * Flush all queued operations as a single bulk API request.
@@ -166,34 +115,41 @@ class WriteQueue
                 );
             }
 
-            return ['ok' => (bool) $result['ok'], 'result' => $result];
+            return ['ok' => (bool)$result['ok'], 'result' => $result];
         }
 
         $result = $client->bulkOperation($operations);
 
-        return ['ok' => (bool) $result['ok'], 'result' => $result];
+        return ['ok' => (bool)$result['ok'], 'result' => $result];
     }
 
     /**
-     * Flush callback used for the WordPress shutdown action.
+     * Queue an IP add / listing request.
+     *
+     * Upgrade-only is enforced server-side: the new bitmask must be strictly
+     * greater than the current DNS value for the IP.
      */
-    public static function shutdownFlush(): void
+    public function queueAdd(string $ip, int $bitmask, string $publicationType = 'dnsbl', int $ttl = 300): void
     {
-        $instance = self::$instance;
-        if ($instance && !empty($instance->operations) && !$instance->flushed) {
-            $instance->flush();
+        if (!$this->isValidIp($ip) || $bitmask <= 0) {
+            return;
         }
+
+        $this->enqueue([
+            'action' => 'add',
+            'ip' => $ip,
+            'bitmask' => $bitmask,
+            'publication_type' => $publicationType,
+            'ttl' => max(300, $ttl),
+        ]);
     }
 
-    /**
-     * Number of currently queued operations.
-     */
-    public function pendingCount(): int
+    // ─── Flush ────────────────────────────────────────────────────────────────
+
+    private function isValidIp(string $ip): bool
     {
-        return count($this->operations);
+        return filter_var($ip, FILTER_VALIDATE_IP) !== false;
     }
-
-    // ─── Private ──────────────────────────────────────────────────────────────
 
     /** @param array<string,mixed> $op */
     private function enqueue(array $op): void
@@ -214,9 +170,56 @@ class WriteQueue
         add_action('shutdown', [self::class, 'shutdownFlush'], PHP_INT_MAX);
     }
 
-    private function isValidIp(string $ip): bool
+    // ─── Private ──────────────────────────────────────────────────────────────
+
+    /**
+     * Queue an IP delete / delist request.
+     */
+    public function queueDelete(string $ip, int $bitmask, string $publicationType = 'dnsbl'): void
     {
-        return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+        if (!$this->isValidIp($ip)) {
+            return;
+        }
+
+        $this->enqueue([
+            'action' => 'delete',
+            'ip' => $ip,
+            'bitmask' => $bitmask,
+            'publication_type' => $publicationType,
+        ]);
+    }
+
+    /**
+     * Queue an IP update (bitmask change, can increase or decrease).
+     */
+    public function queueUpdate(
+        string $ip,
+        int    $oldBitmask,
+        int    $newBitmask,
+        string $publicationType = 'dnsbl',
+        int    $ttl = 300
+    ): void
+    {
+        if (!$this->isValidIp($ip)) {
+            return;
+        }
+
+        $this->enqueue([
+            'action' => 'update',
+            'ip' => $ip,
+            'bitmask' => $newBitmask,
+            'old_bitmask' => $oldBitmask,
+            'publication_type' => $publicationType,
+            'ttl' => max(300, $ttl),
+        ]);
+    }
+
+    /**
+     * Number of currently queued operations.
+     */
+    public function pendingCount(): int
+    {
+        return count($this->operations);
     }
 }
 

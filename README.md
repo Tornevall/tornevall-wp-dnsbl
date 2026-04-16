@@ -31,8 +31,9 @@ The current release line includes:
 - one visible DNSBL / Tools API token field in the WordPress settings UI, plus live **Check token permissions** diagnostics and permission-aware token status for delete / delist work
 - dashboard/settings warnings when live DNSBL delete / delist access is missing, together with gating for the configured main delisting page
 - built-in main removal-page template plus shortcode-based custom removal pages that only expose the operations allowed by the current token
-- checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, and safer disabled-state submit handling
-- optional advanced CIDR delist mode for permitted tokens, with guarded ranges, chunked bulk handling, and explicit approval guidance when CIDR removal is not allowed
+- checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, reusable post-check searches, a dedicated **Reset** action, safer disabled-state submit handling, and a dedicated busy spinner/status row while live requests are running
+- optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, and explicit approval guidance when CIDR removal is not allowed
+- if the user clicks **Check if listed** with a valid CIDR still sitting in the first checker field, the plugin now opens **Advanced**, moves the CIDR there, and lets that Advanced CIDR scope drive the later local scan and delist submit
 - Turnstile-protected live removal submits, more tolerant checker follow-up handling on slower hosts, and frontend cache-busting so delist-flow fixes reach browsers promptly
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
@@ -97,7 +98,12 @@ Important behaviour:
 - custom shortcode pages continue to work even when the built-in main page is not used
 - shortcode forms now only expose the DNSBL operations that the configured token is actually allowed to perform
 - the managed internal/public delist page keeps the UX minimal (IP only), gives an immediate local DNS statement first, and when a token exists it then runs a background Tools follow-up before sending delist; success messages note that propagation can take a little while
-- when delist is ready the IP input is locked and a dedicated Delist action is shown; the advanced CIDR section opens only in that ready state
+- when single-IP delist is ready a dedicated Delist action is shown, but the checker can now still be reused immediately for another lookup; **Reset** clears the current checker/CIDR state without needing a page reload, and Advanced CIDR can also be opened earlier through the explicit toggle or automatic CIDR handoff and then becomes the authoritative scope for that flow
+- checker and delist requests now also show a dedicated spinner/status row below the action buttons so it is clearer that the live request is still working
+- advanced CIDR checks are now performed locally by the WordPress plugin itself, using the configured resolver hosts in small batches with a progress bar and hit list instead of sending the block lookup to the Tools API
+- the final CIDR delete still goes through the DNSBL write endpoint, but only after the local scan has found at least one listed address in the requested `/24`-`/32` block, and the plugin now only submits delete operations for the IPs that the local CIDR scan actually marked as listed, one IP at a time
+- the CIDR scan is intentionally paced in small local batches so the resolver side is not flooded while the progress UI keeps moving forward
+- if a valid CIDR is left in the first checker field and the user clicks **Check if listed**, the plugin now moves it into the Advanced CIDR field automatically, keeps that Advanced CIDR value as the authoritative delete scope, and opens the section immediately instead of leaving the form in an invalid single-IP state
 
 ### How do I test the plugin without locking myself out?
 
@@ -112,7 +118,7 @@ See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0
 - Added the Tools-backed DNSBL write-token flow for add/delete/update/bulk operations
 - Added the shortcode-based delisting/removal form with AJAX proxy and dry-run support
 - The live token checker now reports automatic DNSBL access for active admin-owned Tools tokens and no longer frames that case as a separate token model in the plugin UI
-- 3.1.0 also covers the current checker-style public delist flow, including the Tools-backed follow-up lookup, main removal-page template/permission gating, and the current Delist-button submit/captcha handling fixes
+- 3.1.0 also covers the current checker-style public delist flow, including the Tools-backed follow-up lookup, main removal-page template/permission gating, the current Delist-button submit/captcha/spinner handling fixes, and the local CIDR progress/hit-list/listed-target workflow with Advanced CIDR as the authoritative delete scope
 
 ### 3.0.3 highlights
 
