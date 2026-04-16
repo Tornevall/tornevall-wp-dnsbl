@@ -93,29 +93,18 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 == Changelog ==
 
-= Unreleased (post-3.1.0 maintenance) =
-
-* Fixed checker-mode delist submit so the confirmed IP is always sent even when the IP field is locked/disabled.
-* Fixed external Tools API `419` follow-up failures so they no longer appear as a local WordPress session-expired error in the checker UI.
-* Improved checker-mode delist UX so **Delist** itself shows the in-flight submit state while both checker buttons are disabled to prevent duplicate submits.
-* The removal-form frontend script now uses file-modification-time cache-busting so deployed JS fixes are picked up immediately instead of staying behind a stale `?ver=3.1.0` asset URL.
-
-= Unreleased =
-
-* Added a built-in plugin template for the primary removal page (`templates/removal-page.php`) when the selected delisting page does not already contain a removal shortcode.
-* Saving the primary delisting page now performs a live delete-permission check against `GET /api/dnsbl/token/info` before WordPress accepts that page as the plugin-managed removal page.
-* Shortcode-based custom removal pages continue to work, and the form now hides operations that the configured token is not allowed to perform.
-* WordPress dashboard and plugin settings now warn when the configured DNSBL / Tools API token still lacks live delete / delist access, and the plugin can load the legacy shipped Swedish translation filename used by older packages.
-* The token status block now reports the current add/delete/update capability, and delisting-page controls stay read-only until delete / delist access has been confirmed.
-* Internal delist slug routing now registers a dedicated query-var rewrite path and refreshes rewrite rules on activation/slug updates, fixing plugin-managed `/delist` 404 issues.
-* The managed public delist page now uses an IP-only checker flow and hides the custom-shortcode helper block; custom WordPress pages can still use `[dnsbl_removal_form]` and `[tornevall_dnsbl_removal_form]`.
-
 = 3.1.0 =
 
-* Added the plugin-side DNSBL write API integration (`add`, `delete`, `update`, `bulk`) plus bulk queueing and optional dry-run acknowledgement through the Tools DNSBL endpoints.
-* Added the shortcode-based delisting/removal form (`[dnsbl_removal_form]`) with AJAX backend proxy support.
-* The plugin UI now uses one visible **DNSBL / Tools API token** field instead of presenting separate token models in the settings page.
-* The **Check token permissions** tool now always asks Tools for a live answer, warns when the token exists on the other Tools environment, and reports automatic DNSBL access when the configured token belongs to an active Tools admin.
+* Added the plugin-side DNSBL write integration (`add`, `delete`, `update`, `bulk`) around one visible **Write token** field, bulk queueing, and optional dry-run acknowledgement through the Tools DNSBL endpoints.
+* Added the shortcode-based removal form (`[dnsbl_removal_form]`) with AJAX backend proxy support, built-in main removal-page templating, and live delisting-page permission gating.
+* Added the Tools-backed checker/removal follow-up via `POST /api/dnsbl/check-ip`, together with the checker-style public delist flow and dashboard/settings warnings when live delete / delist access is still missing.
+* Added advanced optional CIDR removal flow for permitted tokens, including safe `/24`..`/32` validation, chunked bulk handling, and Cloudflare Turnstile verification for live removal-form submissions.
+* The plugin UI now uses one visible **DNSBL / Tools API token** field, and the **Check token permissions** tool now always asks Tools for a live answer and reports effective DNSBL access more clearly.
+* Preferred resolver hosts now cover all four canonical DNSBL/FraudBL zones, and migrations merge any missing defaults into existing installs without removing custom hosts.
+* Shortcode/custom removal pages now expose only the operations allowed by the current token, while the plugin-managed main removal page stays delete-focused.
+* Token status panels, delisting-page controls, and checker submits now better reflect real delete capability, including explicit IP reposting when the checker has locked the field before submit.
+* Checker follow-up failures now report clearer backend/API errors for remote `419` cases, and write/check diagnostics now distinguish true invalid DNSBL tokens from wrong-token-type or inactive admin-key cases.
+* Checker-mode Turnstile stays hidden during pre-check/background steps, is enforced on actual write submissions, and the Delist button now carries the in-flight submit state itself.
 
 = 3.0.3 =
 
@@ -157,14 +146,9 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 == Upgrade Notice ==
 
-= Unreleased =
-
-Planned next packaging step for the checker-mode delist payload fix, clearer follow-up error handling, and the corrected Delist-button loading/caching behavior for the public removal flow.
-
-
 = 3.1.0 =
 
-Adds the public DNSBL API token flow, AJAX-backed delisting tooling, and the final single-token permission-checker wording for the current release line.
+Adds the public DNSBL API token flow, AJAX-backed delisting tooling, the checker-style public removal flow, and the final single-token permission-checker wording for the current release line.
 
 
 = 3.0.3 =
