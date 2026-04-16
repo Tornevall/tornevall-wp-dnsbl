@@ -428,7 +428,7 @@ class Plugin
                 'Delist is ready. You can now submit the request.' => 'Avlistning är klar att skickas. Du kan nu skicka begäran.',
                 'Security session expired (HTTP 419). Please refresh this page and try again.' => 'Säkerhetssessionen har gått ut (HTTP 419). Ladda om sidan och försök igen.',
                 'The Tools API follow-up could not be completed. The first DNS result is still shown above.' => 'Tools API-uppföljningen kunde inte slutföras. Det första DNS-resultatet visas fortfarande ovan.',
-                'Enter an IP address and run the listing check first. If listed, the plugin continues a token-backed background check and then enables Delist.' => 'Ange en IP-adress och kör listningskontrollen först. Om den är listad fortsätter pluginet med en token-baserad bakgrundskontroll och aktiverar sedan Delist.',
+                'Enter an IP address and run the listing check first. The first answer comes from the configured DNS resolvers, and if they say the IP is listed the plugin continues with a token-backed background check before Delist is offered. You can then search again immediately or use Reset to start over. If you click Check if listed with a CIDR range in the first field, Advanced opens and takes over that range instead.' => 'Ange en IP-adress och kör listningskontrollen först. Det första svaret kommer från de konfigurerade DNS-resolvers, och om de säger att IP-adressen är listad fortsätter pluginet med en token-baserad bakgrundskontroll innan Delist erbjuds. Du kan sedan söka igen direkt eller använda Reset för att börja om. Om du klickar på Kontrollera om adressen är listad medan ett CIDR-intervall står i det första fältet öppnas Advanced och tar över det intervallet i stället.',
                 'Delist' => 'Avlista',
                 'Advanced delist range (CIDR)' => 'Avancerat avlistningsintervall (CIDR)',
                 'Optional: set a small CIDR range tied to the listed IP. Large ranges are blocked. Use /24 to /32 only.' => 'Valfritt: ange ett litet CIDR-intervall kopplat till den listade IP-adressen. Stora intervall blockeras. Använd endast /24 till /32.',
@@ -455,18 +455,18 @@ class Plugin
                 'Listed addresses found in this CIDR block' => 'Listade adresser som hittades i detta CIDR-block',
                 'Listed addresses found so far: %1$d' => 'Listade adresser hittills: %1$d',
                 'Listed addresses found: %1$d of %2$d' => 'Listade adresser hittade: %1$d av %2$d',
-                'Checking listing status…' => 'Kontrollerar listningsstatus…',
                 'Sending delist request…' => 'Skickar avlistningsbegäran…',
                 'Working…' => 'Arbetar…',
-                'CIDR detected. Advanced mode has been opened and the range was moved there. Click Check if listed again from Advanced to run the local CIDR check, then continue the delist flow from that approved CIDR scope.' => 'CIDR upptäcktes. Advanced-läget har öppnats och intervallet flyttades dit. Klicka på Kontrollera om adressen är listad igen från Advanced för att köra den lokala CIDR-kontrollen och fortsätt sedan delist-flödet från den godkända CIDR-scopen.',
+                'CIDR detected. Advanced mode has been opened and the range was moved there. Run the local CIDR check from Advanced, then continue the delist flow from that approved CIDR scope.' => 'CIDR upptäcktes. Advanced-läget har öppnats och intervallet flyttades dit. Kör den lokala CIDR-kontrollen från Advanced och fortsätt sedan delist-flödet från den godkända CIDR-scopen.',
+                'Reset' => 'Återställ',
                 'A CIDR range was entered in the IP field. The first field only accepts one IP address. Open Advanced and place the CIDR range there instead.' => 'Ett CIDR-intervall angavs i IP-fältet. Det första fältet accepterar bara en IP-adress. Öppna Advanced och lägg CIDR-intervallet där i stället.',
                 'Send delist request' => 'Skicka avlistningsbegäran',
                 'This IP is listed. Click the button again to send the delist request.' => 'Denna IP är listad. Klicka på knappen igen för att skicka avlistningsbegäran.',
                 'This IP is listed. Delist is ready.' => 'Denna IP är listad. Avlistning är klar att skickas.',
-                'This IP is listed. A Tools API follow-up is now running in the background to confirm delist details.' => 'Denna IP är listad. En Tools API-uppföljning körs nu i bakgrunden för att bekräfta avlistningsdetaljerna.',
+                'This IP is listed according to the configured DNS resolvers. A Tools API follow-up is now running in the background to confirm delist details.' => 'Denna IP är listad enligt de konfigurerade DNS-resolvers. En Tools API-uppföljning körs nu i bakgrunden för att bekräfta avlistningsdetaljerna.',
                 'Check and send delist request' => 'Kontrollera och skicka avlistningsbegäran',
-                'This IP is not currently listed in DNSBL/FraudBL, so no delist request was sent.' => 'Denna IP är för närvarande inte listad i DNSBL/FraudBL, så ingen avlistningsbegäran skickades.',
-                'This IP is not currently listed in DNSBL/FraudBL. A Tools API follow-up is still running in the background for a second opinion.' => 'Denna IP är för närvarande inte listad i DNSBL/FraudBL. En Tools API-uppföljning körs ändå i bakgrunden för en andra kontroll.',
+                'This IP is not currently listed in DNSBL/FraudBL according to the configured DNS resolvers, so no delist request was sent.' => 'Denna IP är enligt de konfigurerade DNS-resolvers för närvarande inte listad i DNSBL/FraudBL, så ingen avlistningsbegäran skickades.',
+                'This IP is not currently listed in DNSBL/FraudBL according to the configured DNS resolvers. A Tools API follow-up is still running in the background for a second opinion.' => 'Denna IP är enligt de konfigurerade DNS-resolvers för närvarande inte listad i DNSBL/FraudBL. En Tools API-uppföljning körs ändå i bakgrunden för en andra kontroll.',
                 'The IP appears listed, but no removable bitmask could be resolved right now. Please try again in a moment.' => 'IP-adressen verkar vara listad, men ingen borttagningsbar bitmask kunde hämtas just nu. Försök igen om en stund.',
                 'The IP appears listed, but the local DNS resolve could not decide the removable bitmask. A Tools API follow-up is now running in the background.' => 'IP-adressen verkar vara listad, men den lokala DNS-kontrollen kunde inte avgöra den borttagningsbara bitmasken. En Tools API-uppföljning körs nu i bakgrunden.',
                 'No Tools API token is configured for the background DNSBL check.' => 'Ingen Tools API-token är konfigurerad för DNSBL-kontrollen i bakgrunden.',
@@ -903,7 +903,7 @@ class Plugin
             <p style="margin:0 0 .75rem 0; opacity:.82;">
                 <?php
                 echo esc_html($checkerMode
-                        ? __('Enter an IP address and run the listing check first. If listed, the plugin continues a token-backed background check and then enables Delist. You can then search again immediately or use Reset to start over. If you click Check if listed with a CIDR range in the first field, Advanced opens and takes over that range instead.', 'tornevall-networks-dnsbl-implementation')
+                        ? __('Enter an IP address and run the listing check first. The first answer comes from the configured DNS resolvers, and if they say the IP is listed the plugin continues with a token-backed background check before Delist is offered. You can then search again immediately or use Reset to start over. If you click Check if listed with a CIDR range in the first field, Advanced opens and takes over that range instead.', 'tornevall-networks-dnsbl-implementation')
                         : __('Submit add/delete/update requests via WordPress backend proxy to the Tools DNSBL API.', 'tornevall-networks-dnsbl-implementation'));
                 ?>
             </p>
@@ -1283,7 +1283,7 @@ class Plugin
                 'busyText' => __('Working…', 'tornevall-networks-dnsbl-implementation'),
                 'busyCheckingText' => __('Checking listing status…', 'tornevall-networks-dnsbl-implementation'),
                 'busyDelistText' => __('Sending delist request…', 'tornevall-networks-dnsbl-implementation'),
-                'cidrMovedToAdvancedText' => __('CIDR detected. Advanced mode has been opened and the range was moved there. Click Check if listed again from Advanced to run the local CIDR check, then continue the delist flow from that approved CIDR scope.', 'tornevall-networks-dnsbl-implementation'),
+                'cidrMovedToAdvancedText' => __('CIDR detected. Advanced mode has been opened and the range was moved there. Run the local CIDR check from Advanced, then continue the delist flow from that approved CIDR scope.', 'tornevall-networks-dnsbl-implementation'),
                 'cidrCheckText' => __('Check CIDR locally', 'tornevall-networks-dnsbl-implementation'),
                 'cidrCheckingText' => __('Checking CIDR locally…', 'tornevall-networks-dnsbl-implementation'),
                 'cidrStartingText' => __('Starting local CIDR scan…', 'tornevall-networks-dnsbl-implementation'),
@@ -1486,8 +1486,8 @@ class Plugin
                 wp_send_json_error([
                         'ok' => false,
                         'message' => $backgroundCheckAvailable
-                                ? __('This IP is not currently listed in DNSBL/FraudBL. A Tools API follow-up is still running in the background for a second opinion.', 'tornevall-networks-dnsbl-implementation')
-                                : __('This IP is not currently listed in DNSBL/FraudBL, so no delist request was sent.', 'tornevall-networks-dnsbl-implementation'),
+                                ? __('This IP is not currently listed in DNSBL/FraudBL according to the configured DNS resolvers. A Tools API follow-up is still running in the background for a second opinion.', 'tornevall-networks-dnsbl-implementation')
+                                : __('This IP is not currently listed in DNSBL/FraudBL according to the configured DNS resolvers, so no delist request was sent.', 'tornevall-networks-dnsbl-implementation'),
                         'operation' => 'check',
                         'ip' => $ip,
                         'check_only' => true,
@@ -1519,7 +1519,7 @@ class Plugin
                 wp_send_json_success([
                         'ok' => true,
                         'message' => $backgroundCheckAvailable
-                                ? __('This IP is listed. A Tools API follow-up is now running in the background to confirm delist details.', 'tornevall-networks-dnsbl-implementation')
+                                ? __('This IP is listed according to the configured DNS resolvers. A Tools API follow-up is now running in the background to confirm delist details.', 'tornevall-networks-dnsbl-implementation')
                                 : __('This IP is listed. Delist is ready.', 'tornevall-networks-dnsbl-implementation'),
                         'operation' => 'check',
                         'ip' => $ip,

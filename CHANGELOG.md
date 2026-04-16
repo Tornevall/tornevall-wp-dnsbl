@@ -23,6 +23,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Checker and delist submits now also show a dedicated busy spinner/status row below the buttons, so it is clearer that a live request is still running even before the result box updates.
 - CIDR delete now targets only the IPs that the local CIDR scan actually found as listed, and those delete calls are now sent sequentially one IP at a time instead of in chunked bulk batches.
 - If a user clicks **Check if listed** while a valid CIDR is still sitting in the first checker IP field, the plugin now opens **Advanced** at that point, moves the CIDR there automatically, and treats that Advanced CIDR scope as the authoritative range for the later local scan and delist submit.
+- Checker copy now says explicitly when a listed/not-listed result comes from the plugin's configured DNS resolvers first, before the optional Tools follow-up appends delist-specific detail.
 
 ### Fixed
 - Delist request no longer fails with `Invalid IP address format.` when the checker flow has locked the IP field before submit; the confirmed IP is now re-posted explicitly.
@@ -33,6 +34,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - CIDR delist no longer depends on the originally checked single IP being the only anchor for the requested block; the final submit now accepts a completed local CIDR scan ticket for the exact Advanced-range scope instead.
 - CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic “failed chunk” message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
 - The public checker can now be reused immediately after a completed lookup: the IP field no longer stays terminally locked after a listed result, and a dedicated **Reset** button now clears checker/CIDR/background state so users can start over without refreshing the page.
+- Reset/input changes now invalidate older checker/CIDR async callbacks more aggressively, so stale background responses from a previous search are less likely to repaint the form after the user has already started over.
 
 ### Technical
 - `class-dnsbl-migrations.php`: `tornevall_dnsbl_removal_token` moved to `retiredOptions()`; migration transfers its value to `tornevall_dnsbl_write_token` if the latter is empty.

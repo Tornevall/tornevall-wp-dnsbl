@@ -73,6 +73,7 @@
         var cidrScanListedCount = 0;
         var cidrScanId = '';
         var checkerStateVersion = 0;
+        var cidrScanVersion = 0;
 
         function formatTemplate(template, replacements) {
             var output = String(template || '');
@@ -130,6 +131,11 @@
         function invalidateCheckerResponses() {
             checkerStateVersion += 1;
             return checkerStateVersion;
+        }
+
+        function invalidateCidrScanRequests() {
+            cidrScanVersion += 1;
+            return cidrScanVersion;
         }
 
         function setBusyState(active, message, config) {
@@ -240,6 +246,9 @@
 
         function clearCidrScanState(options) {
             options = options || {};
+            if (options.invalidateRequest !== false) {
+                invalidateCidrScanRequests();
+            }
             cidrScanInProgress = false;
             cidrScanComplete = false;
             cidrScanListedCount = 0;
@@ -550,6 +559,7 @@
             }
 
             clearCidrScanState({keepProgressVisible: true, keepStatus: true});
+            var activeScanVersion = cidrScanVersion;
             hideCidrStatus();
             cidrScanInProgress = true;
             updateCidrProgress(0, 0, String(config.cidrStartingText || 'Starting local CIDR scan…'));
@@ -557,6 +567,10 @@
             setCheckerButtonState();
 
             var requestNextBatch = function (activeScanId) {
+                if (activeScanVersion !== cidrScanVersion) {
+                    return Promise.resolve();
+                }
+
                 if (getTrimmedCidrValue() !== cidrValue) {
                     cidrScanInProgress = false;
                     setCheckerButtonState();
@@ -576,6 +590,10 @@
 
                 return sendAjaxPayload(payload, config)
                     .then(function (result) {
+                        if (activeScanVersion !== cidrScanVersion) {
+                            return Promise.resolve();
+                        }
+
                         var data = result.json && result.json.data ? result.json.data : {};
                         var ok = !!result.json.success && !!data.ok;
                         if (!ok) {
@@ -625,6 +643,9 @@
 
                         return wait(config.cidrBatchPauseMs || 0)
                             .then(function () {
+                                if (activeScanVersion !== cidrScanVersion) {
+                                    return Promise.resolve();
+                                }
                                 return requestNextBatch(cidrScanId);
                             });
                     });
@@ -632,6 +653,10 @@
 
             requestNextBatch('')
                 .catch(function (error) {
+                    if (activeScanVersion !== cidrScanVersion) {
+                        return;
+                    }
+
                     var message = (error && typeof error.message === 'string' && error.message.trim() !== '')
                         ? String(error.message)
                         : String(config.cidrFailedText || 'The local CIDR check could not be completed.');
@@ -639,6 +664,10 @@
                     setResult(cidrStatusNode, false, message);
                 })
                 .finally(function () {
+                    if (activeScanVersion !== cidrScanVersion) {
+                        return;
+                    }
+
                     cidrScanInProgress = false;
                     setCheckerButtonState();
                 });
@@ -998,6 +1027,10 @@
                     resetTurnstile();
                 })
                 .finally(function () {
+                    if (checkerMode && requestVersion !== checkerStateVersion) {
+                        return;
+                    }
+
                     if (form.dataset.forceDelist) {
                         delete form.dataset.forceDelist;
                     }
