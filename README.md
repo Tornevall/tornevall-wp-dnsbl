@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.0`
+- **Release:** `3.1.1`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -32,15 +32,17 @@ The current release line includes:
 - dashboard/settings warnings when live DNSBL delete / delist access is missing, together with gating for the configured main delisting page
 - built-in main removal-page template plus shortcode-based custom removal pages that only expose the operations allowed by the current token
 - checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, reusable post-check searches, a dedicated **Reset** action, safer disabled-state submit handling, and a dedicated busy spinner/status row while live requests are running
-- optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, and explicit approval guidance when CIDR removal is not allowed
+- optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, explicit approval guidance when CIDR removal is not allowed, and a delegated CIDR floor from Tools so non-admin tokens can be limited to ranges like `/25`..`/32`
 - if the user clicks **Check if listed** with a valid CIDR still sitting in the first checker field, the plugin now opens **Advanced**, moves the CIDR there, and lets that Advanced CIDR scope drive the later local scan and delist submit
-- Turnstile-protected live removal submits, more tolerant checker follow-up handling on slower hosts, and frontend cache-busting so delist-flow fixes reach browsers promptly
+- optional Turnstile protection for live removal submits, now controlled by a dedicated removal-page checkbox instead of being inherited automatically from comment/registration Turnstile settings
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
+- additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
+- a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.0` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.1` release yet.
 
 ## Description
 
@@ -55,7 +57,7 @@ Current admin features include:
 - visitor statistics for blacklist activity
 - safe IP whitelisting
 - protected-admin notices and quick whitelist actions
-- Turnstile settings for comments and registrations
+- Turnstile settings for comments and registrations, plus a separate opt-in toggle for public delisting/removal submits
 - live DNSBL token permission checks before the main delisting page is activated
 - dashboard/settings warnings when the current token cannot offer live removals yet
 - built-in removal-page template plus shortcode-based custom page support
@@ -65,7 +67,7 @@ Current admin features include:
 1. Upload the plugin archive to `/wp-content/plugins/`.
 2. Activate the plugin through the **Plugins** menu in WordPress.
 3. Open the plugin settings page and configure DNSBL/FraudBL behaviour.
-4. If you want Turnstile protection, add your Cloudflare Turnstile keys in the plugin settings.
+4. If you want Turnstile protection, add your Cloudflare Turnstile keys in the plugin settings and then opt in separately for comments, registrations, and/or public delisting/removal submits.
 
 The plugin creates and uses cache/statistics tables to avoid excessive DNS traffic and to surface admin metrics.
 
@@ -101,9 +103,16 @@ Important behaviour:
 - when single-IP delist is ready a dedicated Delist action is shown, but the checker can now still be reused immediately for another lookup; **Reset** clears the current checker/CIDR state without needing a page reload, and Advanced CIDR can also be opened earlier through the explicit toggle or automatic CIDR handoff and then becomes the authoritative scope for that flow
 - checker and delist requests now also show a dedicated spinner/status row below the action buttons so it is clearer that the live request is still working
 - advanced CIDR checks are now performed locally by the WordPress plugin itself, using the configured resolver hosts in small batches with a progress bar and hit list instead of sending the block lookup to the Tools API
-- the final CIDR delete still goes through the DNSBL write endpoint, but only after the local scan has found at least one listed address in the requested `/24`-`/32` block, and the plugin now only submits delete operations for the IPs that the local CIDR scan actually marked as listed, one IP at a time
+- Advanced CIDR now follows the delegated CIDR floor exposed by Tools (`delete_min_cidr_prefix`), so non-admin tokens can be restricted to `/25`..`/32`, `/26`..`/32`, or single-IP `/32` only instead of always getting `/24` access
+- the final CIDR delete still goes through the DNSBL write endpoint, but only after the local scan has found at least one listed address in the allowed CIDR block, and the plugin now only submits delete operations for the IPs that the local CIDR scan actually marked as listed, one IP at a time
 - the CIDR scan is intentionally paced in small local batches so the resolver side is not flooded while the progress UI keeps moving forward
 - if a valid CIDR is left in the first checker field and the user clicks **Check if listed**, the plugin now moves it into the Advanced CIDR field automatically, keeps that Advanced CIDR value as the authoritative delete scope, and opens the section immediately instead of leaving the form in an invalid single-IP state
+- when the plugin talks to the Tools DNSBL endpoints it now also includes its own site identity metadata, so Tools-side removal audits can tell which WordPress site triggered a delist request even in server-to-server flows
+- Turnstile on the public delisting/removal flow is now explicitly opt-in and reuses the same site key, secret key, and theme configured for comment protection; if Cloudflare Turnstile has temporary issues, admins can now disable only the removal-page challenge without touching comments or account registration
+
+### Can I leave feedback somewhere?
+
+Yes. The plugin admin now shows a small dismissible reminder with a direct link to the WordPress.org review form so you can quickly rate the plugin and say what should improve next.
 
 ### How do I test the plugin without locking myself out?
 
@@ -112,6 +121,12 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.1 highlights
+
+- Added a dedicated admin checkbox for Turnstile on the public delisting/removal flow
+- The public removal page no longer inherits Turnstile automatically just because comment/registration Turnstile is configured
+- Cloudflare problems on `challenges.cloudflare.com` can now be mitigated by disabling only the removal-page challenge while keeping comment and registration protection unchanged
 
 ### 3.1.0 highlights
 

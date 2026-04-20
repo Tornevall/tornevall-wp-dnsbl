@@ -21,6 +21,8 @@ class Plugin
     private const CIDR_SCAN_APPROVAL_TTL = 900;
     private const INTERNAL_DELIST_SELECTION = '__internal__';
     private const INTERNAL_DELIST_QUERY_VAR = 'tornevall_dnsbl_internal_delist';
+    private const RATING_NOTICE_DISMISSED_OPTION = 'tornevall_dnsbl_rating_notice_dismissed';
+    private const RATING_NOTICE_DISMISS_QUERY = 'tornevall_dnsbl_dismiss_rating_notice';
 
     public static function registerHooks(): void
     {
@@ -28,6 +30,7 @@ class Plugin
         add_action('admin_enqueue_scripts', [self::class, 'enqueue']);
         add_action('plugins_loaded', [self::class, 'loadTranslations']);
         add_action('plugins_loaded', [Migrations::class, 'maybeUpgrade']);
+        add_action('admin_init', [self::class, 'handleRatingNoticeDismiss']);
         add_filter('query_vars', [self::class, 'registerQueryVars']);
         add_action('init', [self::class, 'registerInternalDelistRewrite']);
         add_action('init', [self::class, 'syncCacheCleanupSchedule']);
@@ -39,6 +42,7 @@ class Plugin
         add_action('admin_notices', [self::class, 'renderActionNotice']);
         add_action('admin_notices', [self::class, 'renderProtectedUserNotice']);
         add_action('admin_notices', [self::class, 'renderWriteAccessAdminNotice']);
+        add_action('admin_notices', [self::class, 'renderRatingPromptNotice']);
         add_action('admin_bar_menu', [self::class, 'addFrontendDryRunAdminBarMenu'], 100);
         add_action('tornevall_dnsbl_cache_cleanup', [self::class, 'purgeExpiredCache']);
         add_action('wp_footer', [self::class, 'renderFrontendDryRunBanner']);
@@ -154,6 +158,7 @@ class Plugin
                 'tornevall_dnsbl_comment_turnstile_site_key' => '',
                 'tornevall_dnsbl_comment_turnstile_secret_key' => '',
                 'tornevall_dnsbl_comment_turnstile_theme' => 'auto',
+                'tornevall_dnsbl_removal_turnstile_enabled' => '0',
                 'tornevall_dnsbl_registration_dnsbl_enabled' => '1',
                 'tornevall_dnsbl_registration_turnstile_enabled' => '1',
                 'tornevall_dnsbl_cache_last_cleanup' => 0,
@@ -432,12 +437,14 @@ class Plugin
                 'Delist' => 'Avlista',
                 'Advanced delist range (CIDR)' => 'Avancerat avlistningsintervall (CIDR)',
                 'Optional: set a small CIDR range tied to the listed IP. Large ranges are blocked. Use /24 to /32 only.' => 'Valfritt: ange ett litet CIDR-intervall kopplat till den listade IP-adressen. Stora intervall blockeras. Använd endast /24 till /32.',
+                'Optional: run a local DNS resolver scan for a small CIDR range before delisting it. The CIDR scan stays inside this WordPress site, and the CIDR value entered here becomes the authoritative scope for the later CIDR delist. Large ranges are blocked. Use %s only.' => 'Valfritt: kör en lokal DNS-resolverkontroll för ett litet CIDR-intervall innan det avlistas. CIDR-skanningen stannar inne i denna WordPress-sajt, och CIDR-värdet som anges här blir den auktoritativa scopen för den senare CIDR-avlistningen. Stora intervall blockeras. Använd endast %s.',
                 'CIDR range' => 'CIDR-intervall',
                 'Run the listing check first before using CIDR delist.' => 'Kör listningskontrollen först innan du använder CIDR-avlistning.',
                 'CIDR value is empty.' => 'CIDR-värdet är tomt.',
                 'CIDR must be an IPv4 range like 203.0.113.0/24.' => 'CIDR måste vara ett IPv4-intervall som 203.0.113.0/24.',
                 'CIDR currently supports IPv4 only.' => 'CIDR stöder för närvarande endast IPv4.',
                 'CIDR prefix must be between /24 and /32. Large ranges like /16 or /8 are blocked.' => 'CIDR-prefix måste vara mellan /24 och /32. Stora intervall som /16 eller /8 blockeras.',
+                'CIDR prefix must be between /%1$d and /32. Large ranges like /16 or /8 are blocked.' => 'CIDR-prefix måste vara mellan /%1$d och /32. Stora intervall som /16 eller /8 blockeras.',
                 'CIDR must include the listed IP you just checked.' => 'CIDR måste inkludera den listade IP-adress du precis kontrollerade.',
                 'Could not resolve the requested CIDR range into addresses.' => 'Det gick inte att lösa upp det begärda CIDR-intervallet till adresser.',
                 'CIDR delist request failed in one of the bulk chunks.' => 'CIDR-avlistningen misslyckades i en av bulk-delarna.',
@@ -479,6 +486,16 @@ class Plugin
                 'Dashboard and plugin settings now warn when this site lacks live DNSBL delete / delist access, so administrators can request approval from Tools before advertising removals.' => 'Dashboarden och plugin-inställningarna varnar nu när denna sajt saknar live delete-/delist-behörighet för DNSBL, så att administratörer kan begära godkännande i Tools innan avlistning erbjuds.',
                 'The WordPress dashboard now shows a warning when the configured DNSBL / Tools API token cannot perform live removals, including a direct link to the current Tools token-access page.' => 'WordPress-dashboarden visar nu en varning när den konfigurerade DNSBL / Tools API-tokenen inte kan utföra live-avlistningar, inklusive en direktlänk till aktuell token-/åtkomstsida i Tools.',
                 'The settings page now shows the same removal-access status inline near the token field, and the plugin also loads the legacy Swedish translation catalog filename used by older packaged language files.' => 'Inställningssidan visar nu samma status för avlistningsåtkomst direkt vid tokenfältet, och pluginet laddar nu även det äldre svenska översättningsfilnamnet som använts i tidigare paketerade språkfiler.',
+                'CIDR delist is disabled for this token. Only single-IP delist is available here until a delegated CIDR floor is approved in Tools.' => 'CIDR-avlistning är avstängd för detta token. Endast avlistning av enstaka IP-adresser är tillgänglig här tills en delegerad CIDR-gräns har godkänts i Tools.',
+                'How is the DNSBL plugin working for you?' => 'Hur fungerar DNSBL-pluginet för dig?',
+                'If this plugin helps you block abuse or makes delisting/support flows easier, please consider leaving a short review on WordPress.org. Honest feedback helps improve the plugin and tells us what should be fixed next.' => 'Om pluginet hjälper dig att blockera abuse eller gör delist-/supportflöden enklare, överväg gärna att lämna ett kort omdöme på WordPress.org. Ärlig feedback hjälper oss att förbättra pluginet och visar vad som bör fixas härnäst.',
+                'Review on WordPress.org' => 'Recensera på WordPress.org',
+                'Dismiss this reminder' => 'Dölj denna påminnelse',
+                'Removal page Turnstile enabled: %s' => 'Turnstile på avlistningssidan aktiverad: %s',
+                'Require Turnstile on public delisting/removal submissions' => 'Kräv Turnstile för publika delist-/removal-skickningar',
+                'Adds Cloudflare Turnstile to live delist/removal submissions on the public page. Checker-only and background follow-up requests stay verification-free so the lookup flow still works when Turnstile has temporary issues.' => 'Lägger till Cloudflare Turnstile på riktiga delist-/removal-skickningar på den publika sidan. Själva checker-steget och bakgrundsuppföljningen fortsätter utan verifiering så att uppslagsflödet fortfarande fungerar när Turnstile har tillfälliga problem.',
+                'Removal-page Turnstile reuses the same site key, secret key and theme configured above for comments. Keep this off unless you explicitly want CAPTCHA on the public delist flow.' => 'Turnstile för avlistningssidan återanvänder samma site key, secret key och theme som konfigureras ovan för kommentarer. Låt detta vara avstängt om du inte uttryckligen vill ha CAPTCHA i det publika delist-flödet.',
+                'Turnstile is optional on the public delisting/removal page and is now controlled separately from comment and registration protection.' => 'Turnstile är valfritt på den publika avlistnings-/removal-sidan och styrs nu separat från skyddet för kommentarer och registreringar.',
         ];
 
         if (($translation === '' || $translation === $text) && isset($fallbacks[$text])) {
@@ -538,6 +555,80 @@ class Plugin
         }
 
         echo self::renderWriteAccessStatusPanel(false);
+    }
+
+    public static function handleRatingNoticeDismiss(): void
+    {
+        if (!is_admin() || !current_user_can('manage_options')) {
+            return;
+        }
+
+        if (!isset($_GET[self::RATING_NOTICE_DISMISS_QUERY])) {
+            return;
+        }
+
+        $dismiss = sanitize_text_field(wp_unslash($_GET[self::RATING_NOTICE_DISMISS_QUERY]));
+        if ($dismiss !== '1') {
+            return;
+        }
+
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'tornevall_dnsbl_dismiss_rating_notice')) {
+            return;
+        }
+
+        update_option(self::RATING_NOTICE_DISMISSED_OPTION, '1');
+
+        $redirectUrl = remove_query_arg([self::RATING_NOTICE_DISMISS_QUERY, '_wpnonce']);
+        wp_safe_redirect($redirectUrl ?: admin_url('admin.php?page=tornevallDnsblMenu'));
+        exit;
+    }
+
+    public static function renderRatingPromptNotice(): void
+    {
+        if (!is_admin() || !current_user_can('manage_options')) {
+            return;
+        }
+
+        if (get_option(self::RATING_NOTICE_DISMISSED_OPTION) === '1') {
+            return;
+        }
+
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen) {
+            return;
+        }
+
+        $screenKeys = array_filter([
+            (string)($screen->id ?? ''),
+            (string)($screen->base ?? ''),
+        ]);
+
+        if (!count(array_intersect(['dashboard', 'dashboard-network', 'toplevel_page_tornevallDnsblMenu'], $screenKeys))) {
+            return;
+        }
+
+        $reviewUrl = 'https://wordpress.org/support/plugin/tornevall-networks-dnsbl-implementation/reviews/#new-post';
+        $dismissUrl = wp_nonce_url(
+            add_query_arg(self::RATING_NOTICE_DISMISS_QUERY, '1'),
+            'tornevall_dnsbl_dismiss_rating_notice'
+        );
+        ?>
+        <div class="notice notice-info is-dismissible inline">
+            <p>
+                <strong><?php echo esc_html__('How is the DNSBL plugin working for you?', 'tornevall-networks-dnsbl-implementation'); ?></strong><br>
+                <?php echo esc_html__('If this plugin helps you block abuse or makes delisting/support flows easier, please consider leaving a short review on WordPress.org. Honest feedback helps improve the plugin and tells us what should be fixed next.', 'tornevall-networks-dnsbl-implementation'); ?>
+            </p>
+            <p>
+                <a class="button button-primary" target="_blank" rel="noopener noreferrer" href="<?php echo esc_url($reviewUrl); ?>">
+                    <?php echo esc_html__('Review on WordPress.org', 'tornevall-networks-dnsbl-implementation'); ?>
+                </a>
+                <a class="button button-link" href="<?php echo esc_url($dismissUrl); ?>">
+                    <?php echo esc_html__('Dismiss this reminder', 'tornevall-networks-dnsbl-implementation'); ?>
+                </a>
+            </p>
+        </div>
+        <?php
     }
 
     public static function renderWriteAccessStatusPanel(bool $inline = false): string
@@ -879,6 +970,8 @@ class Plugin
         $showOperationSelector = !$lockOperation && count($availableActions) > 1;
         $defaultActionIsUpdate = $defaultAction === 'update';
         $prefillIp = $checkerMode ? self::currentVisitorIp() : '';
+        $advancedCidrMinPrefix = $checkerMode ? self::resolveAdvancedCidrMinPrefix($permissionSummary) : null;
+        $advancedCidrRangeLabel = $checkerMode ? self::describeAdvancedCidrRange($permissionSummary) : '/24 to /32';
         $canUseAdvancedCidr = $checkerMode ? self::canUseAdvancedCidr($permissionSummary) : false;
         $restrictedNotice = count($availableActions) < count($requestedActions)
                 ? __('Only the DNSBL operations allowed by the currently configured token are shown below.', 'tornevall-networks-dnsbl-implementation')
@@ -888,6 +981,7 @@ class Plugin
         ?>
         <form class="tornevall-dnsbl-removal-form" data-tornevall-dnsbl-removal-form="1"
               data-checker-mode="<?php echo $checkerMode ? '1' : '0'; ?>"
+              data-cidr-min-prefix="<?php echo esc_attr((string)($advancedCidrMinPrefix ?? 24)); ?>"
               data-can-cidr-delete="<?php echo $canUseAdvancedCidr ? '1' : '0'; ?>" novalidate>
             <style>
                 @keyframes tornevall-dnsbl-spin {
@@ -958,7 +1052,7 @@ class Plugin
                         <strong><?php echo esc_html__('Advanced delist range (CIDR)', 'tornevall-networks-dnsbl-implementation'); ?></strong>
                     </p>
                     <p style="margin:0 0 .45rem 0; color:#1e3a8a; font-size:.92em;">
-                        <?php echo esc_html__('Optional: run a local DNS resolver scan for a small CIDR range before delisting it. The CIDR scan stays inside this WordPress site, and the CIDR value entered here becomes the authoritative scope for the later CIDR delist. Large ranges are blocked. Use /24 to /32 only.', 'tornevall-networks-dnsbl-implementation'); ?>
+                        <?php echo esc_html(sprintf(__('Optional: run a local DNS resolver scan for a small CIDR range before delisting it. The CIDR scan stays inside this WordPress site, and the CIDR value entered here becomes the authoritative scope for the later CIDR delist. Large ranges are blocked. Use %s only.', 'tornevall-networks-dnsbl-implementation'), $advancedCidrRangeLabel)); ?>
                     </p>
                     <label><?php echo esc_html__('CIDR range', 'tornevall-networks-dnsbl-implementation'); ?><br>
                         <input type="text" name="cidr_range" placeholder="203.0.113.0/24" style="min-width:260px;"
@@ -996,7 +1090,7 @@ class Plugin
             <?php } elseif ($checkerMode) { ?>
                 <p style="margin:0 0 .8rem 0; color:#92400e;">
                     <?php
-                    echo esc_html__('CIDR delist is disabled for this token. Only single-IP delist is available here.', 'tornevall-networks-dnsbl-implementation');
+                    echo esc_html__('CIDR delist is disabled for this token. Only single-IP delist is available here until a delegated CIDR floor is approved in Tools.', 'tornevall-networks-dnsbl-implementation');
                     echo ' ';
                     printf(
                             '<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
@@ -1296,6 +1390,8 @@ class Plugin
                 'cidrHitListSummaryProgressText' => __('Listed addresses found so far: %1$d', 'tornevall-networks-dnsbl-implementation'),
                 'cidrHitListSummaryCompleteText' => __('Listed addresses found: %1$d of %2$d', 'tornevall-networks-dnsbl-implementation'),
                 'cidrBatchPauseMs' => 75,
+                'cidrMinPrefix' => $advancedCidrMinPrefix ?? 24,
+                'cidrMaxPrefix' => 32,
                 'backgroundCheckingText' => __('Checking Tools API in the background…', 'tornevall-networks-dnsbl-implementation'),
                 'cidrTimeoutText' => __('CIDR delist request timed out while waiting for Tools. Already submitted delete operations may still finish in the background, so re-check the listed hit list before retrying immediately.', 'tornevall-networks-dnsbl-implementation'),
                 'backgroundCheckFailedText' => __('The Tools API follow-up could not be completed. The first DNS result is still shown above.', 'tornevall-networks-dnsbl-implementation'),
@@ -1323,23 +1419,54 @@ class Plugin
         return is_string($fallback) ? $fallback : 'delete';
     }
 
+    private static function resolveAdvancedCidrMinPrefix(array $permissionSummary): ?int
+    {
+        if (!empty($permissionSummary['token']['is_admin_token'])) {
+            return 24;
+        }
+
+        if (!empty($permissionSummary['token']['resolved_via']) && (string)$permissionSummary['token']['resolved_via'] === 'admin_api_key_passthrough') {
+            return 24;
+        }
+
+        $guardrails = is_array($permissionSummary['delete_guardrails'] ?? null)
+                ? $permissionSummary['delete_guardrails']
+                : (is_array($permissionSummary['token']['delete_guardrails'] ?? null) ? $permissionSummary['token']['delete_guardrails'] : []);
+
+        $minPrefix = isset($guardrails['delete_min_cidr_prefix']) ? (int)$guardrails['delete_min_cidr_prefix'] : 0;
+
+        return ($minPrefix >= 24 && $minPrefix <= 32) ? $minPrefix : null;
+    }
+
+    private static function describeAdvancedCidrRange(array $permissionSummary): string
+    {
+        $minPrefix = self::resolveAdvancedCidrMinPrefix($permissionSummary);
+
+        return '/' . (string)($minPrefix ?? 24) . ' to /32';
+    }
+
     private static function canUseAdvancedCidr(array $permissionSummary): bool
     {
-        $token = is_array($permissionSummary['token'] ?? null) ? $permissionSummary['token'] : [];
-        if (!empty($token['is_admin_token'])) {
+        if (empty($permissionSummary['can_delete'])) {
+            return false;
+        }
+
+        if (!empty($permissionSummary['can_cidr_delete'])) {
             return true;
         }
 
-        if (!empty($token['can_cidr_delete'])) {
-            return true;
-        }
+        return self::resolveAdvancedCidrMinPrefix($permissionSummary) !== null;
+    }
 
-        return false;
+    public static function removalTurnstileRequested(): bool
+    {
+        return get_option('tornevall_dnsbl_removal_turnstile_enabled') === '1';
     }
 
     public static function removalTurnstileEnabled(): bool
     {
-        return self::commentTurnstileSiteKey() !== ''
+        return self::removalTurnstileRequested()
+                && self::commentTurnstileSiteKey() !== ''
                 && self::commentTurnstileSecretKey() !== '';
     }
 
@@ -1557,7 +1684,11 @@ class Plugin
                 ], 409);
             }
 
-            $cidrValidation = self::validateRemovalCidr($cidrRangeRaw);
+            $cidrValidation = self::validateRemovalCidr(
+                    $cidrRangeRaw,
+                    '',
+                    self::resolveAdvancedCidrMinPrefix($permissionSummaryForCidr) ?? 24
+            );
             if (empty($cidrValidation['ok'])) {
                 wp_send_json_error([
                         'ok' => false,
@@ -1722,7 +1853,11 @@ class Plugin
             }
         } else {
             $cidrRangeRaw = isset($_POST['cidr_range']) ? trim(sanitize_text_field(wp_unslash($_POST['cidr_range']))) : '';
-            $cidrValidation = self::validateRemovalCidr($cidrRangeRaw);
+            $cidrValidation = self::validateRemovalCidr(
+                    $cidrRangeRaw,
+                    '',
+                    self::resolveAdvancedCidrMinPrefix($permissionSummary) ?? 24
+            );
             if (empty($cidrValidation['ok'])) {
                 wp_send_json_error([
                         'ok' => false,
@@ -1847,7 +1982,7 @@ class Plugin
     /**
      * @return array{ok:bool,status?:int,message?:string,cidr?:string}
      */
-    private static function validateRemovalCidr(string $cidr, string $listedIp = ''): array
+    private static function validateRemovalCidr(string $cidr, string $listedIp = '', int $minPrefix = 24): array
     {
         $cidr = trim($cidr);
         if ($cidr === '') {
@@ -1865,8 +2000,9 @@ class Plugin
             return ['ok' => false, 'status' => 422, 'message' => __('CIDR currently supports IPv4 only.', 'tornevall-networks-dnsbl-implementation')];
         }
 
-        if ($prefix < 24 || $prefix > 32) {
-            return ['ok' => false, 'status' => 422, 'message' => __('CIDR prefix must be between /24 and /32. Large ranges like /16 or /8 are blocked.', 'tornevall-networks-dnsbl-implementation')];
+        $minPrefix = max(24, min(32, $minPrefix));
+        if ($prefix < $minPrefix || $prefix > 32) {
+            return ['ok' => false, 'status' => 422, 'message' => sprintf(__('CIDR prefix must be between /%1$d and /32. Large ranges like /16 or /8 are blocked.', 'tornevall-networks-dnsbl-implementation'), $minPrefix)];
         }
 
         if ($listedIp !== '' && !self::ipMatchesCidr($listedIp, $networkIp . '/' . $prefix)) {

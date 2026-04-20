@@ -209,6 +209,7 @@ class Admin
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_site_key', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_secret_key', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_theme', ['sanitize_callback' => [self::class, 'sanitizeTurnstileTheme']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_dnsbl_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
     }
@@ -343,6 +344,14 @@ class Admin
                             !empty($summary['can_delete']) ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'),
                             !empty($summary['can_update']) ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation')
                     )); ?>
+                </div>
+                <?php $cidrFloor = isset($summary['delete_guardrails']['delete_min_cidr_prefix']) ? (int)$summary['delete_guardrails']['delete_min_cidr_prefix'] : 0; ?>
+                <div style="margin-top:.35rem; color:#475569; font-size:12px;">
+                    <?php echo esc_html(
+                            !empty($summary['can_cidr_delete'])
+                                    ? sprintf(__('CIDR delist range: /%1$d to /32', 'tornevall-networks-dnsbl-implementation'), $cidrFloor >= 24 ? $cidrFloor : 24)
+                                    : __('CIDR delist is not delegated for this token.', 'tornevall-networks-dnsbl-implementation')
+                    ); ?>
                 </div>
             <?php } ?>
         </div>
@@ -634,6 +643,8 @@ class Admin
         $turnstileSiteKey = Plugin::commentTurnstileSiteKey();
         $turnstileSecretKey = Plugin::commentTurnstileSecretKey();
         $turnstileTheme = Plugin::commentTurnstileTheme();
+        $removalTurnstileRequested = Plugin::removalTurnstileRequested();
+        $removalTurnstileActive = Plugin::removalTurnstileEnabled();
         $registrationDnsblEnabled = Plugin::registrationDnsblEnabled();
         $registrationTurnstileEnabled = get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1';
         $whitelistEntries = Plugin::getWhitelistEntries();
@@ -684,6 +695,7 @@ class Admin
                             <li><?php echo esc_html(sprintf(__('DNSBL / Tools API token configured: %s', 'tornevall-networks-dnsbl-implementation'), $apiTokenSet ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Delete / delist permission confirmed: %s', 'tornevall-networks-dnsbl-implementation'), $delistingAccessConfirmed ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Comment Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $turnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Removal page Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileActive ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration DNSBL enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Dev mode: %s', 'tornevall-networks-dnsbl-implementation'), $devMode ? __('enabled', 'tornevall-networks-dnsbl-implementation') : __('disabled', 'tornevall-networks-dnsbl-implementation'))); ?></li>
@@ -929,6 +941,7 @@ class Admin
                                         }
 
                                         if (summary && (summary.has_token || summary.ok)) {
+                                            var cidrFloor = summary.delete_guardrails && summary.delete_guardrails.delete_min_cidr_prefix ? parseInt(summary.delete_guardrails.delete_min_cidr_prefix, 10) : 0;
                                             var rows = '';
                                             if (summary.token && summary.token.name) {
                                                 rows += '<tr><th><?php echo esc_js(__('Name', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + esc(summary.token.name) + '<\/td><\/tr>';
@@ -945,6 +958,7 @@ class Admin
                                             rows += '<tr><th><?php echo esc_js(__('Can add (list IP)', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_add ? '✓' : '✗') + '<\/td><\/tr>';
                                             rows += '<tr><th><?php echo esc_js(__('Can delete (delist IP)', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_delete ? '✓' : '✗') + '<\/td><\/tr>';
                                             rows += '<tr><th><?php echo esc_js(__('Can update', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_update ? '✓' : '✗') + '<\/td><\/tr>';
+                                            rows += '<tr><th><?php echo esc_js(__('CIDR delist', 'tornevall-networks-dnsbl-implementation')); ?><\/th><td>' + (summary.can_cidr_delete ? ('/' + (cidrFloor >= 24 ? cidrFloor : 24) + ' to /32') : '<?php echo esc_js(__('single-IP only', 'tornevall-networks-dnsbl-implementation')); ?>') + '<\/td><\/tr>';
                                             html += '<table class="widefat striped" style="margin-top:8px;"><tbody>' + rows + '<\/tbody><\/table>';
                                         } else if (rawBody && rawBody.reason === 'wrong_token_type') {
                                             html += '<div class="notice notice-warning inline"><p><?php echo esc_js(__('The supplied token was recognized by Tools, but it is not currently exposing DNSBL delete permissions for this site.', 'tornevall-networks-dnsbl-implementation')); ?><\/p><\/div>';
@@ -1093,7 +1107,14 @@ class Admin
                         </p>
                         <?php
                         self::renderCheckboxRow('tornevall_dnsbl_delistingpage_comments_disabled', __('Disable comments on the delisting page', 'tornevall-networks-dnsbl-implementation'), __('Useful if the delisting page attracts many support comments.', 'tornevall-networks-dnsbl-implementation'), (bool)get_option('tornevall_dnsbl_delistingpage_comments_disabled'));
+                        self::renderCheckboxRow('tornevall_dnsbl_removal_turnstile_enabled', __('Require Turnstile on public delisting/removal submissions', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to live delist/removal submissions on the public page. Checker-only and background follow-up requests stay verification-free so the lookup flow still works when Turnstile has temporary issues.', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileRequested);
                         ?>
+                        <p class="description" style="max-width:820px; margin-top:-4px;">
+                            <?php echo esc_html__('Removal-page Turnstile reuses the same site key, secret key and theme configured above for comments. Keep this off unless you explicitly want CAPTCHA on the public delist flow.', 'tornevall-networks-dnsbl-implementation'); ?>
+                        </p>
+                        <p class="description" style="max-width:820px;">
+                            <?php echo esc_html__('Turnstile is optional on the public delisting/removal page and is now controlled separately from comment and registration protection.', 'tornevall-networks-dnsbl-implementation'); ?>
+                        </p>
                         <?php if (!$delistingAccessConfirmed) { ?>
                             <script>
                                 (function () {

@@ -108,7 +108,12 @@
             }
 
             var prefix = parseInt(match[2], 10);
-            if (prefix < 24 || prefix > 32) {
+            var config = window.tornevallDnsblRemovalForm || {};
+            var minPrefix = parseInt(form.getAttribute('data-cidr-min-prefix') || config.cidrMinPrefix || 24, 10);
+            if (isNaN(minPrefix) || minPrefix < 24 || minPrefix > 32) {
+                minPrefix = 24;
+            }
+            if (prefix < minPrefix || prefix > 32) {
                 return '';
             }
 
