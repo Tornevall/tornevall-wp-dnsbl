@@ -85,6 +85,7 @@ class ApiClient
     {
         $url = $this->baseUrl . $path;
         $timeoutSeconds = $timeout !== null ? max(1, (int)$timeout) : $this->timeout;
+        $payload = $this->withSourceMetadata($payload);
 
         $args = [
             'method' => 'POST',
@@ -156,6 +157,42 @@ class ApiClient
         return strpos($message, 'timed out') !== false
             || strpos($message, 'timeout') !== false
             || strpos($message, 'curl error 28') !== false;
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @return array<string,mixed>
+     */
+    private function withSourceMetadata(array $payload): array
+    {
+        foreach ($this->buildSiteSourceMetadata() as $key => $value) {
+            if (!isset($payload[$key]) || trim((string)$payload[$key]) === '') {
+                $payload[$key] = $value;
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function buildSiteSourceMetadata(): array
+    {
+        $siteUrl = function_exists('home_url') ? trim((string)home_url('/')) : '';
+        $siteHost = $siteUrl !== '' ? trim((string)wp_parse_url($siteUrl, PHP_URL_HOST)) : '';
+        $siteName = function_exists('get_bloginfo') ? trim((string)get_bloginfo('name')) : '';
+
+        $metadata = [
+            'source_type' => 'wordpress_plugin',
+            'source_name' => $siteName !== '' ? $siteName : $siteHost,
+            'source_site_url' => $siteUrl,
+            'source_site_host' => $siteHost,
+        ];
+
+        return array_filter($metadata, static function ($value): bool {
+            return trim((string)$value) !== '';
+        });
     }
 
     /**
@@ -350,7 +387,7 @@ class ApiClient
     // ─── HTTP layer ───────────────────────────────────────────────────────────
 
     /**
-     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool}
+     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool,can_cidr_delete:bool,delete_guardrails:array<string,mixed>}
      */
     public function getTokenPermissionSummary(): array
     {
@@ -359,7 +396,7 @@ class ApiClient
 
     /**
      * @param array{ok?:bool,status?:int,body?:array,error?:string|null} $result
-     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool}
+     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool,can_cidr_delete:bool,delete_guardrails:array<string,mixed>}
      */
     public static function normalizeTokenInfoResult(array $result, bool $hasToken = true): array
     {
@@ -369,11 +406,14 @@ class ApiClient
 
         $body = is_array($result['body'] ?? null) ? $result['body'] : [];
         $token = is_array($body['token'] ?? null) ? $body['token'] : [];
+        $guardrails = is_array($token['delete_guardrails'] ?? null) ? $token['delete_guardrails'] : [];
+        $guardrailMinPrefix = isset($guardrails['delete_min_cidr_prefix']) ? (int)$guardrails['delete_min_cidr_prefix'] : 0;
         $message = trim((string)($body['message'] ?? $result['error'] ?? ''));
         $statusLabel = strtolower((string)($token['status'] ?? ''));
         $isActive = !empty($result['ok']) && $statusLabel === 'active';
         $canAdd = $isActive && !empty($token['can_add']);
         $canDelete = $isActive && !empty($token['can_delete']);
+        $canCidrDelete = !empty($token['can_cidr_delete']) || (!empty($token['is_admin_token']) ? true : ($canDelete && $guardrailMinPrefix >= 24 && $guardrailMinPrefix <= 32));
 
         if ($message === '' && empty($result['ok'])) {
             $message = __('The configured DNSBL / Tools API token could not be verified right now.', 'tornevall-networks-dnsbl-implementation');
@@ -402,11 +442,13 @@ class ApiClient
             'can_add' => $canAdd,
             'can_delete' => $canDelete,
             'can_update' => $canAdd && $canDelete,
+            'can_cidr_delete' => $canCidrDelete,
+            'delete_guardrails' => $guardrails,
         ];
     }
 
     /**
-     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool}
+     * @return array{ok:bool,status:int,body:array,token:array,message:string,error:string,has_token:bool,is_active:bool,can_add:bool,can_delete:bool,can_update:bool,can_cidr_delete:bool,delete_guardrails:array<string,mixed>}
      */
     public static function emptyTokenPermissionSummary(string $message = ''): array
     {
@@ -426,6 +468,8 @@ class ApiClient
             'can_add' => false,
             'can_delete' => false,
             'can_update' => false,
+            'can_cidr_delete' => false,
+            'delete_guardrails' => [],
         ];
     }
 

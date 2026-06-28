@@ -2,6 +2,20 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## Unreleased
+
+### Changed
+- Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
+
+## 3.1.1 - 2026-04-20
+
+### Changed
+- The public delisting/removal page now has its own explicit admin toggle for Cloudflare Turnstile instead of inheriting Turnstile automatically from the comment/registration setup.
+- Removal-page Turnstile reuses the existing comment Turnstile site key, secret key, and theme when admins opt in, so the hotfix stays small and does not introduce a second key-management workflow.
+
+### Fixed
+- Site owners can now disable Turnstile only on the public delisting/removal flow when `challenges.cloudflare.com` is unstable, without having to weaken comment or WordPress registration protection at the same time.
+
 ## 3.1.0
 
 ### Added
@@ -10,6 +24,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Added the checker/removal follow-up against `POST /api/dnsbl/check-ip`, so the public delist flow can confirm live delist candidates after the first local DNS answer.
 - Added the built-in main removal-page template, live delisting-page permission gating, and admin/dashboard warnings when the configured token still lacks delete / delist access.
 - Added advanced optional CIDR delist support for permitted tokens together with Cloudflare Turnstile protection for live removal-form submissions.
+- Added a dismissible WordPress.org feedback/review reminder in the admin UI so site owners can quickly rate the plugin and suggest improvements.
 
 ### Changed
 - Renamed the old removal-token concept to one functional **Write token** flow, migrated legacy saved values, and consolidated the settings UI around one visible DNSBL / Tools token field.
@@ -18,11 +33,12 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - The public delist flow now uses a checker-style UX with separate **Check if listed** / **Delist** steps, local-first listing confirmation, background Tools follow-up, and permission-aware shortcode/main-page behavior.
 - The plugin-managed main removal page stays delete-focused, while custom shortcode pages remain supported but only expose the operations allowed by the current token.
 - Delisting-page controls, token status panels, admin warnings, rewrite handling, and settings copy were all tightened so delete / delist availability is clearer and 404-prone internal routing is avoided.
-- Advanced CIDR mode now sits behind an explicit **Advanced** toggle, stays permission-aware, auto-fills safer defaults when opened from a confirmed checker result, and runs its `/24`-`/32` lookup locally inside WordPress instead of using Tools for the block scan itself.
+- Advanced CIDR mode now sits behind an explicit **Advanced** toggle, stays permission-aware, auto-fills safer defaults when opened from a confirmed checker result, and runs its delegated CIDR lookup locally inside WordPress instead of using Tools for the block scan itself.
 - The advanced CIDR UI now walks the requested block in small local batches, shows scan progress live, and keeps a visible hit list of listed IPs found in the block while the scan runs.
 - Checker and delist submits now also show a dedicated busy spinner/status row below the buttons, so it is clearer that a live request is still running even before the result box updates.
 - CIDR delete now targets only the IPs that the local CIDR scan actually found as listed, and those delete calls are now sent sequentially one IP at a time instead of in chunked bulk batches.
 - If a user clicks **Check if listed** while a valid CIDR is still sitting in the first checker IP field, the plugin now opens **Advanced** at that point, moves the CIDR there automatically, and treats that Advanced CIDR scope as the authoritative range for the later local scan and delist submit.
+- Advanced CIDR is now also driven by the delegated Tools guardrail `delete_min_cidr_prefix`, so non-admin tokens can be limited to ranges like `/25`..`/32`, `/26`..`/32`, or `/32` only instead of always exposing `/24`.
 - Checker copy now says explicitly when a listed/not-listed result comes from the plugin's configured DNS resolvers first, before the optional Tools follow-up appends delist-specific detail.
 
 ### Fixed

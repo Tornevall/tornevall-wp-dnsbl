@@ -29,44 +29,6 @@
         node.textContent = '';
     }
 
-    function turnstileApiReady() {
-        return !!(window.turnstile && typeof window.turnstile.render === 'function');
-    }
-
-    function loadTurnstileApiIfMissing() {
-        if (turnstileApiReady()) {
-            return;
-        }
-
-        if (document.querySelector('script[src*="challenges.cloudflare.com/turnstile/v0/api.js"]')) {
-            return;
-        }
-
-        var script = document.createElement('script');
-        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-        document.head.appendChild(script);
-    }
-
-    function whenTurnstileReady(callback) {
-        var startedAt = Date.now();
-        loadTurnstileApiIfMissing();
-
-        function poll() {
-            if (turnstileApiReady()) {
-                callback();
-                return;
-            }
-
-            if (Date.now() - startedAt > 10000) {
-                return;
-            }
-
-            window.setTimeout(poll, 100);
-        }
-
-        poll();
-    }
-
     function bindForm(form) {
         var submitBtn = form.querySelector('[data-removal-submit]');
         var delistBtn = form.querySelector('[data-removal-delist]');
@@ -102,6 +64,7 @@
         var checkerBaseMessage = '';
         var checkerBackgroundPending = false;
         var checkerDeleteCandidates = [];
+        var turnstileActivated = false;
         var checkerPrefillIp = ipInput ? String(ipInput.getAttribute('data-prefill-ip') || '') : '';
         var checkerPrefillCleared = false;
         var advancedEnabled = false;
@@ -111,15 +74,14 @@
         var cidrScanId = '';
         var checkerStateVersion = 0;
         var cidrScanVersion = 0;
-        var turnstileActivated = false;
-        var turnstileRendering = false;
-        var turnstileWidgetId = '';
 
         function formatTemplate(template, replacements) {
             var output = String(template || '');
             Object.keys(replacements || {}).forEach(function (key) {
-                output = output.replace(new RegExp('%' + key + '\\$[ds]', 'g'), String(replacements[key]));
+                var value = String(replacements[key]);
+                output = output.replace(new RegExp('%' + key + '\\$[ds]', 'g'), value);
             });
+
             return output;
         }
 
@@ -146,7 +108,12 @@
             }
 
             var prefix = parseInt(match[2], 10);
-            if (prefix < 24 || prefix > 32) {
+            var config = window.tornevallDnsblRemovalForm || {};
+            var minPrefix = parseInt(form.getAttribute('data-cidr-min-prefix') || config.cidrMinPrefix || 24, 10);
+            if (isNaN(minPrefix) || minPrefix < 24 || minPrefix > 32) {
+                minPrefix = 24;
+            }
+            if (prefix < minPrefix || prefix > 32) {
                 return '';
             }
 
@@ -177,14 +144,16 @@
         }
 
         function setBusyState(active, message, config) {
-            var fallbackText = String((config && config.busyText) || 'Working...');
+            var fallbackText = String((config && config.busyText) || 'Working…');
 
             if (busyNode) {
                 busyNode.style.display = active ? 'flex' : 'none';
             }
 
             if (busyTextNode) {
-                busyTextNode.textContent = active ? String(message || fallbackText) : fallbackText;
+                busyTextNode.textContent = active
+                    ? String(message || fallbackText)
+                    : fallbackText;
             }
 
             if (active) {
@@ -293,18 +262,23 @@
             if (cidrScanTokenInput) {
                 cidrScanTokenInput.value = '';
             }
+
             if (cidrProgressBar) {
                 cidrProgressBar.style.width = '0%';
             }
+
             if (cidrProgressText) {
                 cidrProgressText.textContent = '';
             }
+
             if (cidrProgressWrap && !options.keepProgressVisible) {
                 cidrProgressWrap.style.display = 'none';
             }
+
             if (!options.keepStatus) {
                 hideCidrStatus();
             }
+
             clearCidrHitList();
         }
 
@@ -319,9 +293,13 @@
             }
 
             if (cidrProgressText) {
-                var prefix = total > 0 ? String(processed) + '/' + String(total) : '0/0';
+                var prefix = total > 0
+                    ? String(processed) + '/' + String(total)
+                    : '0/0';
                 var details = String(message || '').trim();
-                cidrProgressText.textContent = details !== '' ? prefix + ' - ' + details : prefix;
+                cidrProgressText.textContent = details !== ''
+                    ? prefix + ' — ' + details
+                    : prefix;
             }
         }
 
@@ -356,124 +334,6 @@
                 });
         }
 
-        function getTurnstileContainer() {
-            if (!cloudflareTokenInput) {
-                return null;
-            }
-
-            var containerId = cloudflareTokenInput.getAttribute('data-turnstile-container');
-            return containerId ? document.getElementById(containerId) : null;
-        }
-
-        function clearTurnstileToken() {
-            if (cloudflareTokenInput) {
-                cloudflareTokenInput.value = '';
-            }
-        }
-
-        function ensureTurnstileActivated() {
-            if (!cloudflareTokenInput || turnstileActivated || turnstileRendering) {
-                return;
-            }
-
-            var container = getTurnstileContainer();
-            if (!container) {
-                return;
-            }
-
-            var siteKey = String(cloudflareTokenInput.getAttribute('data-turnstile-sitekey') || '').trim();
-            if (siteKey === '') {
-                return;
-            }
-
-            turnstileRendering = true;
-            whenTurnstileReady(function () {
-                if (turnstileActivated) {
-                    turnstileRendering = false;
-                    return;
-                }
-
-                try {
-                    turnstileWidgetId = window.turnstile.render(container, {
-                        sitekey: siteKey,
-                        theme: String(container.getAttribute('data-theme') || 'auto'),
-                        callback: function (token) {
-                            cloudflareTokenInput.value = token;
-                        },
-                        'expired-callback': function () {
-                            clearTurnstileToken();
-                        },
-                        'timeout-callback': function () {
-                            clearTurnstileToken();
-                        },
-                        'error-callback': function () {
-                            clearTurnstileToken();
-                        }
-                    });
-                    container.setAttribute('data-turnstile-rendered', '1');
-                    turnstileActivated = true;
-                } catch (e) {
-                    clearTurnstileToken();
-                    turnstileActivated = false;
-                } finally {
-                    turnstileRendering = false;
-                }
-            });
-        }
-
-        function resetTurnstile() {
-            if (!cloudflareTokenInput) {
-                return;
-            }
-
-            clearTurnstileToken();
-            if (!turnstileApiReady()) {
-                return;
-            }
-
-            if (turnstileWidgetId !== '') {
-                try {
-                    window.turnstile.reset(turnstileWidgetId);
-                    return;
-                } catch (e) {
-                    // Fall through and rebuild the widget below.
-                }
-            }
-
-            var container = getTurnstileContainer();
-            if (container && turnstileWidgetId !== '') {
-                try {
-                    window.turnstile.remove(turnstileWidgetId);
-                } catch (e2) {
-                    // Re-rendering below is safer than failing the form flow.
-                }
-                container.removeAttribute('data-turnstile-rendered');
-            }
-
-            turnstileWidgetId = '';
-            turnstileActivated = false;
-            ensureTurnstileActivated();
-        }
-
-        function updateTurnstileState() {
-            if (!cloudflareTokenInput) {
-                return;
-            }
-
-            var requiresTurnstile = !checkerMode || checkerListed || hasReadyCidrScan();
-            if (turnstileWrap) {
-                turnstileWrap.style.display = requiresTurnstile ? 'block' : 'none';
-            }
-
-            if (requiresTurnstile) {
-                cloudflareTokenInput.setAttribute('required', 'required');
-                ensureTurnstileActivated();
-            } else {
-                cloudflareTokenInput.removeAttribute('required');
-                clearTurnstileToken();
-            }
-        }
-
         function setCheckerButtonState() {
             if (!checkerMode || !submitBtn) {
                 return;
@@ -499,6 +359,7 @@
             if (resetBtn) {
                 resetBtn.disabled = false;
             }
+
             if (ipInput) {
                 ipInput.disabled = cidrScanInProgress;
             }
@@ -515,7 +376,9 @@
             if (advancedToggleBtn) {
                 advancedToggleBtn.style.display = canUseAdvancedCidr && (checkerConfirmed || advancedEnabled) ? 'inline-block' : 'none';
                 advancedToggleBtn.disabled = cidrScanInProgress;
-                advancedToggleBtn.textContent = advancedEnabled ? 'Advanced - ON' : 'Advanced';
+                advancedToggleBtn.textContent = advancedEnabled
+                    ? 'Advanced - ON'
+                    : 'Advanced';
             }
 
             if (cidrCheckBtn) {
@@ -523,7 +386,7 @@
                 cidrCheckBtn.style.display = showCidrCheck ? 'inline-block' : 'none';
                 cidrCheckBtn.disabled = !showCidrCheck || cidrScanInProgress || cidrValue === '';
                 cidrCheckBtn.textContent = cidrScanInProgress
-                    ? String(config.cidrCheckingText || 'Checking CIDR locally...')
+                    ? String(config.cidrCheckingText || 'Checking CIDR locally…')
                     : String(config.cidrCheckText || 'Check CIDR locally');
             }
 
@@ -534,8 +397,8 @@
             setBusyState(
                 true,
                 checkerMode
-                    ? String(isDeleteSubmission ? (config.busyDelistText || config.sendingText || 'Sending delist request...') : (config.busyCheckingText || config.checkingText || 'Checking listing status...'))
-                    : String(config.busyText || config.sendingText || 'Working...'),
+                    ? String(isDeleteSubmission ? (config.busyDelistText || config.sendingText || 'Sending delist request…') : (config.busyCheckingText || config.checkingText || 'Checking listing status…'))
+                    : String(config.busyText || config.sendingText || 'Working…'),
                 config
             );
 
@@ -548,7 +411,9 @@
 
             if (delistBtn) {
                 delistBtn.disabled = true;
-                delistBtn.textContent = isDeleteSubmission ? String(config.sendingText || 'Submitting request...') : delistBtnText;
+                delistBtn.textContent = isDeleteSubmission
+                    ? String(config.sendingText || 'Submitting request...')
+                    : delistBtnText;
             }
         }
 
@@ -582,7 +447,11 @@
             setCheckerButtonState();
 
             if (showMessage) {
-                setResult(resultNode, true, String(config.cidrMovedToAdvancedText || 'CIDR detected. Advanced mode has been opened and the range was moved there. Run the local CIDR check from Advanced, then continue the delist flow from that approved CIDR scope.'));
+                setResult(
+                    resultNode,
+                    true,
+                    String(config.cidrMovedToAdvancedText || 'CIDR detected. Advanced mode has been opened and the range was moved there. Run the local CIDR check from Advanced, then continue the delist flow from that approved CIDR scope.')
+                );
             }
 
             return true;
@@ -627,6 +496,60 @@
             oldInput.required = update;
         }
 
+        syncOperationFields();
+        if (opSelect) {
+            opSelect.addEventListener('change', syncOperationFields);
+        }
+
+        if (checkerMode && ipInput) {
+            ipInput.addEventListener('input', function () {
+                resetCheckerState({keepIp: true});
+            });
+
+            var clearPrefilledIpOnFirstFocus = function () {
+                if (checkerPrefillCleared || checkerPrefillIp === '') {
+                    return;
+                }
+                if (String(ipInput.value || '').trim() === checkerPrefillIp) {
+                    ipInput.value = '';
+                    resetCheckerState({keepIp: true});
+                }
+                checkerPrefillCleared = true;
+            };
+
+            ipInput.addEventListener('focus', clearPrefilledIpOnFirstFocus);
+            ipInput.addEventListener('click', clearPrefilledIpOnFirstFocus);
+            ipInput.addEventListener('touchstart', clearPrefilledIpOnFirstFocus, {passive: true});
+            ipInput.addEventListener('pointerdown', clearPrefilledIpOnFirstFocus, {passive: true});
+            ipInput.addEventListener('keydown', function () {
+                clearPrefilledIpOnFirstFocus();
+            });
+        }
+
+        if (advancedToggleBtn) {
+            advancedToggleBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (!canUseAdvancedCidr || (!checkerConfirmed && !advancedEnabled)) {
+                    return;
+                }
+                advancedEnabled = !advancedEnabled;
+                if (advancedEnabled && cidrInput && String(cidrInput.value || '').trim() === '' && checkerIp !== '') {
+                    cidrInput.value = checkerIp + '/32';
+                }
+                if (!advancedEnabled) {
+                    clearCidrScanState();
+                }
+                setCheckerButtonState();
+            });
+        }
+
+        if (cidrInput) {
+            cidrInput.addEventListener('input', function () {
+                clearCidrScanState();
+                setCheckerButtonState();
+            });
+        }
+
         function runLocalCidrScan() {
             var config = window.tornevallDnsblRemovalForm || {};
             var cidrValue = getTrimmedCidrValue();
@@ -644,7 +567,7 @@
             var activeScanVersion = cidrScanVersion;
             hideCidrStatus();
             cidrScanInProgress = true;
-            updateCidrProgress(0, 0, String(config.cidrStartingText || 'Starting local CIDR scan...'));
+            updateCidrProgress(0, 0, String(config.cidrStartingText || 'Starting local CIDR scan…'));
             clearCidrHitList();
             setCheckerButtonState();
 
@@ -723,12 +646,13 @@
                             return Promise.resolve();
                         }
 
-                        return wait(config.cidrBatchPauseMs || 0).then(function () {
-                            if (activeScanVersion !== cidrScanVersion) {
-                                return Promise.resolve();
-                            }
-                            return requestNextBatch(cidrScanId);
-                        });
+                        return wait(config.cidrBatchPauseMs || 0)
+                            .then(function () {
+                                if (activeScanVersion !== cidrScanVersion) {
+                                    return Promise.resolve();
+                                }
+                                return requestNextBatch(cidrScanId);
+                            });
                     });
             };
 
@@ -754,6 +678,20 @@
                 });
         }
 
+        if (cidrCheckBtn) {
+            cidrCheckBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                runLocalCidrScan();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                resetCheckerState({restorePrefill: true});
+            });
+        }
+
         function runBackgroundCheck(currentIp) {
             if (!checkerMode || !currentIp) {
                 return Promise.resolve();
@@ -771,7 +709,7 @@
 
             checkerBackgroundPending = true;
             checkerConfirmed = checkerListed;
-            setBusyState(true, String(config.backgroundCheckingText || 'Checking Tools API in the background...'), config);
+            setBusyState(true, String(config.backgroundCheckingText || 'Checking Tools API in the background…'), config);
             setCheckerButtonState();
             setResult(
                 resultNode,
@@ -779,12 +717,31 @@
                 buildCombinedMessage(
                     checkerBaseMessage,
                     checkerListed
-                        ? String(config.backgroundCheckingText || 'Checking Tools API in the background... You can already click Delist because the DNS lookup confirmed this IP as listed.')
-                        : String(config.backgroundCheckingText || 'Checking Tools API in the background...')
+                        ? String(config.backgroundCheckingText || 'Checking Tools API in the background… You can already click Delist because the DNS lookup confirmed this IP as listed.')
+                        : String(config.backgroundCheckingText || 'Checking Tools API in the background…')
                 )
             );
 
-            return sendAjaxPayload(backgroundPayload, config)
+            return fetch(String(config.ajaxUrl || ''), {
+                method: 'POST',
+                body: backgroundPayload,
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    return response.json().catch(function () {
+                        return {};
+                    }).then(function (json) {
+                        return {
+                            ok: response.ok,
+                            status: response.status,
+                            json: json
+                        };
+                    });
+                })
                 .then(function (result) {
                     var data = result.json && result.json.data ? result.json.data : {};
                     var rawMessage = String(data.message || (result.ok
@@ -809,7 +766,12 @@
                     checkerConfirmed = checkerListed;
                     setBusyState(false, '', config);
                     setCheckerButtonState();
-                    setResult(resultNode, checkerListed || !!result.ok, buildCombinedMessage(checkerBaseMessage, followUpMessage));
+
+                    setResult(
+                        resultNode,
+                        checkerListed || !!result.ok,
+                        buildCombinedMessage(checkerBaseMessage, followUpMessage)
+                    );
                 })
                 .catch(function () {
                     var liveIpValue = ipInput ? String(ipInput.value || '').trim() : '';
@@ -832,100 +794,99 @@
                 });
         }
 
-        syncOperationFields();
-        if (opSelect) {
-            opSelect.addEventListener('change', syncOperationFields);
-        }
-
-        if (checkerMode && ipInput) {
-            ipInput.addEventListener('input', function () {
-                resetCheckerState({keepIp: true});
-            });
-
-            var clearPrefilledIpOnFirstFocus = function () {
-                if (checkerPrefillCleared || checkerPrefillIp === '') {
-                    return;
+        /**
+         * Initialize or reset Cloudflare Turnstile CAPTCHA if present
+         */
+        function ensureTurnstileActivated() {
+            if (!cloudflareTokenInput || !window.turnstile) {
+                return;
+            }
+            if (turnstileActivated) {
+                return;
+            }
+            var containerId = cloudflareTokenInput.getAttribute('data-turnstile-container');
+            if (containerId) {
+                var container = document.getElementById(containerId);
+                if (container && container.getAttribute('data-turnstile-rendered') !== '1') {
+                    window.turnstile.render('#' + containerId, {
+                        sitekey: String(cloudflareTokenInput.getAttribute('data-turnstile-sitekey') || ''),
+                        callback: function (token) {
+                            cloudflareTokenInput.value = token;
+                        },
+                        'error-callback': function () {
+                            cloudflareTokenInput.value = '';
+                        }
+                    });
+                    container.setAttribute('data-turnstile-rendered', '1');
                 }
-                if (String(ipInput.value || '').trim() === checkerPrefillIp) {
-                    ipInput.value = '';
-                    resetCheckerState({keepIp: true});
+                turnstileActivated = true;
+            }
+        }
+
+        function updateTurnstileState() {
+            if (!cloudflareTokenInput) {
+                return;
+            }
+
+            var requiresTurnstile = !checkerMode || checkerListed || hasReadyCidrScan();
+            if (turnstileWrap) {
+                turnstileWrap.style.display = requiresTurnstile ? 'block' : 'none';
+            }
+
+            if (requiresTurnstile) {
+                cloudflareTokenInput.setAttribute('required', 'required');
+                ensureTurnstileActivated();
+            } else {
+                cloudflareTokenInput.removeAttribute('required');
+                cloudflareTokenInput.value = '';
+            }
+        }
+
+        /**
+         * Reset Turnstile before showing new check/delist
+         */
+        function resetTurnstile() {
+            if (!cloudflareTokenInput || !window.turnstile) {
+                return;
+            }
+            cloudflareTokenInput.value = '';
+            var containerId = cloudflareTokenInput.getAttribute('data-turnstile-container');
+            if (containerId) {
+                var container = document.getElementById(containerId);
+                if (container && container.getAttribute('data-turnstile-rendered') === '1') {
+                    try {
+                        // Reset only rendered widget instances.
+                        window.turnstile.reset(containerId);
+                    } catch (e) {
+                        // Keep checker flow alive even if Turnstile widget reset fails.
+                    }
                 }
-                checkerPrefillCleared = true;
-            };
-
-            ipInput.addEventListener('focus', clearPrefilledIpOnFirstFocus);
-            ipInput.addEventListener('click', clearPrefilledIpOnFirstFocus);
-            ipInput.addEventListener('touchstart', clearPrefilledIpOnFirstFocus, {passive: true});
-            ipInput.addEventListener('pointerdown', clearPrefilledIpOnFirstFocus, {passive: true});
-            ipInput.addEventListener('keydown', function () {
-                clearPrefilledIpOnFirstFocus();
-            });
+            }
         }
 
-        if (advancedToggleBtn) {
-            advancedToggleBtn.addEventListener('click', function (event) {
-                event.preventDefault();
-                if (!canUseAdvancedCidr || (!checkerConfirmed && !advancedEnabled)) {
-                    return;
-                }
-                advancedEnabled = !advancedEnabled;
-                if (advancedEnabled && cidrInput && String(cidrInput.value || '').trim() === '' && checkerIp !== '') {
-                    cidrInput.value = checkerIp + '/32';
-                }
-                if (!advancedEnabled) {
-                    clearCidrScanState();
-                }
-                setCheckerButtonState();
-            });
+        // Initialize Turnstile on page load (if currently required)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateTurnstileState);
+        } else {
+            updateTurnstileState();
         }
 
-        if (cidrInput) {
-            cidrInput.addEventListener('input', function () {
-                clearCidrScanState();
-                setCheckerButtonState();
-            });
-        }
-
-        if (cidrCheckBtn) {
-            cidrCheckBtn.addEventListener('click', function (event) {
-                event.preventDefault();
-                runLocalCidrScan();
-            });
-        }
-
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function (event) {
-                event.preventDefault();
-                resetCheckerState({restorePrefill: true});
-            });
-        }
-
-        updateTurnstileState();
         setCheckerButtonState();
 
         form.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            var config = window.tornevallDnsblRemovalForm || {};
-
+            // Validate Cloudflare token if required
             if (cloudflareTokenInput && cloudflareTokenInput.hasAttribute('required')) {
                 var tokenValue = String(cloudflareTokenInput.value || '').trim();
-                if (tokenValue === '' && turnstileWidgetId !== '' && turnstileApiReady() && typeof window.turnstile.getResponse === 'function') {
-                    try {
-                        tokenValue = String(window.turnstile.getResponse(turnstileWidgetId) || '').trim();
-                        cloudflareTokenInput.value = tokenValue;
-                    } catch (e) {
-                        tokenValue = '';
-                    }
-                }
                 if (tokenValue === '') {
                     restoreIdleButtonState();
                     setResult(resultNode, false, 'Please complete the security verification (Cloudflare).');
-                    ensureTurnstileActivated();
                     return;
                 }
             }
 
+            var config = window.tornevallDnsblRemovalForm || {};
             var payload = new FormData(form);
             var requestVersion = checkerStateVersion;
             payload.append('action', String(config.action || 'tornevall_dnsbl_removal_form_submit'));
@@ -963,7 +924,26 @@
 
             setSubmissionButtonState(checkerMode && payload.get('check_only') !== '1', config);
 
-            sendAjaxPayload(payload, config)
+            fetch(String(config.ajaxUrl || ''), {
+                method: 'POST',
+                body: payload,
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    return response.json().catch(function () {
+                        return {};
+                    }).then(function (json) {
+                        return {
+                            ok: response.ok,
+                            status: response.status,
+                            json: json
+                        };
+                    });
+                })
                 .then(function (result) {
                     if (checkerMode && requestVersion !== checkerStateVersion) {
                         return;
@@ -1020,7 +1000,6 @@
                                 }
                                 clearCidrScanState();
                             }
-                            resetTurnstile();
                         }
                     } else {
                         resetTurnstile();
@@ -1062,9 +1041,7 @@
                     }
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        if (checkerMode) {
-                            setCheckerButtonState();
-                        }
+                        setCheckerButtonState();
                     }
                     if (!checkerBackgroundPending) {
                         setBusyState(false, '', window.tornevallDnsblRemovalForm || {});

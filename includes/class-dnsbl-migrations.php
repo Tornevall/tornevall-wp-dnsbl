@@ -225,8 +225,10 @@ class Migrations
             'tornevall_dnsbl_comment_turnstile_site_key',
             'tornevall_dnsbl_comment_turnstile_secret_key',
             'tornevall_dnsbl_comment_turnstile_theme',
+            'tornevall_dnsbl_removal_turnstile_enabled',
             'tornevall_dnsbl_registration_dnsbl_enabled',
             'tornevall_dnsbl_registration_turnstile_enabled',
+            'tornevall_dnsbl_rating_notice_dismissed',
             'tornevall_dnsbl_database_version',
         ];
 
