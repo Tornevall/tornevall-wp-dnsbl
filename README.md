@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.0`
+- **Release:** `3.1.1`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -34,13 +34,13 @@ The current release line includes:
 - checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, reusable post-check searches, a dedicated **Reset** action, safer disabled-state submit handling, and a dedicated busy spinner/status row while live requests are running
 - optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, and explicit approval guidance when CIDR removal is not allowed
 - if the user clicks **Check if listed** with a valid CIDR still sitting in the first checker field, the plugin now opens **Advanced**, moves the CIDR there, and lets that Advanced CIDR scope drive the later local scan and delist submit
-- Turnstile-protected live removal submits, more tolerant checker follow-up handling on slower hosts, and frontend cache-busting so delist-flow fixes reach browsers promptly
+- Turnstile-protected live removal submits, explicit Turnstile lifecycle handling for the public removal form, more tolerant checker follow-up handling on slower hosts, and frontend cache-busting so delist-flow fixes reach browsers promptly
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.0` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.1` release yet.
 
 ## Description
 
@@ -104,6 +104,7 @@ Important behaviour:
 - the final CIDR delete still goes through the DNSBL write endpoint, but only after the local scan has found at least one listed address in the requested `/24`-`/32` block, and the plugin now only submits delete operations for the IPs that the local CIDR scan actually marked as listed, one IP at a time
 - the CIDR scan is intentionally paced in small local batches so the resolver side is not flooded while the progress UI keeps moving forward
 - if a valid CIDR is left in the first checker field and the user clicks **Check if listed**, the plugin now moves it into the Advanced CIDR field automatically, keeps that Advanced CIDR value as the authoritative delete scope, and opens the section immediately instead of leaving the form in an invalid single-IP state
+- Turnstile on the public removal form now waits for Cloudflare's API before rendering, uses the widget id returned by explicit rendering, and avoids stale or empty response tokens before live delete requests are sent
 
 ### How do I test the plugin without locking myself out?
 
@@ -112,6 +113,12 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.1 highlights
+
+- Fixed the public removal form Turnstile lifecycle so the widget waits for Cloudflare's API, keeps the returned widget id, resets with that widget id, and clears stale tokens on expiration, timeout or error
+- The removal form now recovers the current Turnstile response before submit when the hidden token field is still empty
+- Bumped the plugin release metadata from `3.1.0` to `3.1.1`
 
 ### 3.1.0 highlights
 
