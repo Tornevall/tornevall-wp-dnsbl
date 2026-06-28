@@ -2,10 +2,15 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
-## Unreleased
+## 3.1.2 - 2026-06-28
 
 ### Changed
 - Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
+- Bumped plugin metadata and documentation from `3.1.1` to `3.1.2`.
+
+### Fixed
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty.
 
 ## 3.1.1 - 2026-04-20
 
@@ -43,7 +48,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Fixed
 - Delist request no longer fails with `Invalid IP address format.` when the checker flow has locked the IP field before submit; the confirmed IP is now re-posted explicitly.
-- Background Tools follow-up no longer misreports remote `POST /api/dnsbl/check-ip` auth/CSRF failures as a local WordPress “419 / session expired” problem.
+- Background Tools follow-up no longer misreports remote `POST /api/dnsbl/check-ip` auth/CSRF failures as a local WordPress "419 / session expired" problem.
 - `POST /api/dnsbl/*` endpoints on the Tools backend are now excluded from CSRF verification for token-backed server-to-server calls, which fixes checker follow-up `419` failures.
 - DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
 - Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
