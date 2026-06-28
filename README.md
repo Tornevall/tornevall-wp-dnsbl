@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.1`
+- **Release:** `3.1.2`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `6.9`
@@ -34,7 +34,7 @@ The current release line includes:
 - checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, reusable post-check searches, a dedicated **Reset** action, safer disabled-state submit handling, and a dedicated busy spinner/status row while live requests are running
 - optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, explicit approval guidance when CIDR removal is not allowed, and a delegated CIDR floor from Tools so non-admin tokens can be limited to ranges like `/25`..`/32`
 - if the user clicks **Check if listed** with a valid CIDR still sitting in the first checker field, the plugin now opens **Advanced**, moves the CIDR there, and lets that Advanced CIDR scope drive the later local scan and delist submit
-- optional Turnstile protection for live removal submits, now controlled by a dedicated removal-page checkbox instead of being inherited automatically from comment/registration Turnstile settings
+- optional Turnstile protection for live removal submits, controlled by a dedicated removal-page checkbox and using an explicit Turnstile widget lifecycle that waits for Cloudflare's API, keeps the returned widget id, and clears stale tokens
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
 - a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
@@ -42,7 +42,7 @@ The current release line includes:
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.1` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.2` release yet.
 
 ## Description
 
@@ -108,7 +108,7 @@ Important behaviour:
 - the CIDR scan is intentionally paced in small local batches so the resolver side is not flooded while the progress UI keeps moving forward
 - if a valid CIDR is left in the first checker field and the user clicks **Check if listed**, the plugin now moves it into the Advanced CIDR field automatically, keeps that Advanced CIDR value as the authoritative delete scope, and opens the section immediately instead of leaving the form in an invalid single-IP state
 - when the plugin talks to the Tools DNSBL endpoints it now also includes its own site identity metadata, so Tools-side removal audits can tell which WordPress site triggered a delist request even in server-to-server flows
-- Turnstile on the public delisting/removal flow is now explicitly opt-in and reuses the same site key, secret key, and theme configured for comment protection; if Cloudflare Turnstile has temporary issues, admins can now disable only the removal-page challenge without touching comments or account registration
+- Turnstile on the public delisting/removal flow is explicitly opt-in and reuses the same site key, secret key, and theme configured for comment protection; the widget is rendered only after Cloudflare's API is available, reset/read through the returned widget id, and guarded against stale or empty response tokens before live delete requests are sent
 
 ### Can I leave feedback somewhere?
 
@@ -121,6 +121,12 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.2 highlights
+
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty
+- Released the Tools-backed site identity metadata and bumped the plugin release metadata to `3.1.2`
 
 ### 3.1.1 highlights
 
