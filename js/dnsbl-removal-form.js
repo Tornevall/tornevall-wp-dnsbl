@@ -1072,4 +1072,3 @@
         forms.forEach(bindForm);
     });
 })();
-
