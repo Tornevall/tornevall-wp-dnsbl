@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -17,7 +17,7 @@ FraudBL is part of the protection layer used by the plugin and is available at [
 
 The plugin is intended to provide a lightweight anti-spam and anti-abuse layer for WordPress, with support for local caching to reduce repeated lookups and unnecessary load against blacklist services.
 
-Current admin features include manual DNS lookup tools, self-check tools, visitor statistics, safe IP whitelisting, frontend dry-run support for administrators, Cloudflare Turnstile for comments, and DNSBL plus Turnstile protection for new WordPress account registrations. Tools integration now uses one visible DNSBL / Tools API token field in the plugin UI. The live **Check token permissions** flow always asks Tools directly, warns clearly when the token exists on the other Tools environment (`tools.tornevall.com` vs `tools.tornevall.net`), and reports the effective DNSBL permissions for the configured token. Active admin-owned Tools tokens are shown as having automatic DNSBL access through the same `X-Dnsbl-Token` transport. The plugin now also warns on the WordPress dashboard and settings page when the current token cannot perform live delete / delist operations yet, with a direct link to the active Tools access page. The token status area shows current add/delete/update capability instead of only saying that a token exists, and delisting-page controls stay read-only until delete / delist permission has been confirmed. Internal delist slug routing now uses a dedicated rewrite/query-var path and refreshes rewrite rules on activation and slug changes to avoid `/delist` 404 cases. The managed public delist page now runs as a checker-style IP-only flow (checks listing first, then submits delist), while custom shortcode pages still support the broader permission-aware operations. The plugin also ships a shortcode delisting/removal form (`[dnsbl_removal_form]`) with AJAX backend proxy and optional API dry-run acknowledgement, plus a built-in primary removal-page template that is only activated when the configured token has live delete permission.
+Current admin features include manual DNS lookup tools, self-check tools, visitor statistics, safe IP whitelisting, frontend dry-run support for administrators, Cloudflare Turnstile for comments, and DNSBL plus Turnstile protection for new WordPress account registrations. Tools integration now uses one visible DNSBL / Tools API token field in the plugin UI. The live **Check token permissions** flow always asks Tools directly, warns clearly when the token exists on the other Tools environment (`tools.tornevall.com` vs `tools.tornevall.net`), and reports the effective DNSBL permissions for the configured token. Active admin-owned Tools tokens are shown as having automatic DNSBL access through the same `X-Dnsbl-Token` transport. The plugin now also warns on the WordPress dashboard and settings page when the current token cannot perform live delete / delist operations yet, with a direct link to the active Tools access page. The token status area shows current add/delete/update capability instead of only saying that a token exists, and delisting-page controls stay read-only until delete / delist permission has been confirmed. Internal delist slug routing now uses a dedicated rewrite/query-var path and refreshes rewrite rules on activation and slug changes to avoid `/delist` 404 cases. The managed public delist page now runs as a checker-style IP-only flow (checks listing first, then submits delist), while custom shortcode pages still support the broader permission-aware operations. The plugin also ships a shortcode delisting/removal form (`[dnsbl_removal_form]`) with AJAX backend proxy and optional API dry-run acknowledgement, plus a built-in primary removal-page template that is only activated when the configured token has live delete permission. Version 3.1.1 fixes the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API, uses the explicit widget id for reset/response handling, and clears stale tokens on expiration, timeout or error.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -68,6 +68,7 @@ Important behaviour:
 * Custom shortcode pages continue to work even when the built-in main page is not used
 * Shortcode forms only expose the DNSBL operations that the configured token is actually allowed to perform
 * The checker can now be reused immediately after any completed lookup, and a dedicated **Reset** button clears checker/CIDR/background state without reloading the page
+* Public removal-form Turnstile is rendered explicitly after Cloudflare's API is available, then reset/read through the returned widget id instead of the DOM container id
 
 * How do I test DNSBL without locking myself out?
 
@@ -93,6 +94,12 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 
 == Changelog ==
+
+= 3.1.1 =
+
+* Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
+* Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty.
+* Bumped plugin metadata and documentation from `3.1.0` to `3.1.1`.
 
 = 3.1.0 =
 
@@ -148,6 +155,10 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 
 == Upgrade Notice ==
+
+= 3.1.1 =
+
+Fixes the public removal-form Cloudflare Turnstile lifecycle for live delist submissions and bumps the release metadata to 3.1.1.
 
 = 3.1.0 =
 
