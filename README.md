@@ -125,6 +125,12 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
 
+### 3.1.2 highlights
+
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty
+- Released the Tools-backed site identity metadata and bumped the plugin release metadata to `3.1.2`
+
 ### 3.1.1 highlights
 
 - Added a dedicated admin checkbox for Turnstile on the public delisting/removal flow

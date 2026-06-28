@@ -14,7 +14,7 @@ Protect your WordPress site against comment spam, abusive registrations, and oth
 
 FraudBL is part of the protection layer used by the plugin and is available at [fraudbl.org](https://www.fraudbl.org/). Together with local caching, the plugin helps reduce repeated lookups and unnecessary load while still reacting quickly to known bad sources.
 
-The focus is simple: useful protection, clearer diagnostics, and safer day-to-day administration. Site owners get lookup and self-check tools, visitor statistics, safe IP whitelisting, optional dry-run testing, Cloudflare Turnstile support, and Tools-backed delisting with permission-aware controls when removal access is available.
+Useful protection, clearer diagnostics, and safer day-to-day administration. Site owners get lookup and self-check tools, visitor statistics, safe IP whitelisting, optional dry-run testing, Cloudflare Turnstile support, and Tools-backed delisting with permission-aware controls when removal access is available.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -69,6 +69,7 @@ Important behaviour:
 * Tools-backed DNSBL write/check requests now also carry additive site identity metadata so backend delist audits can show which WordPress site sent the request
 * Turnstile on the public delisting/removal flow is now explicitly optional and controlled by its own admin checkbox, reusing the same site key/secret/theme configured for comment protection only when you opt in
 * A second removal-page checkbox can now temporarily bypass Turnstile automatically when the widget or Cloudflare verification path has operational problems, while keeping comment and registration Turnstile behaviour unchanged
+* Public removal-form Turnstile now waits for Cloudflare's API before rendering, uses the returned widget id for reset/response handling, and clears stale tokens on expiration, timeout or error
 
 * How do I test DNSBL without locking myself out?
 
@@ -97,18 +98,15 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 = 3.1.2 =
 
-* Added a second removal-page Turnstile checkbox that lets the public delist flow bypass the challenge automatically when Turnstile itself has operational problems.
-* The plugin now distinguishes operational Turnstile outages from ordinary user-side verification failures on the public removal page.
+* Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
+* Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty.
+* Released the Tools-backed site identity metadata and bumped the plugin release metadata to `3.1.2`.
 
 = 3.1.1 =
 
 * Added an explicit admin checkbox for Turnstile on the public delisting/removal page.
 * The public delist flow no longer inherits Turnstile automatically just because comment or registration Turnstile is configured.
 * Site owners can now disable only the removal-page challenge when Cloudflare Turnstile has temporary problems, while keeping comment and registration protection enabled.
-
-= Unreleased =
-
-* Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
 
 = 3.1.0 =
 
@@ -128,7 +126,9 @@ Use the Safe IP whitelist in the plugin settings. Keep your own IP address there
 
 == Upgrade Notice ==
 
-Nothing to see here, yet, except for this...
+= 3.1.2 =
+
+Fixes the public removal-form Cloudflare Turnstile lifecycle for live delist submissions and bumps the release metadata to 3.1.2.
 
 = 3.1.1 =
 

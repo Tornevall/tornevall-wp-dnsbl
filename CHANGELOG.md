@@ -2,22 +2,18 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
-## 3.1.3 - 2026-06-02
-
-### Fixed
-- The public DNSBL delisting/removal page can now recover automatically when a cached or stale page was still carrying an old WordPress AJAX nonce. The frontend now fetches a fresh nonce and retries the request once instead of failing immediately with a generic security-validation error.
-
-## 3.1.2 - 2026-04-20
+## 3.1.2 - 2026-06-28
 
 ### Added
 - Added a second removal-page Turnstile checkbox that lets site owners enable automatic fail-open / temporary bypass when Cloudflare Turnstile has operational problems.
 
 ### Changed
-- The public delisting/removal form now detects Turnstile widget initialization failures and verification-side outages separately from ordinary "user did not solve the challenge" cases.
-- When the new fail-open checkbox is enabled, operational Turnstile failures can temporarily bypass the public removal-page challenge until a later healthy Turnstile verification clears that bypass again.
+- Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
+- Bumped plugin metadata and documentation from `3.1.1` to `3.1.2`.
 
 ### Fixed
-- Public delisting can now keep working on sites that intentionally protect the removal page with Turnstile even when the widget or `siteverify` endpoint is unhealthy, without requiring the operator to manually uncheck Turnstile first.
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty.
 
 ## 3.1.1 - 2026-04-20
 
@@ -56,7 +52,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Fixed
 - Delist request no longer fails with `Invalid IP address format.` when the checker flow has locked the IP field before submit; the confirmed IP is now re-posted explicitly.
-- Background Tools follow-up no longer misreports remote `POST /api/dnsbl/check-ip` auth/CSRF failures as a local WordPress “419 / session expired” problem.
+- Background Tools follow-up no longer misreports remote `POST /api/dnsbl/check-ip` auth/CSRF failures as a local WordPress "419 / session expired" problem.
 - `POST /api/dnsbl/*` endpoints on the Tools backend are now excluded from CSRF verification for token-backed server-to-server calls, which fixes checker follow-up `419` failures.
 - DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
 - Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
