@@ -44,8 +44,6 @@
 
         var script = document.createElement('script');
         script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-        script.defer = true;
-        script.async = true;
         document.head.appendChild(script);
     }
 
@@ -55,11 +53,7 @@
 
         function poll() {
             if (turnstileApiReady()) {
-                if (typeof window.turnstile.ready === 'function') {
-                    window.turnstile.ready(callback);
-                } else {
-                    callback();
-                }
+                callback();
                 return;
             }
 
