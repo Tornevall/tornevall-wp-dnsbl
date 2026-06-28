@@ -10,16 +10,14 @@ License: GPLv2 or later
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
 
 == Description ==
-Protect your WordPress site against comment spam, abusive registrations, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL. The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project.
 
-FraudBL is part of the protection layer used by the plugin and is available at [fraudbl.org](https://www.fraudbl.org/). Together with local caching, the plugin helps reduce repeated lookups and unnecessary load while still reacting quickly to known bad sources.
+Protect your WordPress site against comment spam, abusive registrations, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL.
 
-Useful protection, clearer diagnostics, and safer day-to-day administration. Site owners get lookup and self-check tools, visitor statistics, safe IP whitelisting, optional dry-run testing, Cloudflare Turnstile support, and Tools-backed delisting with permission-aware controls when removal access is available.
+The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project..
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
 Documentation: [DNSBL API documentation](https://tools.tornevall.net/docs/dnsbl-api)
-
 
 = Support and feedback =
 
@@ -48,33 +46,13 @@ If the database schema becomes out of sync after an upgrade or a manual source-b
 
 Yes. If you are blacklisted in Tornevall DNSBL, you can use [the removal page](https://www.tornevall.net/removal/) - otherwise, you can't.
 
-You can host the built-in form on any page with:
+* Can I host a delisting page?
+
+Yes. You can host the built-in form on any page with:
 
 `[dnsbl_removal_form]`
 
-Alias shortcode:
-
-`[tornevall_dnsbl_removal_form]`
-
-If you select a **Delisting page** in the plugin settings and that page does not already contain one of those shortcodes, the plugin renders its built-in main template from `templates/removal-page.php` automatically.
-
-Important behaviour:
-
-* Saving a main delisting page now performs a live permission check against `GET /api/dnsbl/token/info`
-* The selected page is saved even when delete / delist permission is missing, but WordPress warns that live removal remains unavailable until Tornevall Networks/FraudBL access is granted
-* Custom shortcode pages continue to work even when the built-in main page is not used
-* Shortcode forms only expose the DNSBL operations that the configured token is actually allowed to perform
-* The checker can now be reused immediately after any completed lookup, and a dedicated **Reset** button clears checker/CIDR/background state without reloading the page
-* Advanced CIDR now follows the delegated Tools guardrail `delete_min_cidr_prefix`, so non-admin tokens can be limited to ranges such as `/25`..`/32` or `/32` only instead of always getting `/24`
-* Tools-backed DNSBL write/check requests now also carry additive site identity metadata so backend delist audits can show which WordPress site sent the request
-* Turnstile on the public delisting/removal flow is now explicitly optional and controlled by its own admin checkbox, reusing the same site key/secret/theme configured for comment protection only when you opt in
-* A second removal-page checkbox can now temporarily bypass Turnstile automatically when the widget or Cloudflare verification path has operational problems, while keeping comment and registration Turnstile behaviour unchanged
-* Public removal-form Turnstile now waits for Cloudflare's API before rendering, uses the returned widget id for reset/response handling, and clears stale tokens on expiration, timeout or error
-
-* How do I test DNSBL without locking myself out?
-
-Use the Safe IP whitelist in the plugin settings. Keep your own IP address there, then use the built-in lookup and self-check tools to verify behaviour. Requests from whitelisted IPs are still evaluated and counted in statistics, but they are not blocked.
-
+But you need permissions for this, which can be gained by request via [https://tools.tornevall.net/](https://tools.tornevall.net/).
 
 
 == Screenshots ==
