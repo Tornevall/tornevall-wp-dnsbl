@@ -4,7 +4,7 @@
  * Plugin URI: https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/
  * Project URI: https://github.com/Tornevall/tornevall-wp-dnsbl
  * Description: DNSBL and FraudBL protection for comments and WordPress registrations, with Cloudflare Turnstile support, whitelist-based dry runs, and admin-safe blocking controls.
- * Version: 3.1.2
+ * Version: 3.1.3
  * Author: Thomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall-networks-dnsbl-implementation
