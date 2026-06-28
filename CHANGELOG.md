@@ -2,14 +2,27 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
-## Unreleased
+## 3.1.3 - 2026-06-02
+
+### Fixed
+- The public DNSBL delisting/removal page can now recover automatically when a cached or stale page was still carrying an old WordPress AJAX nonce. The frontend now fetches a fresh nonce and retries the request once instead of failing immediately with a generic security-validation error.
+
+## 3.1.2 - 2026-04-20
+
+### Added
+- Added a second removal-page Turnstile checkbox that lets site owners enable automatic fail-open / temporary bypass when Cloudflare Turnstile has operational problems.
 
 ### Changed
-- Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
+- The public delisting/removal form now detects Turnstile widget initialization failures and verification-side outages separately from ordinary "user did not solve the challenge" cases.
+- When the new fail-open checkbox is enabled, operational Turnstile failures can temporarily bypass the public removal-page challenge until a later healthy Turnstile verification clears that bypass again.
+
+### Fixed
+- Public delisting can now keep working on sites that intentionally protect the removal page with Turnstile even when the widget or `siteverify` endpoint is unhealthy, without requiring the operator to manually uncheck Turnstile first.
 
 ## 3.1.1 - 2026-04-20
 
 ### Changed
+- Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
 - The public delisting/removal page now has its own explicit admin toggle for Cloudflare Turnstile instead of inheriting Turnstile automatically from the comment/registration setup.
 - Removal-page Turnstile reuses the existing comment Turnstile site key, secret key, and theme when admins opt in, so the hotfix stays small and does not introduce a second key-management workflow.
 

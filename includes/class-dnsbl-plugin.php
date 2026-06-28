@@ -15,6 +15,7 @@ class Plugin
     private const REMOVAL_FORM_SHORTCODE_ALIAS = 'dnsbl_removal_form';
     private const REMOVAL_FORM_SHORTCODE_LEGACY = 'tornevall_dnsbl_removal_form';
     private const REMOVAL_FORM_AJAX_ACTION = 'tornevall_dnsbl_removal_form_submit';
+    private const REMOVAL_FORM_NONCE_REFRESH_ACTION = 'tornevall_dnsbl_removal_form_nonce';
     private const WRITE_PERMISSION_CACHE_TTL = 300;
     private const CIDR_SCAN_BATCH_SIZE = 12;
     private const CIDR_SCAN_STATE_TTL = 900;
@@ -23,6 +24,8 @@ class Plugin
     private const INTERNAL_DELIST_QUERY_VAR = 'tornevall_dnsbl_internal_delist';
     private const RATING_NOTICE_DISMISSED_OPTION = 'tornevall_dnsbl_rating_notice_dismissed';
     private const RATING_NOTICE_DISMISS_QUERY = 'tornevall_dnsbl_dismiss_rating_notice';
+    private const REMOVAL_TURNSTILE_FAIL_OPEN_TRANSIENT = 'tornevall_dnsbl_removal_turnstile_fail_open';
+    private const REMOVAL_TURNSTILE_FAIL_OPEN_TTL = 900;
 
     public static function registerHooks(): void
     {
@@ -49,6 +52,8 @@ class Plugin
         add_action('template_redirect', [self::class, 'maybeRenderInternalDelistPage']);
         add_action('wp_ajax_' . self::REMOVAL_FORM_AJAX_ACTION, [self::class, 'handleRemovalFormAjax']);
         add_action('wp_ajax_nopriv_' . self::REMOVAL_FORM_AJAX_ACTION, [self::class, 'handleRemovalFormAjax']);
+        add_action('wp_ajax_' . self::REMOVAL_FORM_NONCE_REFRESH_ACTION, [self::class, 'handleRemovalFormNonceAjax']);
+        add_action('wp_ajax_nopriv_' . self::REMOVAL_FORM_NONCE_REFRESH_ACTION, [self::class, 'handleRemovalFormNonceAjax']);
         add_shortcode(self::REMOVAL_FORM_SHORTCODE, [self::class, 'renderRemovalFormShortcode']);
         add_shortcode(self::REMOVAL_FORM_SHORTCODE_ALIAS, [self::class, 'renderRemovalFormShortcode']);
         add_shortcode(self::REMOVAL_FORM_SHORTCODE_LEGACY, [self::class, 'renderRemovalFormShortcode']);
@@ -159,6 +164,7 @@ class Plugin
                 'tornevall_dnsbl_comment_turnstile_secret_key' => '',
                 'tornevall_dnsbl_comment_turnstile_theme' => 'auto',
                 'tornevall_dnsbl_removal_turnstile_enabled' => '0',
+                'tornevall_dnsbl_removal_turnstile_fail_open' => '0',
                 'tornevall_dnsbl_registration_dnsbl_enabled' => '1',
                 'tornevall_dnsbl_registration_turnstile_enabled' => '1',
                 'tornevall_dnsbl_cache_last_cleanup' => 0,
@@ -973,6 +979,8 @@ class Plugin
         $advancedCidrMinPrefix = $checkerMode ? self::resolveAdvancedCidrMinPrefix($permissionSummary) : null;
         $advancedCidrRangeLabel = $checkerMode ? self::describeAdvancedCidrRange($permissionSummary) : '/24 to /32';
         $canUseAdvancedCidr = $checkerMode ? self::canUseAdvancedCidr($permissionSummary) : false;
+        $removalTurnstileFailOpenEnabled = self::removalTurnstileFailOpenEnabled();
+        $removalTurnstileFailOpenState = $removalTurnstileFailOpenEnabled ? self::getRemovalTurnstileFailOpenState() : [];
         $restrictedNotice = count($availableActions) < count($requestedActions)
                 ? __('Only the DNSBL operations allowed by the currently configured token are shown below.', 'tornevall-networks-dnsbl-implementation')
                 : '';
@@ -982,6 +990,7 @@ class Plugin
         <form class="tornevall-dnsbl-removal-form" data-tornevall-dnsbl-removal-form="1"
               data-checker-mode="<?php echo $checkerMode ? '1' : '0'; ?>"
               data-cidr-min-prefix="<?php echo esc_attr((string)($advancedCidrMinPrefix ?? 24)); ?>"
+              data-turnstile-fail-open-allowed="<?php echo $removalTurnstileFailOpenEnabled ? '1' : '0'; ?>"
               data-can-cidr-delete="<?php echo $canUseAdvancedCidr ? '1' : '0'; ?>" novalidate>
             <style>
                 @keyframes tornevall-dnsbl-spin {
@@ -1185,6 +1194,8 @@ class Plugin
             <?php if (self::removalTurnstileEnabled()) { ?>
                 <?php $turnstileContainerId = 'tornevall-removal-turnstile-' . wp_generate_uuid4(); ?>
                 <div data-removal-turnstile-wrap
+                     data-turnstile-bypass-active="<?php echo !empty($removalTurnstileFailOpenState['active']) ? '1' : '0'; ?>"
+                     data-turnstile-bypass-message="<?php echo esc_attr((string)($removalTurnstileFailOpenState['message'] ?? '')); ?>"
                      style="margin:.25rem 0 .9rem 0;<?php echo $checkerMode ? 'display:none;' : ''; ?>">
                     <div id="<?php echo esc_attr($turnstileContainerId); ?>"
                          data-theme="<?php echo esc_attr(self::commentTurnstileTheme()); ?>"></div>
@@ -1192,8 +1203,26 @@ class Plugin
                            value="" <?php echo $checkerMode ? '' : 'required'; ?>
                            data-turnstile-container="<?php echo esc_attr($turnstileContainerId); ?>"
                            data-turnstile-sitekey="<?php echo esc_attr(self::commentTurnstileSiteKey()); ?>"/>
+                    <input type="hidden" name="turnstile_operational_issue"
+                           value="<?php echo !empty($removalTurnstileFailOpenState['active']) ? '1' : '0'; ?>"
+                           data-turnstile-operational-issue>
+                    <input type="hidden" name="turnstile_issue_code"
+                           value="<?php echo esc_attr((string)($removalTurnstileFailOpenState['reason'] ?? '')); ?>"
+                           data-turnstile-issue-code>
+                    <input type="hidden" name="turnstile_issue_message"
+                           value="<?php echo esc_attr((string)($removalTurnstileFailOpenState['message'] ?? '')); ?>"
+                           data-turnstile-issue-message>
+                    <div data-removal-turnstile-status
+                         style="<?php echo !empty($removalTurnstileFailOpenState['active']) ? 'display:block;' : 'display:none;'; ?> margin-top:.55rem; padding:.55rem .65rem; border-radius:6px; border:1px solid #fde68a; background:#fffbeb; color:#92400e; font-size:.92em;">
+                        <?php echo esc_html((string)($removalTurnstileFailOpenState['message'] ?? '')); ?>
+                    </div>
                     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
                 </div>
+                <?php if ($removalTurnstileFailOpenEnabled) { ?>
+                    <p class="description" style="max-width:820px; margin-top:-.25rem;">
+                        <?php echo esc_html__('If Cloudflare Turnstile has operational problems on this removal page, the plugin can temporarily bypass the challenge automatically so public delisting does not get stuck behind a broken widget.', 'tornevall-networks-dnsbl-implementation'); ?>
+                    </p>
+                <?php } ?>
             <?php } ?>
 
             <p style="margin:0; display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
@@ -1371,7 +1400,11 @@ class Plugin
         wp_localize_script('tornevall-dnsbl-removal-form', 'tornevallDnsblRemovalForm', [
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'action' => self::REMOVAL_FORM_AJAX_ACTION,
+                'nonceRefreshAction' => self::REMOVAL_FORM_NONCE_REFRESH_ACTION,
                 'nonce' => wp_create_nonce('tornevall_dnsbl_removal_form'),
+                'invalidNonceReason' => 'invalid_nonce',
+                'turnstileFailOpenAllowed' => self::removalTurnstileFailOpenEnabled(),
+                'turnstileLoadTimeoutMs' => 7000,
                 'sendingText' => __('Submitting request…', 'tornevall-networks-dnsbl-implementation'),
                 'checkingText' => __('Checking listing status…', 'tornevall-networks-dnsbl-implementation'),
                 'busyText' => __('Working…', 'tornevall-networks-dnsbl-implementation'),
@@ -1390,7 +1423,7 @@ class Plugin
                 'cidrHitListSummaryProgressText' => __('Listed addresses found so far: %1$d', 'tornevall-networks-dnsbl-implementation'),
                 'cidrHitListSummaryCompleteText' => __('Listed addresses found: %1$d of %2$d', 'tornevall-networks-dnsbl-implementation'),
                 'cidrBatchPauseMs' => 75,
-                'cidrMinPrefix' => $advancedCidrMinPrefix ?? 24,
+                'cidrMinPrefix' => 24,
                 'cidrMaxPrefix' => 32,
                 'backgroundCheckingText' => __('Checking Tools API in the background…', 'tornevall-networks-dnsbl-implementation'),
                 'cidrTimeoutText' => __('CIDR delist request timed out while waiting for Tools. Already submitted delete operations may still finish in the background, so re-check the listed hit list before retrying immediately.', 'tornevall-networks-dnsbl-implementation'),
@@ -1401,6 +1434,11 @@ class Plugin
                 'checkerReadyText' => __('Delist is ready. You can now submit the request.', 'tornevall-networks-dnsbl-implementation'),
                 'csrfExpiredText' => __('Security session expired (HTTP 419). Please refresh this page and try again.', 'tornevall-networks-dnsbl-implementation'),
                 'networkErrorText' => __('Network error. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+                'turnstileUnavailableText' => __('Cloudflare Turnstile could not be initialized right now.', 'tornevall-networks-dnsbl-implementation'),
+                'turnstileLoadTimeoutText' => __('Cloudflare Turnstile did not become ready in time. If automatic bypass is enabled for this removal page, the form can continue without the challenge until Turnstile is healthy again.', 'tornevall-networks-dnsbl-implementation'),
+                'turnstileFailOpenActiveText' => __('Cloudflare Turnstile has operational problems right now, so this removal page is temporarily allowing submissions without the challenge.', 'tornevall-networks-dnsbl-implementation'),
+                'turnstileErrorText' => __('Cloudflare Turnstile reported an operational error. If automatic bypass is enabled for this removal page, the form can continue without the challenge until the service recovers.', 'tornevall-networks-dnsbl-implementation'),
+                'turnstileRequiredText' => __('Please complete the security verification (Cloudflare).', 'tornevall-networks-dnsbl-implementation'),
         ]);
     }
 
@@ -1470,6 +1508,60 @@ class Plugin
                 && self::commentTurnstileSecretKey() !== '';
     }
 
+    public static function removalTurnstileFailOpenEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_removal_turnstile_fail_open') === '1';
+    }
+
+    /**
+     * @return array{active:bool,reason:string,message:string,triggered_at:int,details:array<string,mixed>}
+     */
+    private static function getRemovalTurnstileFailOpenState(): array
+    {
+        $state = get_transient(self::REMOVAL_TURNSTILE_FAIL_OPEN_TRANSIENT);
+        if (!is_array($state)) {
+            return [];
+        }
+
+        return [
+                'active' => !empty($state['active']),
+                'reason' => sanitize_key((string)($state['reason'] ?? '')),
+                'message' => sanitize_text_field((string)($state['message'] ?? '')),
+                'triggered_at' => (int)($state['triggered_at'] ?? 0),
+                'details' => is_array($state['details'] ?? null) ? $state['details'] : [],
+        ];
+    }
+
+    /**
+     * @param array<string,mixed> $details
+     * @return array{active:bool,reason:string,message:string,triggered_at:int,details:array<string,mixed>}
+     */
+    private static function activateRemovalTurnstileFailOpen(string $reason, string $message = '', array $details = []): array
+    {
+        $reason = sanitize_key($reason);
+        $message = sanitize_text_field($message);
+        if ($message === '') {
+            $message = __('Cloudflare Turnstile had operational problems, so this removal page is temporarily bypassing the challenge automatically.', 'tornevall-networks-dnsbl-implementation');
+        }
+
+        $state = [
+                'active' => true,
+                'reason' => $reason,
+                'message' => $message,
+                'triggered_at' => time(),
+                'details' => $details,
+        ];
+
+        set_transient(self::REMOVAL_TURNSTILE_FAIL_OPEN_TRANSIENT, $state, self::REMOVAL_TURNSTILE_FAIL_OPEN_TTL);
+
+        return $state;
+    }
+
+    private static function clearRemovalTurnstileFailOpen(): void
+    {
+        delete_transient(self::REMOVAL_TURNSTILE_FAIL_OPEN_TRANSIENT);
+    }
+
     public static function commentTurnstileSiteKey(): string
     {
         return trim((string)get_option('tornevall_dnsbl_comment_turnstile_site_key'));
@@ -1512,6 +1604,7 @@ class Plugin
         if (!wp_verify_nonce($nonce, 'tornevall_dnsbl_removal_form')) {
             wp_send_json_error([
                     'ok' => false,
+                    'reason' => 'invalid_nonce',
                     'message' => __('Security validation failed. Please refresh and try again.', 'tornevall-networks-dnsbl-implementation'),
             ], 403);
         }
@@ -1559,12 +1652,46 @@ class Plugin
                 $turnstile = sanitize_text_field(wp_unslash($_POST['cf-turnstile-response']));
             }
 
-            $turnstileVerification = self::verifyTurnstileToken($turnstile, $ip);
-            if (empty($turnstileVerification['success'])) {
-                wp_send_json_error([
-                        'ok' => false,
-                        'message' => (string)($turnstileVerification['message'] ?? __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation')),
-                ], 400);
+            $turnstileFailOpenAllowed = self::removalTurnstileFailOpenEnabled();
+            $turnstileBypassState = $turnstileFailOpenAllowed ? self::getRemovalTurnstileFailOpenState() : [];
+
+            if ($turnstileFailOpenAllowed) {
+                $postedOperationalIssue = self::extractRemovalTurnstileOperationalIssueFromRequest();
+                if (!empty($postedOperationalIssue['active'])) {
+                    $turnstileBypassState = self::activateRemovalTurnstileFailOpen(
+                            (string)($postedOperationalIssue['reason'] ?? 'client_error'),
+                            (string)($postedOperationalIssue['message'] ?? ''),
+                            [
+                                    'source' => 'browser',
+                                    'code' => (string)($postedOperationalIssue['reason'] ?? ''),
+                            ]
+                    );
+                }
+            }
+
+            $bypassTurnstileVerification = !empty($turnstileBypassState['active']) && $turnstile === '';
+            if (!$bypassTurnstileVerification) {
+                $turnstileVerification = self::verifyTurnstileToken($turnstile, $ip);
+                if (empty($turnstileVerification['success'])) {
+                    if ($turnstileFailOpenAllowed && self::isTurnstileVerificationOperationalFailure($turnstileVerification)) {
+                        $turnstileBypassState = self::activateRemovalTurnstileFailOpen(
+                                (string)($turnstileVerification['reason'] ?? 'server_error'),
+                                (string)($turnstileVerification['message'] ?? ''),
+                                [
+                                        'source' => 'siteverify',
+                                        'status' => (int)($turnstileVerification['status'] ?? 0),
+                                        'error_codes' => is_array($turnstileVerification['error_codes'] ?? null) ? $turnstileVerification['error_codes'] : [],
+                                ]
+                        );
+                    } else {
+                        wp_send_json_error([
+                                'ok' => false,
+                                'message' => (string)($turnstileVerification['message'] ?? __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation')),
+                        ], !empty($turnstileVerification['operational_failure']) ? 503 : 400);
+                    }
+                } elseif ($turnstileFailOpenAllowed && !empty($turnstileBypassState['active'])) {
+                    self::clearRemovalTurnstileFailOpen();
+                }
             }
         }
 
@@ -1827,6 +1954,14 @@ class Plugin
         }
 
         wp_send_json_error($payload, self::normalizeExternalApiStatus((int)($apiResult['status'] ?? 500)));
+    }
+
+    public static function handleRemovalFormNonceAjax(): void
+    {
+        wp_send_json_success([
+                'ok' => true,
+                'nonce' => wp_create_nonce('tornevall_dnsbl_removal_form'),
+        ]);
     }
 
     private static function handleRemovalCidrScanAjax(): void
@@ -2379,13 +2514,15 @@ class Plugin
     private static function verifyTurnstileToken($responseToken, $ip): array
     {
         if (self::commentTurnstileSiteKey() === '' || self::commentTurnstileSecretKey() === '') {
-            return ['success' => true, 'message' => 'disabled'];
+            return ['success' => true, 'message' => 'disabled', 'operational_failure' => false];
         }
 
         $responseToken = trim((string)$responseToken);
         if ($responseToken === '') {
             return [
                     'success' => false,
+                    'operational_failure' => false,
+                    'reason' => 'missing_input_response',
                     'message' => __('Verification failed. Please complete the Turnstile check.', 'tornevall-networks-dnsbl-implementation'),
             ];
         }
@@ -2402,19 +2539,72 @@ class Plugin
         if (is_wp_error($response)) {
             return [
                     'success' => false,
-                    'message' => __('Verification could not be completed right now. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+                    'operational_failure' => true,
+                    'reason' => 'transport_error',
+                    'message' => __('Cloudflare Turnstile could not be reached right now. Please try again in a moment.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        $status = (int)wp_remote_retrieve_response_code($response);
+        if ($status >= 500) {
+            return [
+                    'success' => false,
+                    'operational_failure' => true,
+                    'reason' => 'service_unavailable',
+                    'status' => $status,
+                    'message' => __('Cloudflare Turnstile is temporarily unavailable. Please try again in a moment.', 'tornevall-networks-dnsbl-implementation'),
             ];
         }
 
         $body = json_decode((string)wp_remote_retrieve_body($response), true);
-        if (!is_array($body) || empty($body['success'])) {
+        if (!is_array($body)) {
             return [
                     'success' => false,
-                    'message' => __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+                    'operational_failure' => true,
+                    'reason' => 'invalid_response',
+                    'status' => $status,
+                    'message' => __('Cloudflare Turnstile returned an invalid verification response. Please try again in a moment.', 'tornevall-networks-dnsbl-implementation'),
             ];
         }
 
-        return ['success' => true, 'message' => 'ok'];
+        if (empty($body['success'])) {
+            $errorCodes = array_values(array_filter(array_map('sanitize_key', (array)($body['error-codes'] ?? []))));
+            $operationalFailure = in_array('internal-error', $errorCodes, true);
+
+            return [
+                    'success' => false,
+                    'operational_failure' => $operationalFailure,
+                    'reason' => $operationalFailure ? 'internal_error' : 'verification_failed',
+                    'status' => $status,
+                    'error_codes' => $errorCodes,
+                    'message' => $operationalFailure
+                            ? __('Cloudflare Turnstile reported an internal error. Please try again in a moment.', 'tornevall-networks-dnsbl-implementation')
+                            : __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        return ['success' => true, 'message' => 'ok', 'operational_failure' => false, 'status' => $status];
+    }
+
+    /**
+     * @return array{active:bool,reason:string,message:string}
+     */
+    private static function extractRemovalTurnstileOperationalIssueFromRequest(): array
+    {
+        $active = self::requestBoolean($_POST['turnstile_operational_issue'] ?? false);
+        $reason = isset($_POST['turnstile_issue_code']) ? sanitize_key(wp_unslash($_POST['turnstile_issue_code'])) : '';
+        $message = isset($_POST['turnstile_issue_message']) ? sanitize_text_field(wp_unslash($_POST['turnstile_issue_message'])) : '';
+
+        return [
+                'active' => $active,
+                'reason' => $reason,
+                'message' => $message,
+        ];
+    }
+
+    private static function isTurnstileVerificationOperationalFailure(array $verification): bool
+    {
+        return !empty($verification['operational_failure']);
     }
 
     /**
