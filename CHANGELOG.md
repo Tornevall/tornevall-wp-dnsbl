@@ -2,6 +2,15 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.1 - 2026-06-28
+
+### Fixed
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty.
+
+### Changed
+- Bumped plugin metadata and documentation from `3.1.0` to `3.1.1`.
+
 ## 3.1.0
 
 ### Added
