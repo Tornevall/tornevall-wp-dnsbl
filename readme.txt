@@ -3,8 +3,8 @@ Contributors: Tornevall
 Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
-Tested up to: 6.9
-Stable tag: 3.1.2
+Tested up to: 7.0
+Stable tag: 3.1.3
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -73,6 +73,10 @@ But you need permissions for this, which can be gained by request via [https://t
 
 
 == Changelog ==
+
+= 3.1.3 =
+
+* Tested with WP7.
 
 = 3.1.2 =
 
