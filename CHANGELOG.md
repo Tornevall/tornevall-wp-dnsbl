@@ -4,6 +4,9 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ## 3.1.2 - 2026-06-28
 
+### Added
+- Added a second removal-page Turnstile checkbox that lets site owners enable automatic fail-open / temporary bypass when Cloudflare Turnstile has operational problems.
+
 ### Changed
 - Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
 - Bumped plugin metadata and documentation from `3.1.1` to `3.1.2`.
@@ -15,6 +18,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 ## 3.1.1 - 2026-04-20
 
 ### Changed
+- Tools-backed DNSBL write/check requests now also carry additive site identity metadata (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist/removal audits can identify which WordPress site submitted the request.
 - The public delisting/removal page now has its own explicit admin toggle for Cloudflare Turnstile instead of inheriting Turnstile automatically from the comment/registration setup.
 - Removal-page Turnstile reuses the existing comment Turnstile site key, secret key, and theme when admins opt in, so the hotfix stays small and does not introduce a second key-management workflow.
 

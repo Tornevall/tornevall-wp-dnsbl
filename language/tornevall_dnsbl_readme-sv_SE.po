@@ -1,0 +1,210 @@
+# Translation of Plugins - Tornevall Networks DNSBL Implementation - Stable Readme in Swedish
+msgid ""
+msgstr ""
+"Project-Id-Version: Tornevall Networks DNSBL Implementation - Stable Readme\n"
+"POT-Creation-Date: 2026-04-29 00:00+0000\n"
+"PO-Revision-Date: 2026-04-29 00:00+0000\n"
+"Last-Translator: Thomas Tornevall\n"
+"Language-Team: Swedish\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Manual sync from current readme.txt\n"
+
+msgid "Tornevall Networks DNSBL Implementation"
+msgstr "Tornevall Networks DNSBL Implementation"
+
+msgid "Tornevall Networks DNSBL implementation with FraudBL support for WordPress"
+msgstr "Tornevall Networks DNSBL-implementering med FraudBL-stöd för WordPress"
+
+msgid "Protect your WordPress site against comment spam, abusive registrations, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL. The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project."
+msgstr "Skydda din WordPress-sajt mot kommentarspam, missbrukade registreringar och andra oönskade inskick från adresser som flaggats av Tornevall Networks DNSBL och FraudBL. Pluginet är byggt för att ge sajtägare ett praktiskt skyddslager mot missbruk utan att den dagliga modereringen blir ett underhållsprojekt."
+
+msgid "FraudBL is part of the protection layer used by the plugin and is available at <a href=\"https://www.fraudbl.org/\">fraudbl.org</a>. Together with local caching, the plugin helps reduce repeated lookups and unnecessary load while still reacting quickly to known bad sources."
+msgstr "FraudBL är en del av skyddslagret som pluginet använder och finns på <a href=\"https://www.fraudbl.org/\">fraudbl.org</a>. Tillsammans med lokal cache hjälper pluginet till att minska upprepade uppslagningar och onödig belastning samtidigt som det fortfarande reagerar snabbt på kända dåliga källor."
+
+msgid "The focus is simple: useful protection, clearer diagnostics, and safer day-to-day administration. Site owners get lookup and self-check tools, visitor statistics, safe IP whitelisting, optional dry-run testing, Cloudflare Turnstile support, and Tools-backed delisting with permission-aware controls when removal access is available."
+msgstr "Fokus är enkelt: användbart skydd, tydligare diagnostik och säkrare vardagsadministration. Sajtägare får uppslags- och självtestverktyg, besöksstatistik, säker IP-whitelistning, valfri dry-run-testning, stöd för Cloudflare Turnstile och Tools-baserad avlistning med behörighetsstyrda kontroller när borttagningsåtkomst finns tillgänglig."
+
+msgid ""
+"Report issues and feedback: <a href=\"https://github.com/Tornevall/tornevall-wp-dnsbl/issues\">GitHub issues</a>\n"
+"Plugin URL: <a href=\"https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/\">WordPress.org plugin page</a>\n"
+"Documentation: <a href=\"https://tools.tornevall.net/docs/dnsbl-api\">DNSBL API documentation</a>"
+msgstr ""
+"Rapportera problem och feedback: <a href=\"https://github.com/Tornevall/tornevall-wp-dnsbl/issues\">GitHub issues</a>\n"
+"Plugin-URL: <a href=\"https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/\">WordPress.org plugin page</a>\n"
+"Dokumentation: <a href=\"https://tools.tornevall.net/docs/dnsbl-api\">DNSBL API documentation</a>"
+
+msgid "Support and feedback"
+msgstr "Support och feedback"
+
+msgid "Bug reports and feedback can currently be submitted via <a href=\"https://github.com/Tornevall/tornevall-wp-dnsbl/issues\">GitHub issues</a>."
+msgstr "Felrapporter och feedback kan för närvarande skickas in via <a href=\"https://github.com/Tornevall/tornevall-wp-dnsbl/issues\">GitHub issues</a>."
+
+msgid "Full Documentation: <a href=\"https://tools.tornevall.net/docs/dnsbl-api\">DNSBL API documentation</a>"
+msgstr "Fullständig dokumentation: <a href=\"https://tools.tornevall.net/docs/dnsbl-api\">DNSBL API documentation</a>"
+
+msgid "Translations can be contributed via <a href=\"https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation\">translate.wordpress.org</a>."
+msgstr "Översättningar kan skickas in via <a href=\"https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation\">translate.wordpress.org</a>."
+
+msgid "Upload the plugin archive to the <code>/wp-content/plugins/</code> directory"
+msgstr "Ladda upp pluginarkivet till katalogen <code>/wp-content/plugins/</code>"
+
+msgid "Activate the plugin through the 'Plugins' menu in WordPress"
+msgstr "Aktivera pluginet via menyn 'Plugins' i WordPress"
+
+msgid "Configure the plugin via admin control panel"
+msgstr "Konfigurera pluginet via administrationspanelen"
+
+msgid "The installation creates a cache table in the WordPress database. This reduces repeated DNS lookups and helps avoid unnecessary load against blacklist services. Both blacklisted and non-listed lookups are cached. The default cache lifetime is 600 seconds and the cleanup interval is 300 seconds."
+msgstr "Installationen skapar en cachetabell i WordPress-databasen. Det minskar upprepade DNS-uppslagningar och hjälper till att undvika onödig belastning mot blacklisttjänsterna. Både svartlistade och icke-listade uppslagningar cachas. Standardlivslängden för cache är 600 sekunder och städintervallet är 300 sekunder."
+
+msgid "The plugin also supports a safe IP whitelist. Whitelisted IP addresses are still checked and can appear in statistics, but they are not blocked, redirected or marked as spam. When possible, the activating visitor IP is seeded into that whitelist automatically during first-time setup."
+msgstr "Pluginet stöder också en säker IP-whitelist. Whitelistade IP-adresser kontrolleras fortfarande och kan visas i statistiken, men de blockeras inte, omdirigeras inte och markeras inte som spam. När det är möjligt läggs den aktiverande besökarens IP automatiskt in i whitelistan vid första installationen."
+
+msgid "If the database schema becomes out of sync after an upgrade or a manual source-based install, deactivate and reactivate the plugin to recreate the required tables."
+msgstr "Om databasschemat hamnar ur synk efter en uppgradering eller en manuell källkodsbaserad installation, avaktivera och aktivera pluginet igen för att återskapa de tabeller som krävs."
+
+msgid "Can I get delisted?"
+msgstr "Kan jag bli avlistad?"
+
+msgid "Yes. If you are blacklisted in Tornevall DNSBL, you can use <a href=\"https://www.tornevall.net/removal/\">the removal page</a> - otherwise, you can't."
+msgstr "Ja. Om du är svartlistad i Tornevall DNSBL kan du använda <a href=\"https://www.tornevall.net/removal/\">borttagningssidan</a> - annars kan du inte det."
+
+msgid "You can host the built-in form on any page with:"
+msgstr "Du kan lägga det inbyggda formuläret på valfri sida med:"
+
+msgid "Alias shortcode:"
+msgstr "Alias-shortcode:"
+
+msgid "If you select a <strong>Delisting page</strong> in the plugin settings and that page does not already contain one of those shortcodes, the plugin renders its built-in main template from <code>templates/removal-page.php</code> automatically."
+msgstr "Om du väljer en <strong>avlistningssida</strong> i pluginets inställningar och den sidan inte redan innehåller någon av dessa shortcodes, renderar pluginet automatiskt sin inbyggda huvudmall från <code>templates/removal-page.php</code>."
+
+msgid "Important behaviour:"
+msgstr "Viktigt beteende:"
+
+msgid "Saving a main delisting page now performs a live permission check against <code>GET /api/dnsbl/token/info</code>"
+msgstr "När en huvudsaklig avlistningssida sparas görs nu en live-kontroll av behörigheter mot <code>GET /api/dnsbl/token/info</code>"
+
+msgid "The selected page is saved even when delete / delist permission is missing, but WordPress warns that live removal remains unavailable until Tornevall Networks/FraudBL access is granted"
+msgstr "Den valda sidan sparas även när delete-/delist-behörighet saknas, men WordPress varnar om att live-borttagning fortfarande inte är tillgänglig förrän Tornevall Networks/FraudBL-åtkomst har beviljats"
+
+msgid "Custom shortcode pages continue to work even when the built-in main page is not used"
+msgstr "Anpassade shortcode-sidor fortsätter att fungera även när den inbyggda huvudsidan inte används"
+
+msgid "Shortcode forms only expose the DNSBL operations that the configured token is actually allowed to perform"
+msgstr "Shortcode-formulär visar bara de DNSBL-operationer som den konfigurerade token faktiskt har rätt att utföra"
+
+msgid "The checker can now be reused immediately after any completed lookup, and a dedicated <strong>Reset</strong> button clears checker/CIDR/background state without reloading the page"
+msgstr "Kontrollverktyget kan nu återanvändas direkt efter varje slutförd kontroll, och en särskild <strong>Reset</strong>-knapp rensar checker-/CIDR-/bakgrundsstatus utan att sidan laddas om"
+
+msgid "Advanced CIDR now follows the delegated Tools guardrail <code>delete_min_cidr_prefix</code>, so non-admin tokens can be limited to ranges such as <code>/25</code>..<code>/32</code> or <code>/32</code> only instead of always getting <code>/24</code>"
+msgstr "Avancerad CIDR följer nu den delegerade Tools-begränsningen <code>delete_min_cidr_prefix</code>, så att icke-admin-token kan begränsas till intervall som <code>/25</code>..<code>/32</code> eller bara <code>/32</code> i stället för att alltid få <code>/24</code>"
+
+msgid "Tools-backed DNSBL write/check requests now also carry additive site identity metadata so backend delist audits can show which WordPress site sent the request"
+msgstr "Tools-baserade DNSBL skriv-/kontrollförfrågningar innehåller nu också kompletterande metadata om webbplatsens identitet så att backendens avlistningsgranskning kan visa vilken WordPress-sajt som skickade förfrågan"
+
+msgid "Turnstile on the public delisting/removal flow is now explicitly optional and controlled by its own admin checkbox, reusing the same site key/secret/theme configured for comment protection only when you opt in"
+msgstr "Turnstile i det publika avlistnings-/borttagningsflödet är nu uttryckligen valfritt och styrs av en egen admin-kryssruta, som återanvänder samma site key/secret/theme som är konfigurerat för kommentarskydd endast när du väljer att aktivera det"
+
+msgid "A second removal-page checkbox can now temporarily bypass Turnstile automatically when the widget or Cloudflare verification path has operational problems, while keeping comment and registration Turnstile behaviour unchanged"
+msgstr "En andra kryssruta på borttagningssidan kan nu tillfälligt kringgå Turnstile automatiskt när widgeten eller Cloudflares verifieringsflöde har driftproblem, samtidigt som beteendet för Turnstile i kommentarer och registreringar lämnas oförändrat"
+
+msgid "How do I test DNSBL without locking myself out?"
+msgstr "Hur testar jag DNSBL utan att låsa ute mig själv?"
+
+msgid "Use the Safe IP whitelist in the plugin settings. Keep your own IP address there, then use the built-in lookup and self-check tools to verify behaviour. Requests from whitelisted IPs are still evaluated and counted in statistics, but they are not blocked."
+msgstr "Använd Safe IP-whitelistan i pluginets inställningar. Behåll din egen IP-adress där och använd sedan de inbyggda uppslags- och självtestverktygen för att verifiera beteendet. Förfrågningar från whitelistade IP-adresser utvärderas fortfarande och räknas i statistiken, men de blockeras inte."
+
+msgid "<p>Try-tests and self-check: direct DNS lookups for a specific IP plus a self-check of the current server and visitor address.</p>"
+msgstr "<p>Prova-tester och självtest: direkta DNS-uppslagningar för en specifik IP samt en självkontroll av den aktuella serverns och besökarens adress.</p>"
+
+msgid "<p>At a glance and visitor statistics: resolver status, selected trigger flags, whitelist state, Turnstile/registration protection status, and recorded DNSBL activity.</p>"
+msgstr "<p>Överblick och besöksstatistik: resolverstatus, valda trigger-flaggor, whitelist-status, status för Turnstile-/registreringsskydd och registrerad DNSBL-aktivitet.</p>"
+
+msgid "<p>Core DNS lookup settings: preferred resolver hosts, cache age, cleanup interval, and the active blacklist trigger-flag profile including FraudBL-related flags.</p>"
+msgstr "<p>Grundläggande inställningar för DNS-uppslagningar: föredragna resolver-värdar, cacheålder, städintervall och den aktiva profilen för blacklist-triggerflaggor inklusive FraudBL-relaterade flaggor.</p>"
+
+msgid "<p>Protection behavior: comment hiding, redirect handling, safe IP whitelisting, blocked-visitor redirect URL, and admin notice styling.</p>"
+msgstr "<p>Skyddsbeteende: dölja kommentarer, hantering av omdirigeringar, säker IP-whitelistning, redirect-URL för blockerade besökare och utformning av adminnotiser.</p>"
+
+msgid "<p>Tools integration and development: diagnostics mode, frontend dry-run guidance, production/dev Tools mode selection, and token configuration.</p>"
+msgstr "<p>Tools-integration och utveckling: diagnostikläge, vägledning för frontend dry-run, val mellan produktions-/dev-läge för Tools och tokenkonfiguration.</p>"
+
+msgid "<p>Cloudflare Turnstile and registration protection: Turnstile settings for comments, the optional public delisting/removal flow, plus DNSBL/FraudBL and Turnstile protection for new WordPress account registrations.</p>"
+msgstr "<p>Cloudflare Turnstile och registreringsskydd: Turnstile-inställningar för kommentarer, det valfria publika avlistnings-/borttagningsflödet samt DNSBL/FraudBL- och Turnstile-skydd för nya WordPress-kontoregistreringar.</p>"
+
+msgid "<p>Frontend dry run in action: admin-bar dry-run indicator, blocked-comments notice on the public site, and the floating dry-run status banner used for safe live testing.</p>"
+msgstr "<p>Frontend dry run i praktiken: dry-run-indikator i adminbaren, notifiering om blockerade kommentarer på den publika sajten och den flytande statusbannern för säker live-testning.</p>"
+
+msgid "Added a second removal-page Turnstile checkbox that lets the public delist flow bypass the challenge automatically when Turnstile itself has operational problems."
+msgstr "Lade till en andra Turnstile-kryssruta på borttagningssidan som gör att det publika avlistningsflödet automatiskt kan hoppa över utmaningen när Turnstile självt har driftproblem."
+
+msgid "The plugin now distinguishes operational Turnstile outages from ordinary user-side verification failures on the public removal page."
+msgstr "Pluginet skiljer nu mellan driftavbrott i Turnstile och vanliga verifieringsfel på användarsidan på den publika borttagningssidan."
+
+msgid "Added an explicit admin checkbox for Turnstile on the public delisting/removal page."
+msgstr "Lade till en uttrycklig admin-kryssruta för Turnstile på den publika avlistnings-/borttagningssidan."
+
+msgid "The public delist flow no longer inherits Turnstile automatically just because comment or registration Turnstile is configured."
+msgstr "Det publika avlistningsflödet ärver inte längre Turnstile automatiskt bara för att Turnstile för kommentarer eller registrering är konfigurerat."
+
+msgid "Site owners can now disable only the removal-page challenge when Cloudflare Turnstile has temporary problems, while keeping comment and registration protection enabled."
+msgstr "Sajtägare kan nu bara stänga av utmaningen på borttagningssidan när Cloudflare Turnstile har tillfälliga problem, samtidigt som skyddet för kommentarer och registreringar förblir aktiverat."
+
+msgid "Unreleased"
+msgstr "Ej släppt ännu"
+
+msgid "Tools-backed DNSBL write/check requests now also carry additive site identity metadata (<code>source_type</code>, <code>source_name</code>, <code>source_site_url</code>, <code>source_site_host</code>) so backend delist/removal audits can identify which WordPress site submitted the request."
+msgstr "Tools-baserade DNSBL skriv-/kontrollförfrågningar bär nu också kompletterande metadata om webbplatsens identitet (<code>source_type</code>, <code>source_name</code>, <code>source_site_url</code>, <code>source_site_host</code>) så att backendens granskning av avlistning/borttagning kan identifiera vilken WordPress-sajt som skickade förfrågan."
+
+msgid "Added the plugin-side DNSBL write integration (<code>add</code>, <code>delete</code>, <code>update</code>, <code>bulk</code>) around one visible <strong>Write token</strong> field, bulk queueing, and optional dry-run acknowledgement through the Tools DNSBL endpoints."
+msgstr "Lade till pluginets egen DNSBL-skrivintegration (<code>add</code>, <code>delete</code>, <code>update</code>, <code>bulk</code>) kring ett synligt fält för <strong>Write token</strong>, bulkköning och valfri bekräftelse av dry-run via Tools DNSBL-endpoints."
+
+msgid "Added the shortcode-based removal form (<code>[dnsbl_removal_form]</code>) with AJAX backend proxy support, built-in main removal-page templating, and live delisting-page permission gating."
+msgstr "Lade till det shortcode-baserade borttagningsformuläret (<code>[dnsbl_removal_form]</code>) med stöd för AJAX-backendproxy, inbyggd mallning för huvudsidan för borttagning och live-styrning av behörigheter för avlistningssidan."
+
+msgid "Added the Tools-backed checker/removal follow-up via <code>POST /api/dnsbl/check-ip</code>, together with the checker-style public delist flow and dashboard/settings warnings when live delete / delist access is still missing."
+msgstr "Lade till den Tools-baserade uppföljningen för kontroll/borttagning via <code>POST /api/dnsbl/check-ip</code>, tillsammans med det publika avlistningsflödet i checker-stil och varningar i dashboard/inställningar när live delete-/delist-åtkomst fortfarande saknas."
+
+msgid "Added advanced optional CIDR removal flow for permitted tokens, including safe <code>/24</code>..<code>/32</code> validation, plugin-local scan progress, a visible hit list of listed addresses, listed-hit-only delete targeting, sequential per-IP delete requests, and Cloudflare Turnstile verification for live removal-form submissions."
+msgstr "Lade till ett avancerat valfritt CIDR-borttagningsflöde för tillåtna token, inklusive säker validering av <code>/24</code>..<code>/32</code>, plugin-lokal scan-progress, en synlig träfflista över listade adresser, delete-targeting endast för listade träffar, sekventiella delete-förfrågningar per IP och Cloudflare Turnstile-verifiering för live-inskick från borttagningsformuläret."
+
+msgid "The plugin UI now uses one visible <strong>DNSBL / Tools API token</strong> field, and the <strong>Check token permissions</strong> tool now always asks Tools for a live answer and reports effective DNSBL access more clearly."
+msgstr "Pluginets gränssnitt använder nu ett synligt fält för <strong>DNSBL / Tools API token</strong>, och verktyget <strong>Check token permissions</strong> frågar nu alltid Tools efter ett live-svar och rapporterar effektiv DNSBL-åtkomst tydligare."
+
+msgid "Preferred resolver hosts now cover all four canonical DNSBL/FraudBL zones, and migrations merge any missing defaults into existing installs without removing custom hosts."
+msgstr "Föredragna resolver-värdar täcker nu alla fyra kanoniska DNSBL-/FraudBL-zoner, och migreringar slår samman saknade standardvärden i befintliga installationer utan att ta bort anpassade värdar."
+
+msgid "Shortcode/custom removal pages now expose only the operations allowed by the current token, while the plugin-managed main removal page stays delete-focused."
+msgstr "Shortcode-/anpassade borttagningssidor visar nu bara de operationer som den aktuella token tillåter, medan pluginets egen huvudsida för borttagning fortsätter att vara delete-fokuserad."
+
+msgid "Token status panels, delisting-page controls, and checker submits now better reflect real delete capability, including explicit IP reposting when the checker has locked the field before submit."
+msgstr "Paneler för tokenstatus, kontroller på avlistningssidan och checker-inskick speglar nu bättre faktisk delete-kapacitet, inklusive uttrycklig återpostning av IP när checker-verktyget har låst fältet före inskick."
+
+msgid "Checker follow-up failures now report clearer backend/API errors for remote <code>419</code> cases, and write/check diagnostics now distinguish true invalid DNSBL tokens from wrong-token-type or inactive admin-key cases."
+msgstr "Uppföljningsfel från checker-verktyget rapporterar nu tydligare backend-/API-fel för fjärrfall med <code>419</code>, och diagnostiken för skriv-/kontrollförfrågningar skiljer nu mellan verkligt ogiltiga DNSBL-token och fall med fel token-typ eller inaktiv admin-nyckel."
+
+msgid "Checker-mode Turnstile stays hidden during pre-check/background steps, is enforced on actual write submissions, the Delist button now carries the in-flight submit state itself, and checker/delist requests now also show a dedicated busy spinner row."
+msgstr "Turnstile i checker-läge förblir dold under förkontroll-/bakgrundssteg, tillämpas vid faktiska skrivinskick, Delist-knappen bär nu själv statusen för ett pågående inskick och checker-/delist-förfrågningar visar nu också en särskild busy-spinner-rad."
+
+msgid "CIDR scanning now stays inside WordPress in small local batches so the resolver side is not flooded, while the final delete still goes through the DNSBL write endpoint after the block scan has found at least one listed address and only for the IPs the local scan actually marked as listed, one IP at a time."
+msgstr "CIDR-skanning stannar nu inne i WordPress i små lokala batcher så att resolversidan inte överbelastas, medan den slutliga borttagningen fortfarande går via DNSBL:s write-endpoint efter att blockskanningen har hittat minst en listad adress och bara för de IP-adresser som den lokala skanningen faktiskt markerade som listade, en IP i taget."
+
+msgid "If the user clicks <strong>Check if listed</strong> while a valid CIDR is still entered in the first checker IP field, the plugin now opens Advanced automatically, moves the CIDR there, and keeps that Advanced CIDR value as the authoritative range for the later scan/delete flow instead of requiring a separate single-IP anchor."
+msgstr "Om användaren klickar på <strong>Check if listed</strong> medan ett giltigt CIDR fortfarande är inskrivet i checker-verktygets första IP-fält, öppnar pluginet nu Advanced automatiskt, flyttar CIDR-värdet dit och behåller det Advanced-CIDR-värdet som det auktoritativa intervallet för det senare skannings-/borttagningsflödet i stället för att kräva en separat ankare-IP."
+
+msgid "The admin UI now also shows a dismissible reminder that links directly to the WordPress.org review form for quick feedback."
+msgstr "Admin-gränssnittet visar nu också en avvisbar påminnelse som länkar direkt till WordPress.orgs formulär för recensioner för snabb feedback."
+
+msgid "Nothing to see here, yet, except for this..."
+msgstr "Inget att se här ännu, förutom detta..."
+
+msgid "Urgent hotfix release. Adds a dedicated Turnstile toggle for the public delisting/removal page so Cloudflare issues there can be mitigated without turning off comment or registration protection."
+msgstr "Brådskande hotfix-release. Lägger till en särskild Turnstile-växel för den publika avlistnings-/borttagningssidan så att Cloudflare-problem där kan mildras utan att kommentars- eller registreringsskyddet stängs av."
+
+msgid "Adds the public DNSBL API token flow, AJAX-backed delisting tooling, the checker-style public removal flow, and the current local CIDR progress/hit-list/listed-target scan for the 3.1.0 release line."
+msgstr "Lägger till det publika DNSBL API-tokenflödet, AJAX-stödda verktyg för avlistning, det publika borttagningsflödet i checker-stil och den aktuella lokala CIDR-skanningen med progress-/träfflista-/listed-target för 3.1.0-serien."
+

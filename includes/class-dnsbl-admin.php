@@ -210,6 +210,7 @@ class Admin
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_secret_key', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_comment_turnstile_theme', ['sanitize_callback' => [self::class, 'sanitizeTurnstileTheme']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_turnstile_fail_open', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_dnsbl_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
     }
@@ -644,6 +645,7 @@ class Admin
         $turnstileSecretKey = Plugin::commentTurnstileSecretKey();
         $turnstileTheme = Plugin::commentTurnstileTheme();
         $removalTurnstileRequested = Plugin::removalTurnstileRequested();
+        $removalTurnstileFailOpen = Plugin::removalTurnstileFailOpenEnabled();
         $removalTurnstileActive = Plugin::removalTurnstileEnabled();
         $registrationDnsblEnabled = Plugin::registrationDnsblEnabled();
         $registrationTurnstileEnabled = get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1';
@@ -696,6 +698,7 @@ class Admin
                             <li><?php echo esc_html(sprintf(__('Delete / delist permission confirmed: %s', 'tornevall-networks-dnsbl-implementation'), $delistingAccessConfirmed ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Comment Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $turnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Removal page Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileActive ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('Removal-page Turnstile automatic bypass enabled: %s', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileFailOpen ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration DNSBL enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Dev mode: %s', 'tornevall-networks-dnsbl-implementation'), $devMode ? __('enabled', 'tornevall-networks-dnsbl-implementation') : __('disabled', 'tornevall-networks-dnsbl-implementation'))); ?></li>
@@ -1108,12 +1111,16 @@ class Admin
                         <?php
                         self::renderCheckboxRow('tornevall_dnsbl_delistingpage_comments_disabled', __('Disable comments on the delisting page', 'tornevall-networks-dnsbl-implementation'), __('Useful if the delisting page attracts many support comments.', 'tornevall-networks-dnsbl-implementation'), (bool)get_option('tornevall_dnsbl_delistingpage_comments_disabled'));
                         self::renderCheckboxRow('tornevall_dnsbl_removal_turnstile_enabled', __('Require Turnstile on public delisting/removal submissions', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to live delist/removal submissions on the public page. Checker-only and background follow-up requests stay verification-free so the lookup flow still works when Turnstile has temporary issues.', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileRequested);
+                        self::renderCheckboxRow('tornevall_dnsbl_removal_turnstile_fail_open', __('Automatically bypass removal-page Turnstile if Cloudflare Turnstile has operational problems', 'tornevall-networks-dnsbl-implementation'), __('When enabled, the public delisting/removal form can temporarily continue without the Turnstile challenge if the widget cannot initialize or Cloudflare verification has an operational outage. This applies only to the public removal page and does not weaken comment or registration protection.', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileFailOpen);
                         ?>
                         <p class="description" style="max-width:820px; margin-top:-4px;">
                             <?php echo esc_html__('Removal-page Turnstile reuses the same site key, secret key and theme configured above for comments. Keep this off unless you explicitly want CAPTCHA on the public delist flow.', 'tornevall-networks-dnsbl-implementation'); ?>
                         </p>
                         <p class="description" style="max-width:820px;">
                             <?php echo esc_html__('Turnstile is optional on the public delisting/removal page and is now controlled separately from comment and registration protection.', 'tornevall-networks-dnsbl-implementation'); ?>
+                        </p>
+                        <p class="description" style="max-width:820px;">
+                            <?php echo esc_html__('The automatic bypass opens only for the public removal page when the Turnstile widget or Cloudflare siteverify endpoint is unhealthy. A later successful Turnstile verification closes that temporary bypass again.', 'tornevall-networks-dnsbl-implementation'); ?>
                         </p>
                         <?php if (!$delistingAccessConfirmed) { ?>
                             <script>
