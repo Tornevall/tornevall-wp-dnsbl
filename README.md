@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.4`
+- **Release:** `3.1.5`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `7.0`
@@ -43,7 +43,7 @@ The current release line includes:
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.4` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.5` release yet.
 
 ## Description
 
@@ -124,6 +124,10 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.5 highlights
+
+- Fixed WordPress multisite/network registrations so the second `wp-signup.php` step can reuse the successful Turnstile check from step 1 instead of failing and sending the visitor back to the first step
 
 ### 3.1.4 highlights
 

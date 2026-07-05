@@ -67,6 +67,7 @@ class Plugin
         add_action('comment_form_logged_in_after', [self::class, 'renderCommentTurnstileWidget']);
         add_action('register_form', [self::class, 'renderRegistrationTurnstileWidget']);
         add_filter('registration_errors', [self::class, 'validateRegistrationErrors'], 10, 3);
+        add_action('signup_hidden_fields', [self::class, 'renderMultisiteRegistrationContinuationField']);
         add_action('signup_extra_fields', [self::class, 'renderMultisiteRegistrationTurnstileWidget']);
         add_filter('wpmu_validate_user_signup', [self::class, 'validateMultisiteUserSignup']);
         add_filter('wpmu_validate_blog_signup', [self::class, 'validateMultisiteBlogSignup']);
@@ -3544,6 +3545,21 @@ class Plugin
         self::renderTurnstileWidget(__('Account registration verification', 'tornevall-networks-dnsbl-implementation'));
     }
 
+    public static function renderMultisiteRegistrationContinuationField($context = ''): void
+    {
+        if (is_admin() || !is_multisite() || !self::registrationTurnstileEnabled() || (string)$context !== 'validate-site') {
+            return;
+        }
+
+        $userName = isset($_POST['user_name']) ? sanitize_user(wp_unslash($_POST['user_name']), true) : '';
+        $userEmail = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
+        if ($userName === '' || $userEmail === '') {
+            return;
+        }
+
+        echo '<input type="hidden" name="tornevall_dnsbl_multisite_turnstile" value="' . esc_attr(self::multisiteRegistrationTurnstileNonce($userName, $userEmail)) . '" />';
+    }
+
     public static function registrationTurnstileEnabled(): bool
     {
         return get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1'
@@ -3708,7 +3724,12 @@ class Plugin
             }
         }
 
-        $state['turnstile'] = self::verifyRegistrationTurnstile(self::registrationTurnstileResponseToken(), $ip);
+        if (self::canReuseMultisiteRegistrationTurnstile()) {
+            $state['turnstile'] = ['success' => true, 'message' => 'multisite-continuation'];
+        } else {
+            $state['turnstile'] = self::verifyRegistrationTurnstile(self::registrationTurnstileResponseToken(), $ip);
+        }
+
         if (empty($state['turnstile']['success'])) {
             self::recordStat($ip, 0, true, 'registration-turnstile-failed');
         }
@@ -3724,6 +3745,42 @@ class Plugin
         }
 
         return $turnstile;
+    }
+
+    private static function canReuseMultisiteRegistrationTurnstile(): bool
+    {
+        if (!is_multisite()) {
+            return false;
+        }
+
+        $stage = isset($_POST['stage']) ? sanitize_key(wp_unslash($_POST['stage'])) : '';
+        if ($stage !== 'validate-blog-signup') {
+            return false;
+        }
+
+        if (self::registrationTurnstileResponseToken() !== '') {
+            return false;
+        }
+
+        $userName = isset($_POST['user_name']) ? sanitize_user(wp_unslash($_POST['user_name']), true) : '';
+        $userEmail = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
+        $nonce = isset($_POST['tornevall_dnsbl_multisite_turnstile']) ? sanitize_text_field(wp_unslash($_POST['tornevall_dnsbl_multisite_turnstile'])) : '';
+
+        if ($userName === '' || $userEmail === '' || $nonce === '') {
+            return false;
+        }
+
+        return wp_verify_nonce($nonce, self::multisiteRegistrationTurnstileAction($userName, $userEmail)) !== false;
+    }
+
+    private static function multisiteRegistrationTurnstileNonce(string $userName, string $userEmail): string
+    {
+        return wp_create_nonce(self::multisiteRegistrationTurnstileAction($userName, $userEmail));
+    }
+
+    private static function multisiteRegistrationTurnstileAction(string $userName, string $userEmail): string
+    {
+        return 'tornevall_dnsbl_multisite_turnstile|' . md5(strtolower($userName) . '|' . strtolower($userEmail));
     }
 
     public static function checkBlacklist($addr, $getIsListed = false, $adminPassThrough = false)

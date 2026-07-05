@@ -2,6 +2,11 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.5 - 2026-07-05
+
+### Fixed
+- Fixed WordPress multisite/network registrations so the second `wp-signup.php` step can reuse the successful Turnstile check from step 1 instead of failing and bouncing visitors back to the first step without a new widget.
+
 ## 3.1.4 - 2026-07-05
 
 ### Fixed

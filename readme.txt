@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.0
-Stable tag: 3.1.4
+Stable tag: 3.1.5
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -74,6 +74,10 @@ But you need permissions for this, which can be gained by request via [https://t
 
 == Changelog ==
 
+= 3.1.5 =
+
+* Fixed WordPress multisite/network registrations so the second `wp-signup.php` step can reuse the successful Turnstile check from step 1 instead of failing and sending the visitor back to the first step.
+
 = 3.1.4 =
 
 * Tested with WP7.
@@ -112,6 +116,10 @@ But you need permissions for this, which can be gained by request via [https://t
 * The admin UI now also shows a dismissible reminder that links directly to the WordPress.org review form for quick feedback.
 
 == Upgrade Notice ==
+
+= 3.1.5 =
+
+Fixes the multisite/network `wp-signup.php` step-two registration flow so Turnstile no longer breaks the second step after a successful first-step check.
 
 = 3.1.4 =
 
