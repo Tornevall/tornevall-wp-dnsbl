@@ -4,10 +4,10 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.2`
+- **Release:** `3.1.4`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
-- **Tested up to:** `6.9`
+- **Tested up to:** `7.0`
 - **Plugin URL:** <https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/>
 - **Project URL:** <https://github.com/Tornevall/tornevall-wp-dnsbl>
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
@@ -26,8 +26,8 @@ The current release line includes:
 - safe IP whitelisting and protected-admin handling
 - frontend dry-run support for administrators
 - Cloudflare Turnstile for WordPress comments
-- DNSBL/FraudBL protection for WordPress account registrations
-- Cloudflare Turnstile for WordPress account registrations
+- DNSBL/FraudBL protection for WordPress account registrations, including WordPress multisite/network signup flows on `wp-signup.php`
+- Cloudflare Turnstile for WordPress account registrations, including WordPress multisite/network signup flows on `wp-signup.php`
 - one visible DNSBL / Tools API token field in the WordPress settings UI, plus live **Check token permissions** diagnostics and permission-aware token status for delete / delist work
 - dashboard/settings warnings when live DNSBL delete / delist access is missing, together with gating for the configured main delisting page
 - built-in main removal-page template plus shortcode-based custom removal pages that only expose the operations allowed by the current token
@@ -43,7 +43,7 @@ The current release line includes:
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.2` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.4` release yet.
 
 ## Description
 
@@ -58,7 +58,7 @@ Current admin features include:
 - visitor statistics for blacklist activity
 - safe IP whitelisting
 - protected-admin notices and quick whitelist actions
-- Turnstile settings for comments and registrations, plus a separate opt-in toggle and optional automatic fail-open bypass for public delisting/removal submits
+- Turnstile settings for comments and registrations, including multisite/network `wp-signup.php` registrations, plus a separate opt-in toggle and optional automatic fail-open bypass for public delisting/removal submits
 - live DNSBL token permission checks before the main delisting page is activated
 - dashboard/settings warnings when the current token cannot offer live removals yet
 - built-in removal-page template plus shortcode-based custom page support
@@ -124,6 +124,11 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.4 highlights
+
+- Registration Turnstile and DNSBL/FraudBL checks now also protect WordPress multisite/network signups on `wp-signup.php`
+- Release metadata now matches the 3.1.4 public package line
 
 ### 3.1.2 highlights
 
