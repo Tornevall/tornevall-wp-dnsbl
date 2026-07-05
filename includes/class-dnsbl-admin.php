@@ -1065,7 +1065,7 @@ class Admin
                     <div class="inside">
                         <h2 style="margin-top:0;"><?php echo esc_html__('WordPress account registration protection', 'tornevall-networks-dnsbl-implementation'); ?></h2>
                         <?php self::renderCheckboxRow('tornevall_dnsbl_registration_dnsbl_enabled', __('Check new account registrations against DNSBL/FraudBL', 'tornevall-networks-dnsbl-implementation'), __('Rejects a new WordPress account registration when the current visitor IP matches the selected blacklist trigger flags.', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled); ?>
-                        <?php self::renderCheckboxRow('tornevall_dnsbl_registration_turnstile_enabled', __('Require Turnstile on new account registrations', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to the public wp-login registration form as an extra anti-bot and anti-abuse sales argument.', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled); ?>
+                        <?php self::renderCheckboxRow('tornevall_dnsbl_registration_turnstile_enabled', __('Require Turnstile on new account registrations', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to the public WordPress registration form, including multisite/network wp-signup flows, as an extra anti-bot and anti-abuse layer.', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled); ?>
                         <p class="description"><?php echo esc_html__('Registration Turnstile reuses the same site key, secret key and theme configured above for comments.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                         <p class="description"><?php echo esc_html__('These controls apply to public WordPress account registration forms and do nothing when user registration is disabled in WordPress.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                     </div>
@@ -1343,4 +1343,3 @@ class Admin
         <?php
     }
 }
-

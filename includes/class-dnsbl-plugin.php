@@ -67,6 +67,9 @@ class Plugin
         add_action('comment_form_logged_in_after', [self::class, 'renderCommentTurnstileWidget']);
         add_action('register_form', [self::class, 'renderRegistrationTurnstileWidget']);
         add_filter('registration_errors', [self::class, 'validateRegistrationErrors'], 10, 3);
+        add_action('signup_extra_fields', [self::class, 'renderMultisiteRegistrationTurnstileWidget']);
+        add_filter('wpmu_validate_user_signup', [self::class, 'validateMultisiteUserSignup']);
+        add_filter('wpmu_validate_blog_signup', [self::class, 'validateMultisiteBlogSignup']);
 
         // Auto-report spam: hook into Akismet spam transition if write token is configured.
         if (self::writeTokenSet() && self::autoReportSpamEnabled()) {
@@ -3532,6 +3535,15 @@ class Plugin
         self::renderTurnstileWidget(__('Account registration verification', 'tornevall-networks-dnsbl-implementation'));
     }
 
+    public static function renderMultisiteRegistrationTurnstileWidget($errors = null): void
+    {
+        if (is_admin() || !is_multisite() || !self::registrationTurnstileEnabled()) {
+            return;
+        }
+
+        self::renderTurnstileWidget(__('Account registration verification', 'tornevall-networks-dnsbl-implementation'));
+    }
+
     public static function registrationTurnstileEnabled(): bool
     {
         return get_option('tornevall_dnsbl_registration_turnstile_enabled') === '1'
@@ -3605,30 +3617,7 @@ class Plugin
             return $errors;
         }
 
-        $ip = self::currentVisitorIp();
-        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) && self::registrationDnsblEnabled()) {
-            $evaluation = self::evaluateBlacklistState($ip, true);
-            self::recordStat($ip, (int)$evaluation['bitmask'], !empty($evaluation['blocked']), 'registration-attempt');
-
-            if (!empty($evaluation['blocked'])) {
-                self::recordStat($ip, (int)$evaluation['bitmask'], true, 'registration-rejected');
-                $errors->add(
-                        'tornevall_dnsbl_registration_blocked',
-                        __('Account registration is blocked because the current visitor IP matches the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation')
-                );
-
-                return $errors;
-            }
-        }
-
-        $turnstile = isset($_POST['cf-turnstile-response']) ? sanitize_text_field(wp_unslash($_POST['cf-turnstile-response'])) : '';
-        $turnstileVerification = self::verifyRegistrationTurnstile($turnstile, $ip);
-        if (empty($turnstileVerification['success'])) {
-            self::recordStat($ip, 0, true, 'registration-turnstile-failed');
-            $errors->add('tornevall_dnsbl_registration_turnstile', (string)$turnstileVerification['message']);
-        }
-
-        return $errors;
+        return self::applyRegistrationValidationErrors($errors);
     }
 
     public static function registrationDnsblEnabled(): bool
@@ -3643,6 +3632,98 @@ class Plugin
         }
 
         return self::verifyTurnstileToken($responseToken, $ip);
+    }
+
+    public static function validateMultisiteUserSignup($result): array
+    {
+        return self::validateMultisiteSignupResult($result);
+    }
+
+    public static function validateMultisiteBlogSignup($result): array
+    {
+        return self::validateMultisiteSignupResult($result);
+    }
+
+    private static function validateMultisiteSignupResult($result): array
+    {
+        $result = is_array($result) ? $result : [];
+        $errors = $result['errors'] ?? null;
+        if (!($errors instanceof \WP_Error)) {
+            $errors = new \WP_Error();
+        }
+
+        $result['errors'] = self::applyRegistrationValidationErrors($errors);
+
+        return $result;
+    }
+
+    private static function applyRegistrationValidationErrors(\WP_Error $errors): \WP_Error
+    {
+        $state = self::getRegistrationValidationState();
+
+        if (!empty($state['dnsbl_blocked']) && !$errors->get_error_code('tornevall_dnsbl_registration_blocked')) {
+            $errors->add(
+                    'tornevall_dnsbl_registration_blocked',
+                    __('Account registration is blocked because the current visitor IP matches the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation')
+            );
+
+            return $errors;
+        }
+
+        if (empty($state['turnstile']['success']) && !$errors->get_error_code('tornevall_dnsbl_registration_turnstile')) {
+            $errors->add('tornevall_dnsbl_registration_turnstile', (string)($state['turnstile']['message'] ?? __('Verification failed. Please try again.', 'tornevall-networks-dnsbl-implementation')));
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @return array{ip:string,dnsbl_blocked:bool,dnsbl_bitmask:int,turnstile:array<string,mixed>}
+     */
+    private static function getRegistrationValidationState(): array
+    {
+        static $state = null;
+
+        if (is_array($state)) {
+            return $state;
+        }
+
+        $ip = self::currentVisitorIp();
+        $state = [
+                'ip' => $ip,
+                'dnsbl_blocked' => false,
+                'dnsbl_bitmask' => 0,
+                'turnstile' => ['success' => true, 'message' => 'disabled'],
+        ];
+
+        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP) && self::registrationDnsblEnabled()) {
+            $evaluation = self::evaluateBlacklistState($ip, true);
+            $state['dnsbl_bitmask'] = (int)($evaluation['bitmask'] ?? 0);
+            $state['dnsbl_blocked'] = !empty($evaluation['blocked']);
+
+            self::recordStat($ip, $state['dnsbl_bitmask'], $state['dnsbl_blocked'], 'registration-attempt');
+
+            if ($state['dnsbl_blocked']) {
+                self::recordStat($ip, $state['dnsbl_bitmask'], true, 'registration-rejected');
+            }
+        }
+
+        $state['turnstile'] = self::verifyRegistrationTurnstile(self::registrationTurnstileResponseToken(), $ip);
+        if (empty($state['turnstile']['success'])) {
+            self::recordStat($ip, 0, true, 'registration-turnstile-failed');
+        }
+
+        return $state;
+    }
+
+    private static function registrationTurnstileResponseToken(): string
+    {
+        $turnstile = isset($_POST['cf-turnstile-response']) ? sanitize_text_field(wp_unslash($_POST['cf-turnstile-response'])) : '';
+        if ($turnstile === '' && isset($_POST['cf_turnstile_token'])) {
+            $turnstile = sanitize_text_field(wp_unslash($_POST['cf_turnstile_token']));
+        }
+
+        return $turnstile;
     }
 
     public static function checkBlacklist($addr, $getIsListed = false, $adminPassThrough = false)
@@ -3964,4 +4045,3 @@ class Plugin
         ];
     }
 }
-
