@@ -127,8 +127,12 @@ See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0
 
 ### 3.1.4 highlights
 
+- Tested with WP7
 - Registration Turnstile and DNSBL/FraudBL checks now also protect WordPress multisite/network signups on `wp-signup.php`
-- Release metadata now matches the 3.1.4 public package line
+
+### 3.1.3 highlights
+
+- Tested with WP7
 
 ### 3.1.2 highlights
 
