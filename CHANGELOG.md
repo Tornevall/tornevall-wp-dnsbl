@@ -2,6 +2,11 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.4 - 2026-07-05
+
+### Fixed
+- Cloudflare Turnstile and DNSBL/FraudBL registration checks now also run on WordPress multisite/network signup flows (`wp-signup.php`) instead of only the standard single-site `wp-login.php?action=register` form.
+
 ## 3.1.2 - 2026-06-28
 
 ### Added
