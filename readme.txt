@@ -79,6 +79,10 @@ But you need permissions for this, which can be gained by request via [https://t
 * Tested with WP7.
 * Registration Turnstile and DNSBL/FraudBL checks now also protect WordPress multisite/network signups on `wp-signup.php`.
 
+= 3.1.3 =
+
+* Tested with WP7.
+
 = 3.1.2 =
 
 * Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling.
