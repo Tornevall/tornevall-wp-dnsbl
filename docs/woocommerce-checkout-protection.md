@@ -35,7 +35,7 @@ These flags represent specific or active abuse and must not offer self-delisting
 
 ## Notifications
 
-Notifications use WordPress `wp_mail()` and can be disabled, sent instantly, or collected for an hourly, twice-daily, or daily digest. An empty recipient field falls back to the WordPress administration email.
+Notifications use WordPress `wp_mail()` and can be disabled, sent instantly, or collected for an hourly, twice-daily, or daily digest. The WordPress administration email is always included. Additional recipients can be configured, and an empty field therefore sends only to the administration email.
 
 Bulk notification rows are stored in:
 

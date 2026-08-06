@@ -360,7 +360,7 @@ class WooCommerce
                         <th scope="row"><label for="tornevall_dnsbl_wc_notify_email"><?php echo esc_html__('Notification recipients', 'tornevall-networks-dnsbl-implementation'); ?></label></th>
                         <td>
                             <input id="tornevall_dnsbl_wc_notify_email" type="text" class="regular-text" name="tornevall_dnsbl_wc_notify_email" value="<?php echo esc_attr((string)get_option('tornevall_dnsbl_wc_notify_email', '')); ?>" placeholder="<?php echo esc_attr((string)get_option('admin_email')); ?>">
-                            <p class="description"><?php echo esc_html__('Separate multiple addresses with commas. Leave empty to use the WordPress administration email.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                            <p class="description"><?php echo esc_html__('Separate multiple addresses with commas. The WordPress administration email is always included; leave this empty to use only that address.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -861,13 +861,18 @@ class WooCommerce
      */
     private static function notificationRecipients(): array
     {
-        $configured = self::sanitizeEmailList(get_option('tornevall_dnsbl_wc_notify_email', ''));
-        if ($configured === '') {
-            $adminEmail = sanitize_email((string)get_option('admin_email'));
-            return $adminEmail !== '' ? [$adminEmail] : [];
+        $recipients = [];
+        $adminEmail = sanitize_email((string)get_option('admin_email'));
+        if ($adminEmail !== '' && is_email($adminEmail)) {
+            $recipients[] = $adminEmail;
         }
 
-        return array_values(array_filter(explode(',', $configured)));
+        $configured = self::sanitizeEmailList(get_option('tornevall_dnsbl_wc_notify_email', ''));
+        if ($configured !== '') {
+            $recipients = array_merge($recipients, array_values(array_filter(explode(',', $configured))));
+        }
+
+        return array_values(array_unique($recipients));
     }
 
     public static function syncNotificationSchedule(): void
