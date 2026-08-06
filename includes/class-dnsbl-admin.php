@@ -213,6 +213,7 @@ class Admin
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_removal_turnstile_fail_open', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_dnsbl_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
         register_setting('dnsblOptions-group', 'tornevall_dnsbl_registration_turnstile_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
+        register_setting('dnsblOptions-group', 'tornevall_dnsbl_woocommerce_checkout_enabled', ['sanitize_callback' => [self::class, 'sanitizeCheckbox']]);
     }
 
     public static function sanitizeToolsBearerToken($value): string
@@ -701,6 +702,7 @@ class Admin
                             <li><?php echo esc_html(sprintf(__('Removal-page Turnstile automatic bypass enabled: %s', 'tornevall-networks-dnsbl-implementation'), $removalTurnstileFailOpen ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration DNSBL enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationDnsblEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Registration Turnstile enabled: %s', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
+                            <li><?php echo esc_html(sprintf(__('WooCommerce checkout protection: %s', 'tornevall-networks-dnsbl-implementation'), Plugin::woocommerceCheckoutEnabled() ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <li><?php echo esc_html(sprintf(__('Dev mode: %s', 'tornevall-networks-dnsbl-implementation'), $devMode ? __('enabled', 'tornevall-networks-dnsbl-implementation') : __('disabled', 'tornevall-networks-dnsbl-implementation'))); ?></li>
                             <?php if ($currentVisitorAddress && filter_var($currentVisitorAddress, FILTER_VALIDATE_IP)) { ?>
                                 <li><?php echo esc_html(sprintf(__('Current visitor address is whitelisted: %s', 'tornevall-networks-dnsbl-implementation'), $currentVisitorWhitelisted ? __('yes', 'tornevall-networks-dnsbl-implementation') : __('no', 'tornevall-networks-dnsbl-implementation'))); ?></li>
@@ -1068,6 +1070,14 @@ class Admin
                         <?php self::renderCheckboxRow('tornevall_dnsbl_registration_turnstile_enabled', __('Require Turnstile on new account registrations', 'tornevall-networks-dnsbl-implementation'), __('Adds Cloudflare Turnstile to the public WordPress registration form, including multisite/network wp-signup flows, as an extra anti-bot and anti-abuse layer.', 'tornevall-networks-dnsbl-implementation'), $registrationTurnstileEnabled); ?>
                         <p class="description"><?php echo esc_html__('Registration Turnstile reuses the same site key, secret key and theme configured above for comments.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                         <p class="description"><?php echo esc_html__('These controls apply to public WordPress account registration forms and do nothing when user registration is disabled in WordPress.', 'tornevall-networks-dnsbl-implementation'); ?></p>
+                    </div>
+                </div>
+
+                <div class="postbox" style="margin-top:16px;">
+                    <div class="inside">
+                        <h2 style="margin-top:0;"><?php echo esc_html__('WooCommerce checkout protection', 'tornevall-networks-dnsbl-implementation'); ?></h2>
+                        <?php self::renderCheckboxRow('tornevall_dnsbl_woocommerce_checkout_enabled', __('Check WooCommerce orders against DNSBL/FraudBL', 'tornevall-networks-dnsbl-implementation'), __('Rejects a WooCommerce order placement when the current visitor IP matches the selected blacklist trigger flags. Works with both the classic (legacy) checkout and the blocks-based checkout.', 'tornevall-networks-dnsbl-implementation'), Plugin::woocommerceCheckoutEnabled()); ?>
+                        <p class="description"><?php echo esc_html__('These controls apply only when WooCommerce is active.', 'tornevall-networks-dnsbl-implementation'); ?></p>
                     </div>
                 </div>
 

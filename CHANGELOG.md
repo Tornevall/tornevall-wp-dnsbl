@@ -2,6 +2,11 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.6 - 2026-08-06
+
+### Added
+- Added WooCommerce checkout protection for both the classic (legacy) shortcode checkout and the blocks-based (Store API) checkout. When enabled, order placement is rejected if the visitor IP matches the active DNSBL/FraudBL policy. The new toggle is in the admin panel under **WooCommerce checkout protection** and is off by default.
+
 ## 3.1.5 - 2026-07-05
 
 ### Fixed

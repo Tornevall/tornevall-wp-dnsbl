@@ -76,6 +76,12 @@ class Plugin
         if (self::writeTokenSet() && self::autoReportSpamEnabled()) {
             add_action('transition_comment_status', [self::class, 'handleCommentStatusTransition'], 10, 3);
         }
+
+        // WooCommerce checkout protection: legacy shortcode checkout and blocks (Store API) checkout.
+        if (self::woocommerceCheckoutEnabled()) {
+            add_action('woocommerce_checkout_process', [self::class, 'validateWooCommerceCheckout']);
+            add_action('woocommerce_store_api_checkout_process_payment_with_context', [self::class, 'validateWooCommerceBlocksCheckout'], 10, 2);
+        }
     }
 
     /**
@@ -171,6 +177,7 @@ class Plugin
                 'tornevall_dnsbl_removal_turnstile_fail_open' => '0',
                 'tornevall_dnsbl_registration_dnsbl_enabled' => '1',
                 'tornevall_dnsbl_registration_turnstile_enabled' => '1',
+                'tornevall_dnsbl_woocommerce_checkout_enabled' => '0',
                 'tornevall_dnsbl_cache_last_cleanup' => 0,
         ];
     }
@@ -506,6 +513,12 @@ class Plugin
                 'Adds Cloudflare Turnstile to live delist/removal submissions on the public page. Checker-only and background follow-up requests stay verification-free so the lookup flow still works when Turnstile has temporary issues.' => 'Lägger till Cloudflare Turnstile på riktiga delist-/removal-skickningar på den publika sidan. Själva checker-steget och bakgrundsuppföljningen fortsätter utan verifiering så att uppslagsflödet fortfarande fungerar när Turnstile har tillfälliga problem.',
                 'Removal-page Turnstile reuses the same site key, secret key and theme configured above for comments. Keep this off unless you explicitly want CAPTCHA on the public delist flow.' => 'Turnstile för avlistningssidan återanvänder samma site key, secret key och theme som konfigureras ovan för kommentarer. Låt detta vara avstängt om du inte uttryckligen vill ha CAPTCHA i det publika delist-flödet.',
                 'Turnstile is optional on the public delisting/removal page and is now controlled separately from comment and registration protection.' => 'Turnstile är valfritt på den publika avlistnings-/removal-sidan och styrs nu separat från skyddet för kommentarer och registreringar.',
+                'Check WooCommerce orders against DNSBL/FraudBL' => 'Kontrollera WooCommerce-beställningar mot DNSBL/FraudBL',
+                'Rejects a WooCommerce order placement when the current visitor IP matches the selected blacklist trigger flags. Works with both the classic (legacy) checkout and the blocks-based checkout.' => 'Avvisar en WooCommerce-beställning när besökarens IP-adress matchar de valda blacklist-flaggorna. Fungerar med både det klassiska (legacy) kassan och den blockbaserade kassan.',
+                'WooCommerce checkout protection: %s' => 'WooCommerce kassaskydd: %s',
+                'Order could not be placed because the current visitor IP matches the active DNSBL policy.' => 'Beställningen kunde inte genomföras eftersom besökarens IP-adress matchar den aktiva DNSBL-policyn.',
+                'WooCommerce checkout protection' => 'WooCommerce kassaskydd',
+                'These controls apply only when WooCommerce is active.' => 'Dessa inställningar gäller endast när WooCommerce är aktivt.',
         ];
 
         if (($translation === '' || $translation === $text) && isset($fallbacks[$text])) {
@@ -3639,6 +3652,82 @@ class Plugin
     public static function registrationDnsblEnabled(): bool
     {
         return get_option('tornevall_dnsbl_registration_dnsbl_enabled') === '1';
+    }
+
+    public static function woocommerceCheckoutEnabled(): bool
+    {
+        return get_option('tornevall_dnsbl_woocommerce_checkout_enabled') === '1';
+    }
+
+    /**
+     * DNSBL check for the legacy WooCommerce shortcode/classic checkout.
+     * Fires on the `woocommerce_checkout_process` action.
+     */
+    public static function validateWooCommerceCheckout(): void
+    {
+        if (self::isAdminBackOfficeRequest()) {
+            return;
+        }
+
+        $ip = self::currentVisitorIp();
+        if ($ip === '' || !filter_var($ip, FILTER_VALIDATE_IP)) {
+            return;
+        }
+
+        $evaluation = self::evaluateBlacklistState($ip, true);
+
+        if (!empty($evaluation['blocked'])) {
+            self::recordStat($ip, (int)$evaluation['bitmask'], true, 'woocommerce-checkout');
+            wc_add_notice(
+                sprintf(
+                    '%s <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+                    esc_html__('Order could not be placed because the current visitor IP matches the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation'),
+                    esc_url(self::getBlockedRedirectUrl()),
+                    esc_html__('More information', 'tornevall-networks-dnsbl-implementation')
+                ),
+                'error'
+            );
+        }
+    }
+
+    /**
+     * DNSBL check for the WooCommerce blocks (Store API) checkout.
+     * Fires on the `woocommerce_store_api_checkout_process_payment_with_context` action.
+     *
+     * @param object $payment_context PaymentContext object passed by the Store API.
+     * @param object $payment_result  PaymentResult object passed by reference.
+     *
+     * @throws \Exception When the RouteException class is available, throws it to surface a
+     *                    4xx error to the blocks checkout; otherwise falls back to a generic
+     *                    RuntimeException so the order is still rejected.
+     */
+    public static function validateWooCommerceBlocksCheckout($payment_context, &$payment_result): void
+    {
+        if (self::isAdminBackOfficeRequest()) {
+            return;
+        }
+
+        $ip = self::currentVisitorIp();
+        if ($ip === '' || !filter_var($ip, FILTER_VALIDATE_IP)) {
+            return;
+        }
+
+        $evaluation = self::evaluateBlacklistState($ip, true);
+
+        if (!empty($evaluation['blocked'])) {
+            self::recordStat($ip, (int)$evaluation['bitmask'], true, 'woocommerce-blocks-checkout');
+            $message = __('Order could not be placed because the current visitor IP matches the active DNSBL policy.', 'tornevall-networks-dnsbl-implementation');
+
+            if (class_exists('\Automattic\WooCommerce\StoreApi\Exceptions\RouteException')) {
+                throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
+                    'tornevall_dnsbl_checkout_blocked',
+                    $message,
+                    400
+                );
+            }
+
+            throw new \RuntimeException($message);
+        }
     }
 
     public static function verifyRegistrationTurnstile($responseToken, $ip): array
