@@ -56,7 +56,7 @@ class Migrations
         Plugin::syncCacheCleanupSchedule();
         Plugin::purgeExpiredCache();
 
-        if (class_exists(WooCommerce::class)) {
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
             WooCommerce::syncNotificationSchedule();
         }
     }
@@ -121,7 +121,7 @@ class Migrations
             ',
         ];
 
-        if (class_exists(WooCommerce::class)) {
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
             $definitions['tornevall_dnsbl_wc_blocked_log'] = WooCommerce::tableDefinition();
         }
 
@@ -136,7 +136,7 @@ class Migrations
             }
         }
 
-        if (class_exists(WooCommerce::class)) {
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
             WooCommerce::ensureDefaultOptions();
         }
 
@@ -215,6 +215,7 @@ class Migrations
         foreach (array_keys(self::tableDefinitions()) as $tableName) {
             $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $tableName);
         }
+        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . 'tornevall_dnsbl_wc_blocked_log');
 
         foreach (self::tableCleanupCandidates($wpdb) as $tableName) {
             $wpdb->query('DROP TABLE IF EXISTS ' . $tableName);

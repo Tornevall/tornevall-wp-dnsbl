@@ -25,7 +25,7 @@ Checkout Blocks and Store API checkout use `woocommerce_store_api_checkout_updat
 
 ## Customer guidance
 
-The merchant can configure the base message. A support instruction is appended automatically. Delisting guidance is suppressed when any matched flag is one of:
+The merchant can configure the base message. A support instruction is appended automatically. Delisting guidance is suppressed when any active resolved flag is one of:
 
 - `IP_PHISHING`
 - `IP_FRAUDCOMMERCE`
