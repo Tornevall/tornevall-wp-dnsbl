@@ -27,6 +27,7 @@ foreach ([
     'includes/class-dnsbl-plugin.php',
     'includes/class-dnsbl-migrations.php',
     'includes/class-dnsbl-admin.php',
+    'includes/class-dnsbl-fraud-mock.php',
     'includes/class-dnsbl-api-client.php',
     'includes/class-dnsbl-write-queue.php',
     'includes/dnsbl-utils.php',
@@ -40,6 +41,7 @@ if (is_admin()) {
     require_once TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/dnsbl-admin.php';
     add_action('admin_menu', 'tornevall_wp_dnsbl_admin');
     add_action('admin_init', 'register_dnsbl_settings');
+    \Tornevall\Networks\DNSBL\FraudMock::registerHooks();
 }
 
 register_activation_hook(TORNEVALL_DNSBL_PLUGIN_FILE, 'tornevall_wp_dnsbl_activate_db');
