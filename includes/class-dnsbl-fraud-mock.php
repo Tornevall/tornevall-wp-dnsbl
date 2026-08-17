@@ -372,7 +372,14 @@ class FraudMock
 
     private static function matchKey(string $identifier): string
     {
-        return preg_replace('/[^a-z0-9]+/i', '', strtolower(trim($identifier))) ?? '';
+        $key = preg_replace('/[^a-z0-9]+/i', '', strtolower(trim($identifier))) ?? '';
+
+        // Treat Swedish 12-digit and 10-digit personal identity formats as the same mock key.
+        if (ctype_digit($key) && strlen($key) === 12 && in_array(substr($key, 0, 2), ['19', '20'], true)) {
+            return substr($key, -10);
+        }
+
+        return $key;
     }
 
     /**
