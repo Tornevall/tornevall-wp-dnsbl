@@ -1,10 +1,10 @@
 # Tornevall Networks DNSBL Implementation
 
-WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations, commerce fraud signals and other abuse-prone submission flows.
+WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations and other abuse-prone submission flows.
 
 ## Release metadata
 
-- **Release:** `3.2.0`
+- **Release:** `3.1.6`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `7.0`
@@ -33,29 +33,45 @@ The current release line includes:
 - built-in main removal-page template plus shortcode-based custom removal pages that only expose the operations allowed by the current token
 - checker-style public delist flow with local-first DNS answers, a Tools-backed follow-up lookup, separate **Check if listed** / **Delist** actions, reusable post-check searches, a dedicated **Reset** action, safer disabled-state submit handling, and a dedicated busy spinner/status row while live requests are running
 - optional advanced CIDR delist mode for permitted tokens, with plugin-local resolver scans, live progress feedback, a visible hit list of listed IPs, listed-hit-only delete targeting, guarded ranges, sequential per-IP delete calls, explicit approval guidance when CIDR removal is not allowed, and a delegated CIDR floor from Tools so non-admin tokens can be limited to ranges like `/25`..`/32`
-- optional Turnstile protection for live removal submits, controlled by a dedicated removal-page checkbox instead of being inherited automatically from comment/registration Turnstile settings
+- if the user clicks **Check if listed** with a valid CIDR still sitting in the first checker field, the plugin now opens **Advanced**, moves the CIDR there, and lets that Advanced CIDR scope drive the later local scan and delist submit
+- optional Turnstile protection for live removal submits, now controlled by a dedicated removal-page checkbox instead of being inherited automatically from comment/registration Turnstile settings
 - an extra removal-page Turnstile fail-open checkbox so the public delist flow can temporarily bypass the Turnstile challenge automatically when the widget or Cloudflare verification path has operational problems
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
+- a stable plugin-to-plugin integration bridge for optional Tornevall add-ons, with capability discovery, IP checking and explicit administrator-approved abuse reporting
 - a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
-- the default protection profile includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
+- the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
-### Commerce hooks in 3.2.0
+FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-Version 3.2.0 adds an optional listener-based commerce fraud layer. The implementation is entirely inside this DNSBL plugin; supported payment plugins are observed through existing WordPress hooks and are not patched or replaced.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.6` release yet.
 
-Initial integrations include:
+## Plugin-to-plugin integration
 
-- **Klarna Payments** - listens to the plugin's accepted, pending and rejected fraud-status actions
-- **Kustom Checkout** - observes the Kustom order callback filter before `fraud_status` is interpreted
-- **Resurs legacy SOAP/RCO** - listens to the existing `resurs_hook_orderinfo` and `resurs_hook_callback` payloads when the old plugin is installed; no calls are made to the legacy API/plugin
-- **Resurs Merchant API** - passively observes the current plugin's rejected task-status filter but deliberately does not classify a normal rejection as fraud unless a trusted custom classifier or explicit signal says so
-- **Generic integrations** - can emit `tornevall_dnsbl_commerce_fraud` with a normalized event array
-- **Resurs MAPI custom integrations** - can emit `tornevall_dnsbl_resurs_mapi_fraud` without modifying the Resurs plugin
+DNSBL remains optional for consuming plugins. Tornevall Tools for WordPress can therefore operate its guestbook without this plugin, while activating DNSBL adds visitor-IP filtering and explicit abuse-report controls.
 
-Confirmed/rejected fraud can queue a Tools `commerce` add using `IP_FRAUDCOMMERCE`. Pending/review states are only observed. A later accepted/cleared event may remove the commerce listing only when the matching source/order reference is locally tracked as having created or owned that listing. Multiple active references sharing one IP are tracked so one successful order does not automatically remove a listing still owned by another active fraud reference.
+The stable WordPress filters are:
 
-The admin-only **Commerce hooks** view shows detected integrations, recent normalized events and a sandbox for explicit ADD/UPDATE/REMOVE tests. Sandbox writes are allowed only when the configured Tools environment is `dev`.
+```php
+$capabilities = apply_filters('tornevall_dnsbl_capabilities', null, [
+    'consumer' => 'my-plugin',
+]);
+
+$check = apply_filters('tornevall_dnsbl_check_ip', null, '203.0.113.10', [
+    'consumer' => 'my-plugin',
+]);
+
+$report = apply_filters('tornevall_dnsbl_report_ip', null, '203.0.113.10', [
+    'bitmask' => 64,
+    'source_note' => 'Explicit administrator abuse report.',
+], [
+    'consumer' => 'my-plugin',
+]);
+```
+
+`tornevall_dnsbl_report_ip` requires a logged-in WordPress administrator and a configured DNSBL token with add permission. The integration bridge never auto-reports a visitor and never exposes the configured token to browser JavaScript.
+
+For guestbook/web-form abuse, bitmask `64` (`IP_ABUSE_NO_SMTP`) is the default classification.
 
 ## Description
 
@@ -74,7 +90,6 @@ Current admin features include:
 - live DNSBL token permission checks before the main delisting page is activated
 - dashboard/settings warnings when the current token cannot offer live removals yet
 - built-in removal-page template plus shortcode-based custom page support
-- commerce hook integration status, recent event history and a dev-only mutation sandbox
 
 ## Installation
 
@@ -82,38 +97,9 @@ Current admin features include:
 2. Activate the plugin through the **Plugins** menu in WordPress.
 3. Open the plugin settings page and configure DNSBL/FraudBL behaviour.
 4. If you want Turnstile protection, add your Cloudflare Turnstile keys in the plugin settings and then opt in separately for comments, registrations, and/or public delisting/removal submits.
-5. If you want commerce fraud listeners, open **Commerce hooks** below the DNSBL menu and enable them after the Tools write token has been configured.
+5. If your site keeps public delisting enabled and you want that flow to stay available even during Cloudflare Turnstile outages, also enable the automatic removal-page Turnstile bypass checkbox.
 
 The plugin creates and uses cache/statistics tables to avoid excessive DNS traffic and to surface admin metrics.
-
-## Commerce custom hook example
-
-A provider/site integration that already knows a payment has been confirmed as fraud can emit the generic hook without changing the payment plugin:
-
-```php
-do_action('tornevall_dnsbl_commerce_fraud', [
-    'source' => 'my_gateway',
-    'state' => 'fraud',
-    'order_id' => 123,
-    'payment_id' => 'payment-reference',
-]);
-```
-
-The customer IP is resolved from the WooCommerce order when possible. An explicit `ip` can also be supplied by trusted integrations.
-
-For the current Resurs Merchant API generation there is also a dedicated custom signal surface:
-
-```php
-do_action(
-    'tornevall_dnsbl_resurs_mapi_fraud',
-    123,
-    'fraud',
-    'payment-reference',
-    []
-);
-```
-
-A regular MAPI rejection is not treated as fraud automatically.
 
 ## FAQ
 
@@ -135,15 +121,31 @@ Alias shortcode:
 [tornevall_dnsbl_removal_form]
 ```
 
-### Does the DNSBL plugin modify Klarna, Kustom or Resurs plugins?
+If you select a **Delisting page** in the plugin settings and that page does **not** already contain one of those shortcodes, the plugin now renders its built-in main template from `templates/removal-page.php` automatically.
 
-No. Version 3.2.0 observes their existing WordPress integration surfaces. All new implementation code lives in this DNSBL plugin.
+Important behaviour:
 
-### How do I test commerce events safely?
+- saving a main delisting page now performs a live permission check against `GET /api/dnsbl/token/info`
+- the selected page is saved even without delete permission, but WordPress warns that live removal stays unavailable until Tornevall Networks/FraudBL access is granted
+- custom shortcode pages continue to work even when the built-in main page is not used
+- shortcode forms now only expose the DNSBL operations that the configured token is actually allowed to perform
+- the managed internal/public delist page keeps the UX minimal (IP only), gives an immediate local DNS statement first, and when a token exists it then runs a background Tools follow-up before sending delist; success messages note that propagation can take a little while
+- when single-IP delist is ready a dedicated Delist action is shown, but the checker can now still be reused immediately for another lookup; **Reset** clears the current checker/CIDR state without needing a page reload, and Advanced CIDR can also be opened earlier through the explicit toggle or automatic CIDR handoff and then becomes the authoritative scope for that flow
+- checker and delist requests now also show a dedicated spinner/status row below the action buttons so it is clearer that the live request is still working
+- advanced CIDR checks are now performed locally by the WordPress plugin itself, using the configured resolver hosts in small batches with a progress bar and hit list instead of sending the block lookup to the Tools API
+- Advanced CIDR now follows the delegated CIDR floor exposed by Tools (`delete_min_cidr_prefix`), so non-admin tokens can be restricted to `/25`..`/32`, `/26`..`/32`, or single-IP `/32` only instead of always getting `/24` access
+- the final CIDR delete still goes through the DNSBL write endpoint, but only after the local scan has found at least one listed address in the allowed CIDR block, and the plugin now only submits delete operations for the IPs that the local CIDR scan actually marked as listed, one IP at a time
+- the CIDR scan is intentionally paced in small local batches so the resolver side is not flooded while the progress UI keeps moving forward
+- if a valid CIDR is left in the first checker field and the user clicks **Check if listed**, the plugin now moves it into the Advanced CIDR field automatically, keeps that Advanced CIDR value as the authoritative delete scope, and opens the section immediately instead of leaving the form in an invalid single-IP state
+- when the plugin talks to the Tools DNSBL endpoints it now also includes its own site identity metadata, so Tools-side removal audits can tell which WordPress site triggered a delist request even in server-to-server flows
+- Turnstile on the public delisting/removal flow is now explicitly opt-in and reuses the same site key, secret key, and theme configured for comment protection; if Cloudflare Turnstile has temporary issues, admins can now disable only the removal-page challenge without touching comments or account registration
+- a second removal-page checkbox can now also keep the public delist flow alive automatically when Turnstile itself is unhealthy: widget/render verification problems open a temporary bypass for the removal page only, and a later healthy Turnstile verification closes that bypass again
 
-Use the **Commerce hooks** sandbox while Tools mode is set to `dev`. The sandbox enters the same normalized event path as the real listeners but refuses live sandbox writes in production mode.
+### Can I leave feedback somewhere?
 
-### How do I test the general plugin without locking myself out?
+Yes. The plugin admin now shows a small dismissible reminder with a direct link to the WordPress.org review form so you can quickly rate the plugin and say what should improve next.
+
+### How do I test the plugin without locking myself out?
 
 Use the safe IP whitelist and the frontend dry-run support for administrators. Whitelisted IPs are still checked and counted in statistics, but they are not blocked.
 
@@ -151,14 +153,11 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
 
-### 3.2.0 highlights
+### 3.1.6 highlights
 
-- Added normalized WooCommerce commerce fraud events and Tools-backed `commerce` ADD/UPDATE/REMOVE handling
-- Added Klarna Payments and Kustom Checkout listeners
-- Added legacy Resurs fraud-hook listeners without communicating with the legacy plugin/API
-- Added passive current Resurs MAPI observation plus explicit custom classification/signal hooks
-- Added ownership-aware clearing so unrelated successful orders do not automatically delist an IP
-- Added an admin-only Commerce hooks surface and a Tools-dev-only sandbox
+- Added an optional, stable plugin-to-plugin integration bridge for DNSBL capability discovery, checks and explicit abuse reports
+- Guestbook/web abuse uses bitmask 64 by default
+- Blacklist publication through the bridge remains administrator-triggered and permission-aware
 
 ### 3.1.5 highlights
 
@@ -169,19 +168,49 @@ See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0
 - Tested with WP7
 - Registration Turnstile and DNSBL/FraudBL checks now also protect WordPress multisite/network signups on `wp-signup.php`
 
+### 3.1.3 highlights
+
+- Tested with WP7
+
 ### 3.1.2 highlights
 
-- Fixed the public removal-form Turnstile lifecycle and stale/empty Turnstile response handling
-- Released the Tools-backed site identity metadata
+- Fixed the public removal-form Turnstile lifecycle so the widget waits for Cloudflare's API before rendering, keeps the returned widget id, and uses that widget id for reset/response handling
+- Fixed stale or empty Turnstile response handling by clearing tokens on expiration, timeout or error and recovering the current widget response before submit when the hidden token field is empty
+- Released the Tools-backed site identity metadata and bumped the plugin release metadata to `3.1.2`
+
+### 3.1.1 highlights
+
+- Added a dedicated admin checkbox for Turnstile on the public delisting/removal flow
+- The public removal page no longer inherits Turnstile automatically just because comment/registration Turnstile is configured
+- Cloudflare problems on `challenges.cloudflare.com` can now be mitigated by disabling only the removal-page challenge while keeping comment and registration protection unchanged
 
 ### 3.1.0 highlights
 
 - Added the Tools-backed DNSBL write-token flow for add/delete/update/bulk operations
 - Added the shortcode-based delisting/removal form with AJAX proxy and dry-run support
-- Added the checker-style public delist flow and local CIDR scanning/removal workflow
+- The live token checker now reports automatic DNSBL access for active admin-owned Tools tokens and no longer frames that case as a separate token model in the plugin UI
+- 3.1.0 also covers the current checker-style public delist flow, including the Tools-backed follow-up lookup, main removal-page template/permission gating, the current Delist-button submit/captcha/spinner handling fixes, and the local CIDR progress/hit-list/listed-target workflow with Advanced CIDR as the authoritative delete scope
+
+### 3.0.3 highlights
+
+- Fixed frontend dry-run availability so the public banner and toggle only appear when DNSBL dev mode is enabled and Tools mode is set to `dev`
+
+### 3.0.2 highlights
+
+- Repackaged the release so updated screenshots and other WordPress.org assets can be picked up properly
+- Restored Markdown-style links in the WordPress readme after the previous plain-URL formatting pass
+
+### 3.0.1 highlights
+
+- Simplified and aligned the public plugin name to better match the slug
+- Corrected the author metadata spelling to Thomas Tornevall
+- Reduced the WordPress.org tags to the five most relevant discovery terms
+- Refreshed the readme wording around FraudBL/fraud discoverability and planned WooCommerce follow-up work
 
 ### 3.0.0 highlights
 
 - Added Cloudflare Turnstile protection for comments
 - Added DNSBL/FraudBL and Turnstile protection for WordPress registrations
 - Added visitor statistics and safer whitelist-based admin testing
+- Added `IP_FRAUDCOMMERCE` to the default protection profile
+- Tightened comment blocking and updated the public removal flow

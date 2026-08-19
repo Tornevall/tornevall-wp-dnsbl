@@ -2,22 +2,15 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
-## 3.2.0 - 2026-08-18
+## 3.1.6 - 2026-08-19
 
 ### Added
-- Added an optional normalized commerce fraud event layer that translates confirmed WooCommerce payment fraud signals into Tools-backed DNSBL operations using `publication_type=commerce` and the existing `IP_FRAUDCOMMERCE` bit.
-- Added listeners for Klarna Payments accepted/pending/rejected actions and the Kustom Checkout order callback filter without changing either payment plugin.
-- Added legacy Resurs SOAP/RCO listeners for `resurs_hook_orderinfo` and `resurs_hook_callback`. The DNSBL plugin only observes those old fraud-capable hooks and never calls the legacy plugin/API.
-- Added passive current Resurs Merchant API observation through `resurs_payment_task_status`, plus the `tornevall_dnsbl_resurs_mapi_fraud_signal` classifier filter and `tornevall_dnsbl_resurs_mapi_fraud` custom signal hook. A normal MAPI rejection is deliberately not treated as fraud automatically.
-- Added the generic `tornevall_dnsbl_commerce_fraud` action so other payment modules/site integrations can submit normalized commerce signals without provider-specific code in the DNSBL core.
-- Added an admin-only **Commerce hooks** page showing detected integrations, recent normalized events, listener enablement and a sandbox for explicit ADD/UPDATE/REMOVE testing.
+- Added the `tornevall_dnsbl_capabilities`, `tornevall_dnsbl_check_ip`, and `tornevall_dnsbl_report_ip` plugin-to-plugin filters so other Tornevall WordPress plugins can use DNSBL as an optional addon without coupling to internal classes.
+- Added an explicit guestbook/web-abuse report path that defaults to `IP_ABUSE_NO_SMTP` (64) and reuses the configured DNSBL/Tools token permissions.
 
-### Changed
-- Pending/review fraud states are observable but are not published as confirmed commerce fraud.
-- Accepted/cleared signals only remove commerce listings when the matching source/order or payment reference is locally tracked as owning the active listing.
-- Multiple active references sharing an IP are tracked so clearing one order does not automatically delist an address still owned by another active fraud reference.
-- Sandbox writes are restricted to the configured Tools `dev` environment.
-- Plugin release metadata is now `3.2.0`.
+### Security
+- The integration bridge never exposes the DNSBL token to consuming JavaScript or public markup.
+- Blacklist publication is never automatic through the addon bridge; the report filter requires a WordPress administrator and a DNSBL token with add permission.
 
 ## 3.1.5 - 2026-07-05
 
@@ -50,7 +43,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Removal-page Turnstile reuses the existing comment Turnstile site key, secret key, and theme when admins opt in, so the hotfix stays small and does not introduce a second key-management workflow.
 
 ### Fixed
-- Site owners can now disable Turnstile only on the public delisting/removal flow when `challenges.cloudflare.com` is unstable, without having to weaken comment or WordPress registration protection at the same time.
+- Site owners can now disable Turnstile only on the public delisting/removal flow when `challenges.cloudflare.com` is unstable, without having to weaken comment or registration protection at the same time.
 
 ## 3.1.0
 
@@ -272,7 +265,6 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Added
 - Initial plugin release (`TSDWP-9`, `TSDWP-5`).
-- Added the admin control panel.
 - Added host detection on bitmask level.
 
 ## Historical source trail

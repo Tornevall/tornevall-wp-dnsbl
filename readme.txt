@@ -4,18 +4,18 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.0
-Stable tag: 3.2.0
+Stable tag: 3.1.6
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
 
 == Description ==
 
-Protect your WordPress site against comment spam, abusive registrations, commerce fraud signals, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL.
+Protect your WordPress site against comment spam, abusive registrations, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL.
 
-The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project.
+The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project..
 
-Version 3.2.0 adds an optional commerce hook layer for WooCommerce. It listens to fraud-capable payment integrations without modifying those plugins, normalizes confirmed fraud signals, and can publish commerce DNSBL changes through Tools. Klarna Payments, Kustom Checkout, legacy Resurs hooks, current Resurs MAPI observation/custom signals, and generic custom events are supported by the integration layer.
+Other Tornevall WordPress plugins can use the optional plugin-to-plugin integration filters to check visitor IP addresses and, when the configured DNSBL token permits it, perform an explicit administrator-approved abuse report. Installing this plugin is not required for those other plugins to function.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -56,9 +56,9 @@ Yes. You can host the built-in form on any page with:
 
 But you need permissions for this, which can be gained by request via [https://tools.tornevall.net/](https://tools.tornevall.net/).
 
-* Does the plugin modify payment plugins?
+* Does another Tornevall plugin need DNSBL to work?
 
-No. Commerce support in 3.2.0 is listener-based. The DNSBL plugin observes existing WordPress hooks and its own generic custom hooks. It does not patch or replace Klarna, Kustom or Resurs plugin code.
+No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools for WordPress can continue without it. When DNSBL is active, the consumer can discover whether IP checking and explicit abuse reporting are available through the plugin integration filters.
 
 
 == Screenshots ==
@@ -80,15 +80,12 @@ No. Commerce support in 3.2.0 is listener-based. The DNSBL plugin observes exist
 
 == Changelog ==
 
-= 3.2.0 =
+= 3.1.6 =
 
-* Added an optional commerce fraud event layer that translates confirmed payment fraud signals into Tools-backed `commerce` DNSBL operations.
-* Added listeners for Klarna Payments fraud-status actions and the Kustom Checkout order callback filter without changing either payment plugin.
-* Added legacy Resurs SOAP/RCO listeners for the existing `resurs_hook_orderinfo` and `resurs_hook_callback` fraud values. The legacy plugin is only observed; it is never called by the DNSBL integration.
-* Added passive support for the current Resurs Merchant API plugin through `resurs_payment_task_status`. A normal Resurs rejection is deliberately not treated as fraud unless a trusted classifier/custom signal marks it as such.
-* Added generic `tornevall_dnsbl_commerce_fraud` and Resurs MAPI `tornevall_dnsbl_resurs_mapi_fraud` hooks for other integrations and site-specific bridges.
-* Added an admin-only Commerce hooks page with provider detection, event history, an enable switch, and a sandbox for ADD/UPDATE/REMOVE testing. Sandbox writes are locked unless Tools mode is `dev`.
-* Pending/review signals are observable but do not publish confirmed commerce fraud. Accepted/cleared signals can remove only listings tracked as owned by the matching plugin/order reference, reducing accidental delists when several orders or systems share an IP.
+* Added a stable plugin-to-plugin DNSBL integration bridge for optional Tornevall WordPress add-ons.
+* Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
+* Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
+* Abuse publication is never triggered automatically by the integration bridge; reporting requires an administrator action and a DNSBL token with add permission.
 
 = 3.1.5 =
 
@@ -133,9 +130,9 @@ No. Commerce support in 3.2.0 is listener-based. The DNSBL plugin observes exist
 
 == Upgrade Notice ==
 
-= 3.2.0 =
+= 3.1.6 =
 
-Adds optional listener-based WooCommerce commerce-fraud integration, custom hooks and a dev-only sandbox for Tools-backed commerce DNSBL ADD/UPDATE/REMOVE testing. Payment plugins are not modified.
+Adds the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons. Existing comment, registration and delisting behavior remains unchanged.
 
 = 3.1.5 =
 
