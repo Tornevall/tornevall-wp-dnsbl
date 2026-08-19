@@ -194,16 +194,19 @@ class Integration
             'publication_type' => $publicationType,
             'ttl' => 300,
             'dry_run' => !empty($options['dry_run']),
-            'source_type' => $sourceType !== '' ? $sourceType : 'wordpress',
-            'source_name' => $sourceName !== '' ? $sourceName : $siteHost,
-            'source_site_url' => $siteUrl,
-            'source_site_host' => $siteHost,
         ];
 
-        // Tools has a separate delegated permission for caller-defined TXT data.
-        // Do not make an otherwise valid add fail merely because the token lacks it.
-        if ($canCustomTxt && $sourceNote !== '') {
-            $payload['source_note'] = $sourceNote;
+        // Consumer-specific TXT metadata is a separate delegated privilege.
+        // If the token cannot use it, publish only the classification and let
+        // Tools apply its own non-custom/default DNSBL metadata behavior.
+        if ($canCustomTxt) {
+            $payload['source_type'] = $sourceType !== '' ? $sourceType : 'wordpress';
+            $payload['source_name'] = $sourceName !== '' ? $sourceName : $siteHost;
+            $payload['source_site_url'] = $siteUrl;
+            $payload['source_site_host'] = $siteHost;
+            if ($sourceNote !== '') {
+                $payload['source_note'] = $sourceNote;
+            }
         }
 
         $result = self::publishReport($payload);
@@ -216,8 +219,8 @@ class Integration
             'ip' => $ip,
             'bitmask' => $bitmask,
             'publication_type' => $publicationType,
-            'source_type' => $sourceType,
-            'source_name' => $sourceName,
+            'source_type' => $canCustomTxt ? $sourceType : '',
+            'source_name' => $canCustomTxt ? $sourceName : '',
             'source_note' => $canCustomTxt ? $sourceNote : '',
             'can_custom_txt' => $canCustomTxt,
             'txt_metadata_published' => $canCustomTxt && !empty($result['ok']),
@@ -228,9 +231,9 @@ class Integration
     }
 
     /**
-     * Send an explicit report through the configured DNSBL write API. Caller-
-     * supplied source_note is included only when token-info confirms that the
-     * delegated token may use custom TXT metadata.
+     * Send an explicit report through the configured DNSBL write API. Consumer-
+     * specific source metadata is included only when token-info confirms that
+     * the delegated token may use custom TXT metadata.
      *
      * @param array<string,mixed> $payload
      * @return array{ok:bool,status:int,body:array,error:string|null}
