@@ -7,16 +7,20 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Stable plugin-to-plugin integration surface for Tornevall WordPress addons.
+ * Stable plugin-to-plugin integration surface for optional WordPress consumers.
  *
- * Consumers use WordPress filters instead of reaching into DNSBL internals:
+ * The hooks are intentionally generic. Guestbooks, comments, Akismet adapters,
+ * registration flows and future plugins can all use the same bridge without
+ * reaching into DNSBL plugin internals.
+ *
  * - tornevall_dnsbl_capabilities
  * - tornevall_dnsbl_check_ip
  * - tornevall_dnsbl_report_ip
  */
 class Integration
 {
-    public const DEFAULT_GUESTBOOK_BITMASK = 64;
+    public const DEFAULT_WEB_ABUSE_BITMASK = 64;
+    public const DEFAULT_GUESTBOOK_BITMASK = self::DEFAULT_WEB_ABUSE_BITMASK;
 
     public static function registerHooks(): void
     {
@@ -58,6 +62,7 @@ class Integration
                 'can_add' => !empty($permissions['can_add']),
                 'can_delete' => !empty($permissions['can_delete']),
             ],
+            'context' => is_array($context) ? $context : [],
         ];
     }
 
@@ -94,12 +99,14 @@ class Integration
             'bitmask' => $bitmask,
             'message' => self::resultMessage($result, $listed),
             'error' => trim((string)($result['error'] ?? '')),
+            'context' => is_array($context) ? $context : [],
         ];
     }
 
     /**
      * Explicitly report one abusive IP through the configured DNSBL write API.
-     * This method never runs automatically from a content rejection hook.
+     * The bridge never reports automatically merely because another plugin
+     * rejected content or classified it as spam.
      *
      * @param mixed $current Existing result from another integration provider.
      * @param mixed $ip IP address to report.
@@ -133,22 +140,41 @@ class Integration
         }
 
         $options = is_array($options) ? $options : [];
-        $bitmask = isset($options['bitmask']) ? (int)$options['bitmask'] : self::DEFAULT_GUESTBOOK_BITMASK;
-        $bitmask = max(0, min(255, $bitmask)) & ~1;
-        if ($bitmask === 0) {
-            $bitmask = self::DEFAULT_GUESTBOOK_BITMASK;
+        $context = is_array($context) ? $context : [];
+        $requestedBitmask = isset($options['bitmask']) ? (int)$options['bitmask'] : self::DEFAULT_WEB_ABUSE_BITMASK;
+        $requestedBitmask = max(0, min(255, $requestedBitmask)) & ~1;
+        if ($requestedBitmask === 0) {
+            $requestedBitmask = self::DEFAULT_WEB_ABUSE_BITMASK;
         }
+
+        $check = self::checkIp(null, $ip, $context);
+        $currentBitmask = !empty($check['ok']) && is_numeric($check['bitmask'] ?? null)
+            ? (int)$check['bitmask']
+            : 0;
+        $bitmask = ($currentBitmask | $requestedBitmask) & ~1;
 
         $publicationType = strtolower(trim((string)($options['publication_type'] ?? 'dnsbl')));
         if (!in_array($publicationType, ['dnsbl', 'fraudbl', 'commerce'], true)) {
             $publicationType = 'dnsbl';
         }
 
-        $sourceNote = sanitize_text_field((string)($options['source_note'] ?? 'Guestbook abuse reported by a WordPress administrator.'));
-        $result = $client->addIp($ip, $bitmask, $publicationType, 300, [
+        $sourceType = sanitize_key((string)($options['source_type'] ?? $context['source_type'] ?? $context['feature'] ?? 'wordpress'));
+        $sourceName = sanitize_text_field((string)($options['source_name'] ?? $context['source_name'] ?? $context['consumer'] ?? 'wordpress'));
+        $sourceNote = sanitize_text_field((string)($options['source_note'] ?? 'WordPress abuse report.'));
+        $siteUrl = function_exists('home_url') ? trim((string)home_url('/')) : '';
+        $siteHost = $siteUrl !== '' ? trim((string)wp_parse_url($siteUrl, PHP_URL_HOST)) : '';
+
+        $result = self::publishReport([
+            'ip' => $ip,
+            'bitmask' => $bitmask,
+            'publication_type' => $publicationType,
+            'ttl' => 300,
             'dry_run' => !empty($options['dry_run']),
-            'source_note' => $sourceNote,
-            'source_type' => 'wordpress_guestbook',
+            'source_type' => $sourceType !== '' ? $sourceType : 'wordpress',
+            'source_name' => $sourceName !== '' ? $sourceName : $siteHost,
+            'source_note' => $sourceNote !== '' ? $sourceNote : 'WordPress abuse report.',
+            'source_site_url' => $siteUrl,
+            'source_site_host' => $siteHost,
         ]);
 
         return [
@@ -159,8 +185,75 @@ class Integration
             'ip' => $ip,
             'bitmask' => $bitmask,
             'publication_type' => $publicationType,
+            'source_type' => $sourceType,
+            'source_name' => $sourceName,
+            'source_note' => $sourceNote,
             'message' => self::resultMessage($result, null),
             'error' => trim((string)($result['error'] ?? '')),
+            'context' => $context,
+        ];
+    }
+
+    /**
+     * Send the explicit report with its source metadata so Tools can publish the
+     * corresponding TXT record. This path is only reachable after the DNSBL
+     * plugin has verified that its configured token is active and can add.
+     *
+     * @param array<string,mixed> $payload
+     * @return array{ok:bool,status:int,body:array,error:string|null}
+     */
+    private static function publishReport(array $payload): array
+    {
+        $token = trim((string)Plugin::apiToken());
+        $baseUrl = untrailingslashit(rtrim((string)Plugin::toolsBaseUrl(), '/'));
+        if ($token === '' || $baseUrl === '') {
+            return [
+                'ok' => false,
+                'status' => 0,
+                'body' => [],
+                'error' => __('DNSBL is not configured.', 'tornevall-networks-dnsbl-implementation'),
+            ];
+        }
+
+        $response = wp_remote_request($baseUrl . '/api/dnsbl/records/add', [
+            'method' => 'POST',
+            'timeout' => 45,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'X-Dnsbl-Token' => $token,
+            ],
+            'body' => wp_json_encode(array_filter($payload, static function ($value): bool {
+                return $value !== null && $value !== '' && $value !== false;
+            })),
+        ]);
+
+        if (is_wp_error($response)) {
+            return [
+                'ok' => false,
+                'status' => 0,
+                'body' => [],
+                'error' => $response->get_error_message(),
+            ];
+        }
+
+        $status = (int)wp_remote_retrieve_response_code($response);
+        $rawBody = (string)wp_remote_retrieve_body($response);
+        $body = json_decode($rawBody, true);
+        $body = is_array($body) ? $body : ['raw' => $rawBody];
+        $error = null;
+        if ($status < 200 || $status >= 300) {
+            $error = trim((string)($body['message'] ?? $body['reason'] ?? ''));
+            if ($error === '') {
+                $error = 'HTTP ' . $status;
+            }
+        }
+
+        return [
+            'ok' => $status >= 200 && $status < 300,
+            'status' => $status,
+            'body' => $body,
+            'error' => $error,
         ];
     }
 
