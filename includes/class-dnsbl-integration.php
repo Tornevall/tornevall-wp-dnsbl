@@ -44,11 +44,14 @@ class Integration
                 'configured' => false,
                 'can_check' => false,
                 'can_report' => false,
+                'can_custom_txt' => false,
                 'message' => __('DNSBL is installed, but no DNSBL / Tools API token is configured.', 'tornevall-networks-dnsbl-implementation'),
             ];
         }
 
         $permissions = $client->getTokenPermissionSummary();
+        $token = is_array($permissions['token'] ?? null) ? $permissions['token'] : [];
+        $canCustomTxt = !empty($token['can_custom_txt']) || !empty($token['is_admin_token']);
 
         return [
             'provider' => 'tornevall-wp-dnsbl',
@@ -56,11 +59,13 @@ class Integration
             'configured' => true,
             'can_check' => true,
             'can_report' => !empty($permissions['is_active']) && !empty($permissions['can_add']),
+            'can_custom_txt' => $canCustomTxt,
             'message' => trim((string)($permissions['message'] ?? '')),
             'permissions' => [
                 'is_active' => !empty($permissions['is_active']),
                 'can_add' => !empty($permissions['can_add']),
                 'can_delete' => !empty($permissions['can_delete']),
+                'can_custom_txt' => $canCustomTxt,
             ],
             'context' => is_array($context) ? $context : [],
         ];
@@ -139,6 +144,8 @@ class Integration
             );
         }
 
+        $token = is_array($permissions['token'] ?? null) ? $permissions['token'] : [];
+        $canCustomTxt = !empty($token['can_custom_txt']) || !empty($token['is_admin_token']);
         $options = is_array($options) ? $options : [];
         $context = is_array($context) ? $context : [];
         $requestedBitmask = isset($options['bitmask']) ? (int)$options['bitmask'] : self::DEFAULT_WEB_ABUSE_BITMASK;
@@ -153,6 +160,23 @@ class Integration
             : 0;
         $bitmask = ($currentBitmask | $requestedBitmask) & ~1;
 
+        if ($currentBitmask > 0 && $bitmask === $currentBitmask) {
+            return [
+                'provider' => 'tornevall-wp-dnsbl',
+                'available' => true,
+                'ok' => true,
+                'status' => 200,
+                'ip' => $ip,
+                'bitmask' => $bitmask,
+                'already_classified' => true,
+                'can_custom_txt' => $canCustomTxt,
+                'txt_metadata_published' => false,
+                'message' => __('The IP address already contains the requested DNSBL classification, so no duplicate DNS write was submitted.', 'tornevall-networks-dnsbl-implementation'),
+                'error' => '',
+                'context' => $context,
+            ];
+        }
+
         $publicationType = strtolower(trim((string)($options['publication_type'] ?? 'dnsbl')));
         if (!in_array($publicationType, ['dnsbl', 'fraudbl', 'commerce'], true)) {
             $publicationType = 'dnsbl';
@@ -164,7 +188,7 @@ class Integration
         $siteUrl = function_exists('home_url') ? trim((string)home_url('/')) : '';
         $siteHost = $siteUrl !== '' ? trim((string)wp_parse_url($siteUrl, PHP_URL_HOST)) : '';
 
-        $result = self::publishReport([
+        $payload = [
             'ip' => $ip,
             'bitmask' => $bitmask,
             'publication_type' => $publicationType,
@@ -172,10 +196,17 @@ class Integration
             'dry_run' => !empty($options['dry_run']),
             'source_type' => $sourceType !== '' ? $sourceType : 'wordpress',
             'source_name' => $sourceName !== '' ? $sourceName : $siteHost,
-            'source_note' => $sourceNote !== '' ? $sourceNote : 'WordPress abuse report.',
             'source_site_url' => $siteUrl,
             'source_site_host' => $siteHost,
-        ]);
+        ];
+
+        // Tools has a separate delegated permission for caller-defined TXT data.
+        // Do not make an otherwise valid add fail merely because the token lacks it.
+        if ($canCustomTxt && $sourceNote !== '') {
+            $payload['source_note'] = $sourceNote;
+        }
+
+        $result = self::publishReport($payload);
 
         return [
             'provider' => 'tornevall-wp-dnsbl',
@@ -187,7 +218,9 @@ class Integration
             'publication_type' => $publicationType,
             'source_type' => $sourceType,
             'source_name' => $sourceName,
-            'source_note' => $sourceNote,
+            'source_note' => $canCustomTxt ? $sourceNote : '',
+            'can_custom_txt' => $canCustomTxt,
+            'txt_metadata_published' => $canCustomTxt && !empty($result['ok']),
             'message' => self::resultMessage($result, null),
             'error' => trim((string)($result['error'] ?? '')),
             'context' => $context,
@@ -195,9 +228,9 @@ class Integration
     }
 
     /**
-     * Send the explicit report with its source metadata so Tools can publish the
-     * corresponding TXT record. This path is only reachable after the DNSBL
-     * plugin has verified that its configured token is active and can add.
+     * Send an explicit report through the configured DNSBL write API. Caller-
+     * supplied source_note is included only when token-info confirms that the
+     * delegated token may use custom TXT metadata.
      *
      * @param array<string,mixed> $payload
      * @return array{ok:bool,status:int,body:array,error:string|null}
