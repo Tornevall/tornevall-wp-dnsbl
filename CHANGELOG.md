@@ -2,6 +2,16 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## 3.1.6 - 2026-08-19
+
+### Added
+- Added the `tornevall_dnsbl_capabilities`, `tornevall_dnsbl_check_ip`, and `tornevall_dnsbl_report_ip` plugin-to-plugin filters so other Tornevall WordPress plugins can use DNSBL as an optional addon without coupling to internal classes.
+- Added an explicit guestbook/web-abuse report path that defaults to `IP_ABUSE_NO_SMTP` (64) and reuses the configured DNSBL/Tools token permissions.
+
+### Security
+- The integration bridge never exposes the DNSBL token to consuming JavaScript or public markup.
+- Blacklist publication is never automatic through the addon bridge; the report filter requires a WordPress administrator and a DNSBL token with add permission.
+
 ## 3.1.5 - 2026-07-05
 
 ### Fixed
@@ -33,7 +43,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Removal-page Turnstile reuses the existing comment Turnstile site key, secret key, and theme when admins opt in, so the hotfix stays small and does not introduce a second key-management workflow.
 
 ### Fixed
-- Site owners can now disable Turnstile only on the public delisting/removal flow when `challenges.cloudflare.com` is unstable, without having to weaken comment or WordPress registration protection at the same time.
+- Site owners can now disable Turnstile only on the public delisting/removal flow when `challenges.cloudflare.com` is unstable, without having to weaken comment or registration protection at the same time.
 
 ## 3.1.0
 
@@ -255,7 +265,6 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Added
 - Initial plugin release (`TSDWP-9`, `TSDWP-5`).
-- Added the admin control panel.
 - Added host detection on bitmask level.
 
 ## Historical source trail
