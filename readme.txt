@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.0
-Stable tag: 3.1.6
+Stable tag: 3.1.5
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -82,6 +82,7 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 = 3.1.6 =
 
+* Development line only - no 3.1.6 release tag has been published yet.
 * Added a stable plugin-to-plugin DNSBL integration bridge for optional Tornevall WordPress add-ons.
 * Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
 * Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
@@ -132,7 +133,7 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 = 3.1.6 =
 
-Adds the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons. Existing comment, registration and delisting behavior remains unchanged.
+Development line for the optional DNSBL integration bridge and WooCommerce checkout protection. No 3.1.6 release tag has been published yet.
 
 = 3.1.5 =
 
