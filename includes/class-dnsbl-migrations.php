@@ -51,12 +51,19 @@ class Migrations
         self::ensureDefaultOptions();
 
         update_option('tornevall_dnsbl_database_version', self::schemaVersion());
-        Plugin::registerInternalDelistRewrite();
-        if (function_exists('flush_rewrite_rules')) {
-            flush_rewrite_rules(false);
-        }
+        self::refreshRewriteRulesAfterMigration();
         Plugin::syncCacheCleanupSchedule();
         Plugin::purgeExpiredCache();
+    }
+
+    private static function refreshRewriteRulesAfterMigration(): void
+    {
+        if (did_action('init')) {
+            Plugin::refreshInternalDelistRewriteRules(false);
+            return;
+        }
+
+        add_action('init', [Plugin::class, 'refreshInternalDelistRewriteRules'], 20);
     }
 
     /**
@@ -271,4 +278,3 @@ class Migrations
         }
     }
 }
-
