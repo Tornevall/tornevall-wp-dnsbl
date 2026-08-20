@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.0
-Stable tag: 3.1.6
+Stable tag: 3.1.5
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -17,7 +17,7 @@ The plugin is built to give site owners a practical anti-abuse layer without tur
 
 Other Tornevall WordPress plugins can use the optional plugin-to-plugin integration filters to check visitor IP addresses and, when the configured DNSBL token permits it, perform an explicit administrator-approved abuse report. Installing this plugin is not required for those other plugins to function.
 
-The opt-in commerce layer can normalize confirmed fraud signals from supported WooCommerce payment integrations and custom hooks. Pending/review states are observed without publication, and removal is limited to matching locally owned references.
+The 3.2 development line adds an opt-in WooCommerce commerce layer that can normalize confirmed fraud signals from payment integrations and custom hooks. Pending/review states are observed without publication, and removal is limited to matching locally owned references.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -82,14 +82,22 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 == Changelog ==
 
+= 3.2.0 =
+
+* Development line for first-class WooCommerce payment gateway and fraud integration.
+* Added an opt-in normalized commerce fraud event layer with ownership-safe ADD / UPDATE / REMOVE handling.
+* Added initial adapters for Klarna Payments, Kustom Checkout, current Resurs Merchant API signals and legacy Resurs compatibility hooks.
+* Added generic DNSBL-owned commerce hooks so additional WooCommerce gateways and fraud providers can integrate without coupling to core internals.
+* Added an administrator-only Commerce hooks page and development-only sandbox.
+* Ordinary payment rejection is not treated as fraud unless an explicit fraud signal or trusted classifier confirms it.
+
 = 3.1.6 =
 
-* Added a stable plugin-to-plugin DNSBL integration bridge for optional Tornevall WordPress add-ons.
+* Development line for the stable plugin-to-plugin DNSBL integration bridge and WooCommerce checkout protection work.
 * Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
 * Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
 * Abuse publication is never triggered automatically by the integration bridge; reporting requires an administrator action and a DNSBL token with add permission.
-* Added opt-in commerce fraud hooks with ownership-safe ADD / UPDATE / REMOVE handling.
-* Added an administrator-only Commerce hooks page and development-only sandbox.
+* 3.1.6 remains untagged while the branch is under development.
 
 = 3.1.5 =
 
@@ -134,9 +142,13 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 == Upgrade Notice ==
 
+= 3.2.0 =
+
+Development line for WooCommerce payment gateway and fraud integration. Not published as the WordPress.org stable tag yet.
+
 = 3.1.6 =
 
-Adds the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons. Existing comment, registration and delisting behavior remains unchanged.
+Development line for the optional DNSBL integration bridge and WooCommerce checkout protection. No 3.1.6 release tag has been published yet.
 
 = 3.1.5 =
 
