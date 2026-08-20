@@ -2,6 +2,7 @@ name: WordPress Plugin Check
 
 on:
   pull_request:
+    # Keep CI active for the default branch and both maintained release lines.
     branches:
       - master
       - '3.1'
