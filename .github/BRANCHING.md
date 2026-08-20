@@ -6,7 +6,7 @@ This repository currently develops two active version lines in parallel. The bra
 
 - `3.1` is the current stable development and maintenance line.
 - `master` represents the current stable code line.
-- Changes merged into `3.1` are allowed to flow directly into `master`.
+- Changes merged into `3.1` flow directly into `master`.
 - While both version lines are active, every change merged into `3.1` must also be forward-synced into `3.2`.
 - `3.2` is based on `3.1` and adds the upcoming `3.2.0` WooCommerce and fraud integration work.
 
@@ -29,14 +29,18 @@ Branch synchronization is not a release operation.
 - Do not create or publish a `3.1.6` tag/release unless explicitly requested.
 - The same rule applies to `3.2.0`: development on the `3.2` branch does not itself authorize tagging or publishing a release.
 
-## Pull requests and conflicts
+## Automated synchronization and conflicts
 
-- Stable promotion should use normal pull requests from `3.1` to `master` when synchronization is needed.
-- Forward synchronization should use normal pull requests from `3.1` to `3.2` when synchronization is needed.
-- Never force-merge or silently discard conflicting changes.
-- Resolve conflicts explicitly and preserve both the stable-line fix and valid `3.2` development work.
-- A merge commit making `master` technically one commit ahead of `3.1` is acceptable when there is no file-content difference between the stable branches.
+Synchronization from `3.1` is handled by GitHub Actions rather than recurring synchronization pull requests.
+
+- A push to `3.1` triggers synchronization into both `master` and `3.2`.
+- Each target is processed independently so a failure for one target does not cancel the other target.
+- If a target already contains all commits from `3.1`, that target is left unchanged.
+- When the merge is clean, the Action creates a normal merge commit and pushes it to the target branch.
+- Never force-push, force-merge, silently discard changes, or automatically resolve conflicts.
+- A merge conflict or a branch-protection rejection must make that target's Action job fail visibly and require explicit intervention.
+- Manual `workflow_dispatch` remains available to retry synchronization after a problem has been resolved.
 
 ## Development direction
 
-`3.1` remains the stable maintenance base while `3.2` develops the broader WooCommerce/fraud architecture. Features that belong specifically to the new 3.2 architecture should target `3.2`. Fixes or stable improvements that should also exist in the current stable code should normally target `3.1` first and then be forward-synced.
+`3.1` remains the stable maintenance base while `3.2` develops the broader WooCommerce/fraud architecture. Features that belong specifically to the new 3.2 architecture should target `3.2`. Fixes or stable improvements that should also exist in the current stable code should normally target `3.1` first and then be forward-synced automatically.
