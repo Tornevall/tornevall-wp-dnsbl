@@ -39,12 +39,19 @@ The current release line includes:
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
 - a stable plugin-to-plugin integration bridge for optional Tornevall add-ons, with capability discovery, IP checking and explicit administrator-approved abuse reporting
+- an opt-in commerce fraud event layer with provider adapters, ownership-safe ADD / UPDATE / REMOVE operations and a development-only administrator sandbox
 - a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.6` release yet.
+Commerce fraud integration is included in the `3.1.6` development line. Automatic listeners remain disabled until enabled by an administrator.
+
+## Commerce fraud hooks
+
+The commerce layer normalizes supported payment-plugin signals and custom events before sending confirmed commerce operations through the existing Tools-backed write queue. Pending and review states are logged without publication. A later accepted or cleared event can remove a listing only when the same source/order/payment reference owns it locally.
+
+The **Commerce hooks** administrator page shows detected integrations and recent events. Its sandbox follows the live event path and can write only when the configured Tools environment is `dev`.
 
 ## Plugin-to-plugin integration
 

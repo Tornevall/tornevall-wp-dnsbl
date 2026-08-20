@@ -17,6 +17,8 @@ The plugin is built to give site owners a practical anti-abuse layer without tur
 
 Other Tornevall WordPress plugins can use the optional plugin-to-plugin integration filters to check visitor IP addresses and, when the configured DNSBL token permits it, perform an explicit administrator-approved abuse report. Installing this plugin is not required for those other plugins to function.
 
+The opt-in commerce layer can normalize confirmed fraud signals from supported WooCommerce payment integrations and custom hooks. Pending/review states are observed without publication, and removal is limited to matching locally owned references.
+
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
 Documentation: [DNSBL API documentation](https://tools.tornevall.net/docs/dnsbl-api)
@@ -86,6 +88,8 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 * Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
 * Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
 * Abuse publication is never triggered automatically by the integration bridge; reporting requires an administrator action and a DNSBL token with add permission.
+* Added opt-in commerce fraud hooks with ownership-safe ADD / UPDATE / REMOVE handling.
+* Added an administrator-only Commerce hooks page and development-only sandbox.
 
 = 3.1.5 =
 

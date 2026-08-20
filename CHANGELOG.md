@@ -7,10 +7,13 @@ All notable changes to the DNSBL plugin should be documented in this file.
 ### Added
 - Added the `tornevall_dnsbl_capabilities`, `tornevall_dnsbl_check_ip`, and `tornevall_dnsbl_report_ip` plugin-to-plugin filters so other Tornevall WordPress plugins can use DNSBL as an optional addon without coupling to internal classes.
 - Added an explicit guestbook/web-abuse report path that defaults to `IP_ABUSE_NO_SMTP` (64) and reuses the configured DNSBL/Tools token permissions.
+- Added an opt-in commerce fraud event layer for Klarna Payments, Kustom Checkout, current Resurs Merchant API signals, legacy Resurs hooks and custom integrations.
+- Added the administrator-only **Commerce hooks** page with detected integrations, recent normalized events and a development-only ADD / UPDATE / REMOVE sandbox.
 
 ### Security
 - The integration bridge never exposes the DNSBL token to consuming JavaScript or public markup.
 - Blacklist publication is never automatic through the addon bridge; the report filter requires a WordPress administrator and a DNSBL token with add permission.
+- Pending and review states are recorded without being published as confirmed fraud, and removal requires a matching locally owned source/order/payment reference.
 
 ## 3.1.5 - 2026-07-05
 

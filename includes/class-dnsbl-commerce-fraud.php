@@ -420,7 +420,14 @@ class CommerceFraud
         $remoteBitmask = self::currentRemoteBitmask($ip);
         $remoteAlreadyCommerce = $remoteBitmask !== null && (($remoteBitmask & self::BITMASK) === self::BITMASK);
 
-        $ownership[$key] = self::ownershipRow($event, true, !$remoteAlreadyCommerce);
+        // A failed pre-check cannot prove that this plugin created the remote
+        // listing. Queue the add, but never claim delete ownership unless the
+        // check explicitly confirmed that commerce was not already present.
+        $ownership[$key] = self::ownershipRow(
+            $event,
+            true,
+            $remoteBitmask !== null && !$remoteAlreadyCommerce
+        );
         self::saveOwnership($ownership);
 
         if ($remoteAlreadyCommerce) {

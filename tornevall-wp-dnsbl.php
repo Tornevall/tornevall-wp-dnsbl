@@ -29,6 +29,7 @@ foreach ([
     'includes/class-dnsbl-admin.php',
     'includes/class-dnsbl-api-client.php',
     'includes/class-dnsbl-write-queue.php',
+    'includes/class-dnsbl-integration.php',
     'includes/class-dnsbl-commerce-fraud.php',
     'includes/dnsbl-utils.php',
     'includes/dnsbl-migrations.php',
@@ -48,4 +49,6 @@ register_deactivation_hook(TORNEVALL_DNSBL_PLUGIN_FILE, 'tornevall_wp_dnsbl_deac
 register_uninstall_hook(TORNEVALL_DNSBL_PLUGIN_FILE, 'tornevall_wp_dnsbl_uninstall_db');
 
 tornevall_dnsbl_register_hooks();
+\Tornevall\Networks\DNSBL\Integration::registerHooks();
 \Tornevall\Networks\DNSBL\CommerceFraud::registerHooks();
+
