@@ -3,8 +3,8 @@
  * Plugin Name: Tornevall Networks DNSBL Implementation
  * Plugin URI: https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/
  * Project URI: https://github.com/Tornevall/tornevall-wp-dnsbl
- * Description: DNSBL and FraudBL protection for comments, registrations and commerce fraud signals, with Cloudflare Turnstile support and Tools-backed DNSBL writes.
- * Version: 3.1.6
+ * Description: DNSBL and FraudBL protection for comments, registrations and WooCommerce payment/fraud signals, with Cloudflare Turnstile support and Tools-backed DNSBL writes.
+ * Version: 3.2.0
  * Author: Thomas Tornevall
  * Author URI: https://www.tornevalls.se/
  * Text Domain: tornevall-networks-dnsbl-implementation
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 define('TORNEVALL_DNSBL_PLUGIN_FILE', __FILE__);
 define('TORNEVALL_DNSBL_PLUGIN_DIR', plugin_dir_path(TORNEVALL_DNSBL_PLUGIN_FILE));
 define('TORNEVALL_DNSBL_PLUGIN_URL', plugin_dir_url(TORNEVALL_DNSBL_PLUGIN_FILE));
-define('TORNEVALL_DNSBL_PLUGIN_VERSION', '3.1.6');
+define('TORNEVALL_DNSBL_PLUGIN_VERSION', '3.2.0');
 define('TORNEVALL_DNSBL_PUBLIC_DOCS_URL', 'https://tools.tornevall.net/docs/dnsbl-api');
 define('TORNEVALL_DNSBL_CHANGELOG_URL', 'https://github.com/Tornevall/tornevall-wp-dnsbl/blob/master/CHANGELOG.md');
 define('TORNEVALL_DNSBL_HISTORY_URL', 'https://github.com/Tornevall/tornevall-wp-dnsbl/commits/master');
@@ -51,4 +51,3 @@ register_uninstall_hook(TORNEVALL_DNSBL_PLUGIN_FILE, 'tornevall_wp_dnsbl_uninsta
 tornevall_dnsbl_register_hooks();
 \Tornevall\Networks\DNSBL\Integration::registerHooks();
 \Tornevall\Networks\DNSBL\CommerceFraud::registerHooks();
-
