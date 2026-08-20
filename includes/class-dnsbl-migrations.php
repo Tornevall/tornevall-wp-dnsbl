@@ -121,6 +121,12 @@ class Migrations
     {
         foreach (Plugin::defaultOptions() as $key => $value) {
             if (get_option($key) === false) {
+                if ($key === 'tornevall_dnsbl_filter_types'
+                    && is_array($value)
+                    && !in_array('IP_PHISHING', $value, true)) {
+                    $value[] = 'IP_PHISHING';
+                }
+
                 add_option($key, $value);
             }
         }
