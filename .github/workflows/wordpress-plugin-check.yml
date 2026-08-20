@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   plugin-check:
@@ -31,4 +32,7 @@ jobs:
         uses: wordpress/plugin-check-action@v1
         with:
           build-dir: './'
+          slug: tornevall-networks-dnsbl-implementation
+          exclude-files: '.gitignore'
+          exclude-directories: '.github'
           strict: false
