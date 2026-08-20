@@ -3,8 +3,8 @@ Contributors: Tornevall
 Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
-Tested up to: 7.0
-Stable tag: 3.1.5
+Tested up to: 7.1
+Stable tag: 3.1.6
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -28,6 +28,30 @@ Bug reports and feedback can currently be submitted via [GitHub issues](https://
 Full Documentation: [DNSBL API documentation](https://tools.tornevall.net/docs/dnsbl-api)
 
 Translations can be contributed via [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/tornevall-networks-dnsbl-implementation).
+
+= Privacy and optional usage statistics =
+
+The plugin includes optional aggregate usage statistics. This telemetry is disabled by default and is only enabled after a WordPress administrator explicitly checks the usage-statistics consent checkbox and saves the preference. Configuring a DNSBL / Tools API token does not enable telemetry and is not treated as consent.
+
+When enabled, the plugin periodically sends aggregated DNSBL evaluation counters to Tornevall Tools. A batch can contain the plugin version, reporting time window, DNSBL listed/not-listed outcomes, returned bitmasks, blocked/not-blocked decisions, internal source categories such as request/admin-request/dry-run-request, and a count for each aggregate combination.
+
+Telemetry batches do not include queried or visitor IP addresses, comments, usernames, email addresses, site URLs, hostnames, or raw DNS responses. Statistics collected locally before the administrator opts in are not sent retroactively.
+
+Telemetry is normally sent at most once per hour through WordPress WP-Cron. Low-traffic sites may send later because WP-Cron is traffic-driven. Failed or timed-out submissions keep the same batch ID for a later retry so the Tools receiver can treat the batch idempotently instead of counting it twice.
+
+The telemetry request is sent over HTTPS to the selected Tornevall Tools environment and authenticated with the configured DNSBL / Tools API token in the `X-Dnsbl-Token` header. The token is not included inside the telemetry JSON body. Tornevall Tools attributes accepted statistics internally to the authenticated token and token owner. The plugin does not expose a telemetry readback function to the sending site.
+
+Turning telemetry off stops the telemetry schedule and discards any unsent telemetry batch. The plugin also adds suggested disclosure text to WordPress' built-in Privacy Policy Guide.
+
+External service: [Tornevall Tools](https://tools.tornevall.net/)
+
+Service documentation: [Tornevall Tools documentation](https://tools.tornevall.net/docs)
+
+Privacy Policy: [Tornevall Tools Privacy Policy](https://tools.tornevall.net/docs/en/privacy-policy)
+
+Terms of Service: [Tornevall Tools Terms of Service](https://tools.tornevall.net/docs/en/terms-of-service)
+
+Technical telemetry details are also documented in `TELEMETRY.md` in the plugin source repository.
 
 
 == Installation ==
@@ -60,6 +84,10 @@ But you need permissions for this, which can be gained by request via [https://t
 
 No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools for WordPress can continue without it. When DNSBL is active, the consumer can discover whether IP checking and explicit abuse reporting are available through the plugin integration filters.
 
+* Does the plugin send usage statistics?
+
+Only if a WordPress administrator explicitly opts in. Usage statistics are disabled by default. When enabled, aggregate DNSBL evaluation counters are batched and normally sent to Tornevall Tools at most once per hour through WP-Cron. Queried IP addresses, comments, usernames, email addresses, site URLs, hostnames, and raw DNS responses are not included in telemetry batches.
+
 
 == Screenshots ==
 
@@ -82,7 +110,10 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 = 3.1.6 =
 
-* Development line only - no 3.1.6 release tag has been published yet.
+* Added explicit opt-in aggregate DNSBL usage statistics with a separate administrator consent checkbox; configuring a token alone does not enable telemetry.
+* Usage statistics are aggregated locally and normally sent at most once per hour through WP-Cron instead of sending one report per lookup/evaluation.
+* Telemetry batches omit queried IP addresses, comments, usernames, email addresses, site URLs, hostnames, and raw DNS responses, and pre-consent history is not sent retroactively.
+* Added WordPress Privacy Policy Guide disclosure text and public telemetry/service documentation.
 * Added a stable plugin-to-plugin DNSBL integration bridge for optional Tornevall WordPress add-ons.
 * Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
 * Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
@@ -133,7 +164,7 @@ No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools f
 
 = 3.1.6 =
 
-Development line for the optional DNSBL integration bridge and WooCommerce checkout protection. No 3.1.6 release tag has been published yet.
+Adds explicit optional usage-statistics consent and hourly aggregate telemetry batching. Telemetry is disabled by default and is never enabled merely by configuring a DNSBL / Tools API token. Also includes the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons.
 
 = 3.1.5 =
 
