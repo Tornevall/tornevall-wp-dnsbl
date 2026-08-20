@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) {
 
 class Migrations
 {
+    private const PHISHING_DEFAULT_MIGRATION_OPTION = 'tornevall_dnsbl_phishing_default_migrated';
+
     public static function maybeUpgrade(): void
     {
         $dbVersion = get_option('tornevall_dnsbl_database_version');
@@ -121,6 +123,12 @@ class Migrations
     {
         foreach (Plugin::defaultOptions() as $key => $value) {
             if (get_option($key) === false) {
+                if ($key === 'tornevall_dnsbl_filter_types'
+                    && is_array($value)
+                    && !in_array('IP_PHISHING', $value, true)) {
+                    $value[] = 'IP_PHISHING';
+                }
+
                 add_option($key, $value);
             }
         }
@@ -141,7 +149,29 @@ class Migrations
         }
 
         Plugin::maybeUpgradeSelectedFlags();
+        self::maybeEnablePhishingDefault();
         self::maybeAddMissingResolverHosts();
+    }
+
+    /**
+     * Enable phishing filtering once for installs that predate it as a default.
+     *
+     * The migration marker prevents a later manual opt-out from being silently
+     * reverted by ensureDefaultOptions() on subsequent requests.
+     */
+    public static function maybeEnablePhishingDefault(): void
+    {
+        if (get_option(self::PHISHING_DEFAULT_MIGRATION_OPTION) === '1') {
+            return;
+        }
+
+        $selected = Plugin::normalizeSelectedFlags(get_option('tornevall_dnsbl_filter_types'));
+        if (!in_array('IP_PHISHING', $selected, true)) {
+            $selected[] = 'IP_PHISHING';
+            update_option('tornevall_dnsbl_filter_types', $selected);
+        }
+
+        update_option(self::PHISHING_DEFAULT_MIGRATION_OPTION, '1');
     }
 
     /**
@@ -230,6 +260,7 @@ class Migrations
             'tornevall_dnsbl_registration_dnsbl_enabled',
             'tornevall_dnsbl_registration_turnstile_enabled',
             'tornevall_dnsbl_rating_notice_dismissed',
+            self::PHISHING_DEFAULT_MIGRATION_OPTION,
             'tornevall_dnsbl_database_version',
         ];
 
