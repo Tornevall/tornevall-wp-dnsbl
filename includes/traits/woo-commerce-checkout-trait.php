@@ -50,16 +50,17 @@ trait WooCommerceCheckoutTrait
         self::recordBlockedAttempt($evaluation, $context);
 
         $message = self::buildCustomerMessage($evaluation, false);
+        $plainMessage = esc_html(wp_strip_all_tags($message));
 
         if (class_exists('\\Automattic\\WooCommerce\\StoreApi\\Exceptions\\RouteException')) {
             throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
                 'tornevall_dnsbl_checkout_blocked',
-                wp_strip_all_tags($message),
+                $plainMessage,
                 403
             );
         }
 
-        throw new \Exception(wp_strip_all_tags($message), 403);
+        throw new \Exception($plainMessage, 403);
     }
 
     /**
