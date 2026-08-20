@@ -3,7 +3,7 @@ Contributors: Tornevall
 Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 3.1.6
 License: GPLv2 or later
 
@@ -180,7 +180,7 @@ Fixes the public removal-form Cloudflare Turnstile lifecycle for live delist sub
 
 = 3.1.1 =
 
-Urgent hotfix release. Adds a dedicated Turnstile toggle for the public delisting/removal page so Cloudflare issues there can be mitigated without turning off comment and registration protection.
+Urgent hotfix release. Adds a dedicated Turnstile toggle for the public delisting/removal page so Cloudflare issues there can be mitigated without turning off comment or registration protection.
 
 = 3.1.0 =
 
