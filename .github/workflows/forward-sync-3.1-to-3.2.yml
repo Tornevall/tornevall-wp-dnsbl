@@ -7,68 +7,46 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write
+
+concurrency:
+  group: forward-sync-3.1
+  cancel-in-progress: false
 
 jobs:
-  open-sync-prs:
-    name: Open 3.1 forward-sync PRs
+  sync:
+    name: Sync 3.1 into ${{ matrix.base }}
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         base:
           - master
           - '3.2'
 
     steps:
-      - name: Check and open forward-sync pull request
-        uses: actions/github-script@v7
+      - name: Check out target branch
+        uses: actions/checkout@v4
         with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const head = '3.1';
-            const base = '${{ matrix.base }}';
+          ref: ${{ matrix.base }}
+          fetch-depth: 0
 
-            const comparison = await github.rest.repos.compareCommitsWithBasehead({
-              owner,
-              repo,
-              basehead: `${base}...${head}`,
-            });
+      - name: Merge 3.1 into target
+        shell: bash
+        run: |
+          set -euo pipefail
 
-            if (comparison.data.ahead_by === 0) {
-              core.info(`${base} already contains all commits from ${head}.`);
-              return;
-            }
+          target='${{ matrix.base }}'
+          git fetch origin 3.1
 
-            const existing = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: 'open',
-              head: `${owner}:${head}`,
-              base,
-              per_page: 100,
-            });
+          if git merge-base --is-ancestor origin/3.1 HEAD; then
+            echo "${target} already contains all commits from 3.1."
+            exit 0
+          fi
 
-            if (existing.data.length > 0) {
-              core.info(`Forward-sync PR already open for ${base}: #${existing.data[0].number}`);
-              return;
-            }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
-            const created = await github.rest.pulls.create({
-              owner,
-              repo,
-              head,
-              base,
-              title: `Forward sync ${head} into ${base}`,
-              body: [
-                'Automated forward-sync PR while 3.1 is the current stable line.',
-                '',
-                `This PR carries changes merged into \`${head}\` forward into \`${base}\`.`,
-                '',
-                'No release tag is created. Conflicts must be resolved explicitly; this workflow never force-merges or silently resolves conflicts.',
-              ].join('\n'),
-            });
-
-            core.info(`Created forward-sync PR #${created.data.number} for ${base}.`);
+          git merge --no-ff -m "Forward sync 3.1 into ${target}" origin/3.1
+          git push origin "HEAD:${target}"
