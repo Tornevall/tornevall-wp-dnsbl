@@ -1,0 +1,52 @@
+name: Forward sync 3.1
+
+on:
+  push:
+    branches:
+      - '3.1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward-sync-3.1
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync 3.1 into ${{ matrix.base }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        base:
+          - master
+          - '3.2'
+
+    steps:
+      - name: Check out target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.base }}
+          fetch-depth: 0
+
+      - name: Merge 3.1 into target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target='${{ matrix.base }}'
+          git fetch origin 3.1
+
+          if git merge-base --is-ancestor origin/3.1 HEAD; then
+            echo "${target} already contains all commits from 3.1."
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git merge --no-ff -m "Forward sync 3.1 into ${target}" origin/3.1
+          git push origin "HEAD:${target}"
