@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.1
-Stable tag: 3.1.6
+Stable tag: 3.1.5
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -16,6 +16,8 @@ Protect your WordPress site against comment spam, abusive registrations, and oth
 The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project..
 
 Other Tornevall WordPress plugins can use the optional plugin-to-plugin integration filters to check visitor IP addresses and, when the configured DNSBL token permits it, perform an explicit administrator-approved abuse report. Installing this plugin is not required for those other plugins to function.
+
+The 3.2 development line adds an opt-in WooCommerce commerce layer that can normalize confirmed fraud signals from payment integrations and custom hooks. Pending/review states are observed without publication, and removal is limited to matching locally owned references.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -108,6 +110,15 @@ Only if a WordPress administrator explicitly opts in. Usage statistics are disab
 
 == Changelog ==
 
+= 3.2.0 =
+
+* Development line for first-class WooCommerce payment gateway and fraud integration.
+* Added an opt-in normalized commerce fraud event layer with ownership-safe ADD / UPDATE / REMOVE handling.
+* Added initial adapters for Klarna Payments, Kustom Checkout, current Resurs Merchant API signals and legacy Resurs compatibility hooks.
+* Added generic DNSBL-owned commerce hooks so additional WooCommerce gateways and fraud providers can integrate without coupling to core internals.
+* Added an administrator-only Commerce hooks page and development-only sandbox.
+* Ordinary payment rejection is not treated as fraud unless an explicit fraud signal or trusted classifier confirms it.
+
 = 3.1.6 =
 
 * Added explicit opt-in aggregate DNSBL usage statistics with a separate administrator consent checkbox; configuring a token alone does not enable telemetry.
@@ -118,6 +129,7 @@ Only if a WordPress administrator explicitly opts in. Usage statistics are disab
 * Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
 * Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
 * Abuse publication is never triggered automatically by the integration bridge; reporting requires an administrator action and a DNSBL token with add permission.
+* 3.1.6 remains untagged while the branch is under development.
 
 = 3.1.5 =
 
@@ -162,9 +174,13 @@ Only if a WordPress administrator explicitly opts in. Usage statistics are disab
 
 == Upgrade Notice ==
 
+= 3.2.0 =
+
+Development line for WooCommerce payment gateway and fraud integration. Not published as the WordPress.org stable tag yet.
+
 = 3.1.6 =
 
-Adds explicit optional usage-statistics consent and hourly aggregate telemetry batching. Telemetry is disabled by default and is never enabled merely by configuring a DNSBL / Tools API token. Also includes the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons.
+Adds explicit optional usage-statistics consent and hourly aggregate telemetry batching plus the optional DNSBL integration bridge. Telemetry is disabled by default and is never enabled merely by configuring a DNSBL / Tools API token. No 3.1.6 release tag has been published yet.
 
 = 3.1.5 =
 

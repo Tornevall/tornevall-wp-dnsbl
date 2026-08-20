@@ -4,7 +4,8 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.6`
+- **Development line:** `3.2.0`
+- **Latest published stable tag:** `3.1.5`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `7.0`
@@ -13,11 +14,17 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 - **Issues:** <https://github.com/Tornevall/tornevall-wp-dnsbl/issues>
 - **Documentation:** <https://tools.tornevall.net/docs/dnsbl-api>
 
+## Branch policy
+
+The `3.1` branch remains the active 3.1.x development/maintenance line. The `3.2` branch is downstream from `3.1` and is the development line for the WooCommerce payment gateway and fraud work.
+
+While both lines are active, relevant changes merged into `3.1` must be forward-merged into `3.2`. Neither the `3.1.6` development state nor the `3.2.0` development state should be treated as a published WordPress.org release until a release tag is explicitly created.
+
 ## What the current codebase includes
 
 The current code line keeps the DNSBL API integration on the intended public release line and presents one visible DNSBL / Tools API token flow in the WordPress admin UI. The live permission checker asks Tools directly, reports environment mismatches clearly, and shows automatic DNSBL access when the configured token belongs to an active Tools admin.
 
-The current release line includes:
+The current codebase includes:
 
 - WordPress-native DNSBL/FraudBL checking
 - admin AJAX lookup and self-check tools
@@ -39,12 +46,23 @@ The current release line includes:
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
 - a stable plugin-to-plugin integration bridge for optional Tornevall add-ons, with capability discovery, IP checking and explicit administrator-approved abuse reporting
+- an opt-in WooCommerce commerce fraud event layer with provider adapters, ownership-safe ADD / UPDATE / REMOVE operations and a development-only administrator sandbox
 - a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.6` release yet.
+## WooCommerce payment gateway and fraud integration - 3.2.0
+
+The 3.2 development line is where WooCommerce becomes a first-class part of DNSBL rather than a set of isolated payment-plugin hooks.
+
+The commerce layer normalizes supported payment-plugin signals and custom events before sending confirmed commerce operations through the existing Tools-backed write queue. Pending and review states are logged without publication. A later accepted or cleared event can remove a listing only when the same source/order/payment reference owns it locally.
+
+Initial provider adapters cover Klarna Payments, Kustom Checkout, current Resurs Merchant API signals and legacy Resurs compatibility hooks. The internal event model remains provider-agnostic so additional WooCommerce payment gateways and fraud providers can be added without rewriting the write/ownership core.
+
+An ordinary payment rejection is not automatically fraud. Publication requires an explicit provider fraud state, trusted classifier or explicit DNSBL-owned integration signal.
+
+The **Commerce hooks** administrator page shows detected integrations and recent events. Its sandbox follows the live event path and can write only when the configured Tools environment is `dev`.
 
 ## Plugin-to-plugin integration
 
@@ -153,11 +171,22 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
 
-### 3.1.6 highlights
+### 3.2.0 development highlights
+
+- First-class WooCommerce payment gateway and fraud integration line
+- Provider-agnostic normalized commerce event model
+- Initial Klarna Payments, Kustom Checkout and Resurs adapters/signals
+- Ownership-safe Tools-backed ADD / UPDATE / REMOVE handling
+- Development-only commerce sandbox
+- No automatic fraud classification from an ordinary payment rejection
+
+### 3.1.6 development highlights
 
 - Added an optional, stable plugin-to-plugin integration bridge for DNSBL capability discovery, checks and explicit abuse reports
 - Guestbook/web abuse uses bitmask 64 by default
 - Blacklist publication through the bridge remains administrator-triggered and permission-aware
+- WooCommerce checkout protection is developed in the 3.1.6 line before being forward-merged into 3.2
+- 3.1.6 remains untagged
 
 ### 3.1.5 highlights
 

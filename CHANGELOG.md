@@ -2,7 +2,18 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
-## 3.1.6 - 2026-08-19
+## 3.2.0 - Unreleased
+
+### Added
+- Added an opt-in commerce fraud event layer for WooCommerce payment integrations, including initial Klarna Payments, Kustom Checkout, current Resurs Merchant API signals, legacy Resurs compatibility hooks and custom integrations.
+- Added the administrator-only **Commerce hooks** page with detected integrations, recent normalized events and a development-only ADD / UPDATE / REMOVE sandbox.
+- Added a provider-agnostic event model so additional WooCommerce payment gateways and fraud providers can be integrated without coupling the write core to one gateway.
+
+### Security
+- Pending and review states are recorded without being published as confirmed fraud, and removal requires a matching locally owned source/order/payment reference.
+- Ordinary payment rejection is not automatically classified as fraud unless an explicit fraud signal or trusted classifier confirms it.
+
+## 3.1.6 - Unreleased
 
 ### Added
 - Added the `tornevall_dnsbl_capabilities`, `tornevall_dnsbl_check_ip`, and `tornevall_dnsbl_report_ip` plugin-to-plugin filters so other Tornevall WordPress plugins can use DNSBL as an optional addon without coupling to internal classes.
@@ -77,7 +88,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
 - Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
 - CIDR delist no longer depends on the originally checked single IP being the only anchor for the requested block; the final submit now accepts a completed local CIDR scan ticket for the exact Advanced-range scope instead.
-- CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic “failed chunk” message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
+- CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic "failed chunk" message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
 - The public checker can now be reused immediately after a completed lookup: the IP field no longer stays terminally locked after a listed result, and a dedicated **Reset** button now clears checker/CIDR/background state so users can start over without refreshing the page.
 - Reset/input changes now invalidate older checker/CIDR async callbacks more aggressively, so stale background responses from a previous search are less likely to repaint the form after the user has already started over.
 
@@ -111,7 +122,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 ### Added
 - Added a refactored WordPress-native DNSBL/FraudBL core with admin AJAX lookup and self-check tools.
 - Added visitor statistics in the admin dashboard for resolved checks, blacklist hits, blocked requests, unique visitor addresses and cached blacklist activity.
-- Added configurable cache cleanup scheduling, recorded cleanup timestamps and caching of both listed and non-listed DNS lookups.
+- Added configurable cache cleanup scheduling, recorded cleanup timestamps and caching of both listed and non-listed DNSBL lookups.
 - Added a safe IP whitelist, activating-user IP seeding, protected-admin notices and a one-click current-visitor whitelist action.
 - Added changelog, source-history and public documentation links in the admin help flow.
 - Added Cloudflare Turnstile protection for frontend WordPress comments.
@@ -195,13 +206,13 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Notes
 - The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
-- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/>
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/>.
 
 ## 2.0.0
 
 ### Notes
 - The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
-- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/>
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/>.
 
 ## 1.1.1
 

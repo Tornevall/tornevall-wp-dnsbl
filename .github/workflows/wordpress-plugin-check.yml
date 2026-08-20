@@ -34,10 +34,16 @@ jobs:
           build-dir: './'
           slug: tornevall-networks-dnsbl-implementation
           exclude-files: '.gitignore'
-          exclude-directories: '.github'
+          # Repository test harnesses are executed by php-checks.yml and are not
+          # part of the WordPress plugin distribution.
+          exclude-directories: '.github,tests'
           # Existing 3.1 baseline debt is tracked in #46. Keep these waivers narrow:
           # any new Plugin Check error code still fails CI and these should be removed
           # individually as the historical findings are corrected.
+          #
+          # stable_tag_mismatch is 3.2-only development policy tracked in #55:
+          # Version is 3.2.0 while WordPress.org Stable tag intentionally remains
+          # at the actually published 3.1.5 until an explicit 3.2.0 release.
           ignore-codes: |
             WordPress.WP.I18n.MissingTranslatorsComment
             WordPress.WP.I18n.UnorderedPlaceholdersText
@@ -45,4 +51,5 @@ jobs:
             wp_function_not_compatible_with_requires_wp
             WordPress.WP.EnqueuedResources.NonEnqueuedScript
             PluginCheck.CodeAnalysis.Offloading.OffloadedContent
+            stable_tag_mismatch
           strict: false
