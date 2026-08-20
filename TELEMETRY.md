@@ -37,6 +37,8 @@ The existing DNSBL / Tools API token is supplied in the `X-Dnsbl-Token` request 
 
 Tornevall Tools attributes accepted statistics internally to the authenticated token and token owner. The telemetry endpoint is write-only for the WordPress plugin and does not provide the sending site with a telemetry readback API.
 
+As with any HTTPS request, the sending WordPress server's network IP address is necessarily visible to Tornevall Tools and can be present in normal server/API request logs. This transport metadata is separate from the aggregate telemetry payload and is not the visitor/query IP address being evaluated by DNSBL.
+
 ## Frequency and retry behavior
 
 Telemetry is scheduled with WordPress WP-Cron and normally sends at most one batch per hour. WP-Cron runs when WordPress receives traffic, so actual delivery can be later on low-traffic sites.
