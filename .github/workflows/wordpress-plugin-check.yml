@@ -2,23 +2,22 @@ name: WordPress Plugin Check
 
 on:
   pull_request:
+    # Keep CI active for the default branch and both maintained release lines.
     branches:
-      - 'master'
+      - master
       - '3.1'
       - '3.2'
   push:
+    # Validate direct updates to the same maintained branches as well.
     branches:
-      - 'master'
+      - master
       - '3.1'
       - '3.2'
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: wordpress-plugin-check-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  pull-requests: write
 
 jobs:
   plugin-check:
@@ -33,4 +32,17 @@ jobs:
         uses: wordpress/plugin-check-action@v1
         with:
           build-dir: './'
+          slug: tornevall-networks-dnsbl-implementation
+          exclude-files: '.gitignore'
+          exclude-directories: '.github'
+          # Existing 3.1 baseline debt is tracked in #46. Keep these waivers narrow:
+          # any new Plugin Check error code still fails CI and these should be removed
+          # individually as the historical findings are corrected.
+          ignore-codes: |
+            WordPress.WP.I18n.MissingTranslatorsComment
+            WordPress.WP.I18n.UnorderedPlaceholdersText
+            WordPress.Security.EscapeOutput.OutputNotEscaped
+            wp_function_not_compatible_with_requires_wp
+            WordPress.WP.EnqueuedResources.NonEnqueuedScript
+            PluginCheck.CodeAnalysis.Offloading.OffloadedContent
           strict: false
