@@ -7,6 +7,8 @@
  * Version: 3.1.6
  * Author: Thomas Tornevall
  * Author URI: https://www.tornevalls.se/
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: tornevall-networks-dnsbl-implementation
  */
 
