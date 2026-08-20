@@ -1,4 +1,4 @@
-name: Forward sync 3.1 to 3.2
+name: Forward sync 3.1
 
 on:
   push:
@@ -11,9 +11,15 @@ permissions:
   pull-requests: write
 
 jobs:
-  open-sync-pr:
-    name: Open 3.1 to 3.2 sync PR
+  open-sync-prs:
+    name: Open 3.1 forward-sync PRs
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        base:
+          - master
+          - '3.2'
 
     steps:
       - name: Check and open forward-sync pull request
@@ -23,7 +29,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const head = '3.1';
-            const base = '3.2';
+            const base = '${{ matrix.base }}';
 
             const comparison = await github.rest.repos.compareCommitsWithBasehead({
               owner,
@@ -46,7 +52,7 @@ jobs:
             });
 
             if (existing.data.length > 0) {
-              core.info(`Forward-sync PR already open: #${existing.data[0].number}`);
+              core.info(`Forward-sync PR already open for ${base}: #${existing.data[0].number}`);
               return;
             }
 
@@ -57,12 +63,12 @@ jobs:
               base,
               title: `Forward sync ${head} into ${base}`,
               body: [
-                'Automated forward-sync PR for the parallel 3.1/3.2 development period.',
+                'Automated forward-sync PR while 3.1 is the current stable line.',
                 '',
                 `This PR carries changes merged into \`${head}\` forward into \`${base}\`.`,
                 '',
-                'Conflicts must be resolved explicitly. This workflow never force-merges or silently resolves conflicts.',
+                'No release tag is created. Conflicts must be resolved explicitly; this workflow never force-merges or silently resolves conflicts.',
               ].join('\n'),
             });
 
-            core.info(`Created forward-sync PR #${created.data.number}.`);
+            core.info(`Created forward-sync PR #${created.data.number} for ${base}.`);
