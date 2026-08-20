@@ -2,6 +2,7 @@
 
 use Tornevall\Networks\DNSBL\Migrations;
 use Tornevall\Networks\DNSBL\Plugin;
+use Tornevall\Networks\DNSBL\Telemetry;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -24,11 +25,13 @@ function tornevall_wp_dnsbl_activate_db()
 
 function tornevall_wp_dnsbl_deactivate_db()
 {
+    Telemetry::clearSchedule();
     Migrations::deactivate();
 }
 
 function tornevall_wp_dnsbl_uninstall_db()
 {
+    Telemetry::uninstall();
     Migrations::uninstall();
 }
 
