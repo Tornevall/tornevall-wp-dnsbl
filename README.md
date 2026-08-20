@@ -4,7 +4,7 @@ WordPress plugin for DNSBL/FraudBL-based protection of comments, registrations a
 
 ## Release metadata
 
-- **Release:** `3.1.5`
+- **Release:** `3.1.6`
 - **Requires at least:** `5.8`
 - **Requires PHP:** `8.1`
 - **Tested up to:** `7.0`
@@ -38,12 +38,40 @@ The current release line includes:
 - an extra removal-page Turnstile fail-open checkbox so the public delist flow can temporarily bypass the Turnstile challenge automatically when the widget or Cloudflare verification path has operational problems
 - AJAX proxy flow for DNSBL writes through WordPress backend, plus dry-run controls for both local simulation and API acknowledgement (`dry_run`)
 - additive site identity stamping on Tools DNSBL write/check requests (`source_type`, `source_name`, `source_site_url`, `source_site_host`) so backend delist audits can show which WordPress site submitted the request
+- a stable plugin-to-plugin integration bridge for optional Tornevall add-ons, with capability discovery, IP checking and explicit administrator-approved abuse reporting
 - a dismissible admin reminder that invites site owners to leave WordPress.org feedback when the plugin is helping them
 - the default protection profile still includes `IP_FRAUDCOMMERCE`, and public removal references continue to point at <https://www.tornevall.net/removal/>
 
 FraudBL and fraud-related discovery are intentionally kept visible in the project description even though the plugin title now aligns more closely with the slug and package identity.
 
-WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.5` release yet.
+WooCommerce-oriented protection is a planned next step, but it is not part of the packaged `3.1.6` release yet.
+
+## Plugin-to-plugin integration
+
+DNSBL remains optional for consuming plugins. Tornevall Tools for WordPress can therefore operate its guestbook without this plugin, while activating DNSBL adds visitor-IP filtering and explicit abuse-report controls.
+
+The stable WordPress filters are:
+
+```php
+$capabilities = apply_filters('tornevall_dnsbl_capabilities', null, [
+    'consumer' => 'my-plugin',
+]);
+
+$check = apply_filters('tornevall_dnsbl_check_ip', null, '203.0.113.10', [
+    'consumer' => 'my-plugin',
+]);
+
+$report = apply_filters('tornevall_dnsbl_report_ip', null, '203.0.113.10', [
+    'bitmask' => 64,
+    'source_note' => 'Explicit administrator abuse report.',
+], [
+    'consumer' => 'my-plugin',
+]);
+```
+
+`tornevall_dnsbl_report_ip` requires a logged-in WordPress administrator and a configured DNSBL token with add permission. The integration bridge never auto-reports a visitor and never exposes the configured token to browser JavaScript.
+
+For guestbook/web-form abuse, bitmask `64` (`IP_ABUSE_NO_SMTP`) is the default classification.
 
 ## Description
 
@@ -124,6 +152,12 @@ Use the safe IP whitelist and the frontend dry-run support for administrators. W
 ## Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for the complete version series from `1.0.0` onward.
+
+### 3.1.6 highlights
+
+- Added an optional, stable plugin-to-plugin integration bridge for DNSBL capability discovery, checks and explicit abuse reports
+- Guestbook/web abuse uses bitmask 64 by default
+- Blacklist publication through the bridge remains administrator-triggered and permission-aware
 
 ### 3.1.5 highlights
 

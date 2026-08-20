@@ -4,7 +4,7 @@ Tags: antispam, blacklist, fraud, comment spam, user registration
 Requires at least: 5.8
 Requires PHP: 8.1
 Tested up to: 7.0
-Stable tag: 3.1.5
+Stable tag: 3.1.6
 License: GPLv2 or later
 
 Tornevall Networks DNSBL implementation with FraudBL support for WordPress
@@ -14,6 +14,8 @@ Tornevall Networks DNSBL implementation with FraudBL support for WordPress
 Protect your WordPress site against comment spam, abusive registrations, and other unwanted submissions with Tornevall Networks DNSBL and FraudBL.
 
 The plugin is built to give site owners a practical anti-abuse layer without turning everyday moderation into a maintenance project..
+
+Other Tornevall WordPress plugins can use the optional plugin-to-plugin integration filters to check visitor IP addresses and, when the configured DNSBL token permits it, perform an explicit administrator-approved abuse report. Installing this plugin is not required for those other plugins to function.
 
 Report issues and feedback: [GitHub issues](https://github.com/Tornevall/tornevall-wp-dnsbl/issues)
 Plugin URL: [WordPress.org plugin page](https://wordpress.org/plugins/tornevall-networks-dnsbl-implementation/)
@@ -54,6 +56,10 @@ Yes. You can host the built-in form on any page with:
 
 But you need permissions for this, which can be gained by request via [https://tools.tornevall.net/](https://tools.tornevall.net/).
 
+* Does another Tornevall plugin need DNSBL to work?
+
+No. DNSBL is an optional protection add-on. A consumer such as Tornevall Tools for WordPress can continue without it. When DNSBL is active, the consumer can discover whether IP checking and explicit abuse reporting are available through the plugin integration filters.
+
 
 == Screenshots ==
 
@@ -73,6 +79,13 @@ But you need permissions for this, which can be gained by request via [https://t
 
 
 == Changelog ==
+
+= 3.1.6 =
+
+* Added a stable plugin-to-plugin DNSBL integration bridge for optional Tornevall WordPress add-ons.
+* Consumers can discover check/report capability, check a visitor IP and explicitly report web/guestbook abuse without reading DNSBL plugin internals.
+* Guestbook/web abuse reports default to `IP_ABUSE_NO_SMTP` (64).
+* Abuse publication is never triggered automatically by the integration bridge; reporting requires an administrator action and a DNSBL token with add permission.
 
 = 3.1.5 =
 
@@ -116,6 +129,10 @@ But you need permissions for this, which can be gained by request via [https://t
 * The admin UI now also shows a dismissible reminder that links directly to the WordPress.org review form for quick feedback.
 
 == Upgrade Notice ==
+
+= 3.1.6 =
+
+Adds the optional DNSBL integration bridge used by Tornevall Tools for WordPress and future add-ons. Existing comment, registration and delisting behavior remains unchanged.
 
 = 3.1.5 =
 
