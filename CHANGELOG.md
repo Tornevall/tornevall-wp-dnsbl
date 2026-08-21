@@ -8,10 +8,13 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Added an opt-in commerce fraud event layer for WooCommerce payment integrations, including initial Klarna Payments, Kustom Checkout, current Resurs Merchant API signals, legacy Resurs compatibility hooks and custom integrations.
 - Added the administrator-only **Commerce hooks** page with detected integrations, recent normalized events and a development-only ADD / UPDATE / REMOVE sandbox.
 - Added a provider-agnostic event model so additional WooCommerce payment gateways and fraud providers can be integrated without coupling the write core to one gateway.
+- Added direct Tornevall Tools account pairing for DNSBL credentials, including existing-token rotation, separate site-token creation and non-admin copies of selected admin-token permissions.
+- Added the optional server-side `tornevall_dnsbl_managed_api_token` bridge so Tornevall Tools for WordPress can supply a managed fallback credential without duplicating DNSBL functionality.
 
 ### Security
 - Pending and review states are recorded without being published as confirmed fraud, and removal requires a matching locally owned source/order/payment reference.
 - Ordinary payment rejection is not automatically classified as fraud unless an explicit fraud signal or trusted classifier confirms it.
+- Pairing device codes remain short-lived and server-side, authorization redirects are restricted to HTTPS on the configured Tools host, and explicit DNSBL plugin credentials keep priority over managed fallback credentials.
 
 ## 3.1.6 - Unreleased
 
