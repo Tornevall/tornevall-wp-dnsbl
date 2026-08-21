@@ -2,6 +2,16 @@
 
 All notable changes to the DNSBL plugin should be documented in this file.
 
+## Unreleased
+
+### Added
+- Added the optional server-side `tornevall_dnsbl_managed_api_token` filter so a separate WordPress integration can provide a site-specific DNSBL credential without duplicating DNSBL functionality.
+- Added handling for both empty and previously nonexistent legacy Tools-token options, so fresh installations can consume a managed credential as the final fallback.
+
+### Security
+- Explicit DNSBL plugin token settings keep priority over managed credentials.
+- Managed credentials are resolved server-side only and are not rendered into browser markup, JavaScript, diagnostics or logs by the bridge.
+
 ## 3.1.6 - 2026-08-19
 
 ### Added
@@ -77,7 +87,7 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - DNSBL write/check auth diagnostics now distinguish wrong-token-type and inactive-admin-key cases from truly invalid/revoked DNSBL tokens.
 - Removal Turnstile verification is now skipped for checker-only/background pre-check requests and enforced on actual write submissions, which fixes false `Verification failed. Please try again.` messages.
 - CIDR delist no longer depends on the originally checked single IP being the only anchor for the requested block; the final submit now accepts a completed local CIDR scan ticket for the exact Advanced-range scope instead.
-- CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic “failed chunk” message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
+- CIDR delete timeouts now surface as an explicit timeout/warning state instead of the older generic "failed chunk" message when WordPress only lost the HTTP response while Tools may still have completed already-submitted deletes.
 - The public checker can now be reused immediately after a completed lookup: the IP field no longer stays terminally locked after a listed result, and a dedicated **Reset** button now clears checker/CIDR/background state so users can start over without refreshing the page.
 - Reset/input changes now invalidate older checker/CIDR async callbacks more aggressively, so stale background responses from a previous search are less likely to repaint the form after the user has already started over.
 
@@ -195,13 +205,13 @@ All notable changes to the DNSBL plugin should be documented in this file.
 
 ### Notes
 - The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
-- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/>
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-1-changelog/>.
 
 ## 2.0.0
 
 ### Notes
 - The local tag readme preserves only a link to the historical release post, not detailed bullet notes.
-- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/>
+- Historical release reference: <https://www.tornevall.net/2018/07/17/dnsbl-for-wordpress-2-0-0-changelog/>.
 
 ## 1.1.1
 
