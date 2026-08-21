@@ -25,7 +25,7 @@ class Migrations
 
     public static function schemaVersion(): string
     {
-        return '3.1.0';
+        return '3.1.1';
     }
 
     public static function run(): void
@@ -54,6 +54,10 @@ class Migrations
         self::refreshRewriteRulesAfterMigration();
         Plugin::syncCacheCleanupSchedule();
         Plugin::purgeExpiredCache();
+
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
+            WooCommerce::syncNotificationSchedule();
+        }
     }
 
     private static function refreshRewriteRulesAfterMigration(): void
@@ -97,6 +101,7 @@ class Migrations
             'tornevall_dnsbl_form_noajax',
             'tornevall_dnsbl_getlisted_resolver',
             'tornevall_dnsbl_removal_token', // replaced by tornevall_dnsbl_write_token in 3.1.0
+            'tornevall_dnsbl_woocommerce_checkout_enabled', // incomplete implementation from pre-3.1.6 builds
         ];
     }
 
@@ -105,7 +110,7 @@ class Migrations
      */
     public static function tableDefinitions(): array
     {
-        return [
+        $definitions = [
             'dnsblcache' => '
                 `ipAddr` VARCHAR(50) NOT NULL,
                 `lastResponse` INT NOT NULL DEFAULT 0,
@@ -124,6 +129,12 @@ class Migrations
                 KEY `denyIndex` (`ipAddr`, `wasBlocked`)
             ',
         ];
+
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
+            $definitions['tornevall_dnsbl_wc_blocked_log'] = WooCommerce::tableDefinition();
+        }
+
+        return $definitions;
     }
 
     public static function ensureDefaultOptions(): void
@@ -138,6 +149,10 @@ class Migrations
 
                 add_option($key, $value);
             }
+        }
+
+        if (class_exists(WooCommerce::class) && WooCommerce::isWooCommerceActive()) {
+            WooCommerce::ensureDefaultOptions();
         }
 
         // Migrate legacy removal_token -> write_token on first upgrade.
@@ -189,7 +204,6 @@ class Migrations
     {
         $stored = trim((string)get_option('tornevall_dnsbl_resolver_hosts'));
         if ($stored === '') {
-            // Empty: ensureDefaultOptions() will have already added the default via add_option.
             return;
         }
 
@@ -216,6 +230,9 @@ class Migrations
     public static function deactivate(): void
     {
         Plugin::clearCacheCleanupSchedule();
+        if (class_exists(WooCommerce::class)) {
+            WooCommerce::clearNotificationSchedule();
+        }
         if (function_exists('flush_rewrite_rules')) {
             flush_rewrite_rules(false);
         }
@@ -226,11 +243,15 @@ class Migrations
         global $wpdb;
 
         Plugin::clearCacheCleanupSchedule();
+        if (class_exists(WooCommerce::class)) {
+            WooCommerce::clearNotificationSchedule();
+        }
 
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table names are generated internally from the trusted WordPress table prefix.
         foreach (array_keys(self::tableDefinitions()) as $tableName) {
             $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $tableName);
         }
+        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . 'tornevall_dnsbl_wc_blocked_log');
 
         foreach (self::tableCleanupCandidates($wpdb) as $tableName) {
             $wpdb->query('DROP TABLE IF EXISTS ' . $tableName);
@@ -269,6 +290,16 @@ class Migrations
             'tornevall_dnsbl_rating_notice_dismissed',
             self::PHISHING_DEFAULT_MIGRATION_OPTION,
             'tornevall_dnsbl_database_version',
+            'tornevall_dnsbl_wc_enabled',
+            'tornevall_dnsbl_wc_filter_types',
+            'tornevall_dnsbl_wc_block_action',
+            'tornevall_dnsbl_wc_customer_message',
+            'tornevall_dnsbl_wc_delist_hint',
+            'tornevall_dnsbl_wc_notify_email',
+            'tornevall_dnsbl_wc_notify_mode',
+            'tornevall_dnsbl_wc_notify_schedule',
+            'tornevall_dnsbl_protect_wp_admin',
+            'tornevall_dnsbl_woocommerce_checkout_enabled',
         ];
 
         $optionsToDelete = array_merge($optionsToDelete, self::retiredOptions());
