@@ -23,11 +23,12 @@ class ManagedToolsToken
 
     public static function registerHooks(): void
     {
-        add_filter('option_' . self::LEGACY_TOOLS_TOKEN_OPTION, [self::class, 'resolve'], 20, 2);
+        add_filter('option_' . self::LEGACY_TOOLS_TOKEN_OPTION, [self::class, 'resolve'], 20, 1);
+        add_filter('default_option_' . self::LEGACY_TOOLS_TOKEN_OPTION, [self::class, 'resolve'], 20, 1);
     }
 
     /**
-     * @param mixed $storedValue Stored legacy Tools token value.
+     * @param mixed $storedValue Stored legacy Tools token value or default.
      * @return mixed
      */
     public static function resolve($storedValue)
@@ -41,7 +42,7 @@ class ManagedToolsToken
          *
          * The value must never be rendered into browser markup or JavaScript.
          * Explicit DNSBL plugin token settings always take precedence because
-         * this filter is attached only to the final legacy Tools fallback.
+         * this bridge feeds only the final legacy Tools fallback.
          *
          * @param string $token Managed token candidate. Empty by default.
          */
