@@ -42,7 +42,7 @@ class ToolsPairing
 
         $response = self::postTools('/api/integrations/wordpress/device', [
             'site_name' => get_bloginfo('name') . ' - Tornevall DNSBL',
-            'site_url' => home_url('/'),
+            'site_url' => site_url('/'),
             'callback_url' => $callbackUrl,
             'requested_services' => ['dnsbl'],
         ]);
@@ -159,19 +159,17 @@ class ToolsPairing
             self::START_ACTION
         );
         $hasToken = Plugin::writeTokenSet();
+        $description = $hasToken
+            ? __('Authorize with your Tools account to select this or another DNSBL token. By default Tools rotates the selected existing token and installs its new value here automatically; you can choose a separate site token on the approval page instead.', 'tornevall-networks-dnsbl-implementation')
+            : __('Authorize with your Tools account to select an existing DNSBL token. By default Tools rotates that token and installs its new value here automatically; you can choose a separate site token on the approval page instead.', 'tornevall-networks-dnsbl-implementation');
+        $buttonLabel = $hasToken
+            ? __('Connect / rotate token via Tools', 'tornevall-networks-dnsbl-implementation')
+            : __('Connect to Tools and select token', 'tornevall-networks-dnsbl-implementation');
 
         echo '<div class="notice notice-info" style="padding:14px 18px;">';
         echo '<p><strong>' . esc_html__('Connect DNSBL directly to Tornevall Tools', 'tornevall-networks-dnsbl-implementation') . '</strong></p>';
-        echo '<p>' . esc_html__(
-            $hasToken
-                ? 'Authorize with your Tools account to select this or another DNSBL token. By default Tools rotates the selected existing token and installs its new value here automatically; you can choose a separate site token on the approval page instead.'
-                : 'Authorize with your Tools account to select an existing DNSBL token. By default Tools rotates that token and installs its new value here automatically; you can choose a separate site token on the approval page instead.',
-            'tornevall-networks-dnsbl-implementation'
-        ) . '</p>';
-        echo '<p><a class="button button-primary" href="' . esc_url($url) . '">' . esc_html__(
-            $hasToken ? 'Connect / rotate token via Tools' : 'Connect to Tools and select token',
-            'tornevall-networks-dnsbl-implementation'
-        ) . '</a></p>';
+        echo '<p>' . esc_html($description) . '</p>';
+        echo '<p><a class="button button-primary" href="' . esc_url($url) . '">' . esc_html($buttonLabel) . '</a></p>';
         echo '<p class="description">' . esc_html(sprintf(
             __('Authorization host: %s. No token value is displayed in the browser.', 'tornevall-networks-dnsbl-implementation'),
             Plugin::toolsBaseUrl()
@@ -192,7 +190,7 @@ class ToolsPairing
         }
 
         $message = isset($_GET['tornevall_dnsbl_pairing_message'])
-            ? sanitize_text_field(rawurldecode(wp_unslash((string)$_GET['tornevall_dnsbl_pairing_message'])))
+            ? sanitize_text_field(wp_unslash((string)$_GET['tornevall_dnsbl_pairing_message']))
             : '';
         if ($message === '') {
             $message = $notice === 'connected'
@@ -205,8 +203,8 @@ class ToolsPairing
     }
 
     /**
-     * @param string               $path API path.
-     * @param array<string,mixed>  $payload Request payload.
+     * @param string              $path API path.
+     * @param array<string,mixed> $payload Request payload.
      * @return array<string,mixed>|WP_Error
      */
     private static function postTools(string $path, array $payload)
@@ -282,7 +280,7 @@ class ToolsPairing
         $args = [
             'page' => 'tornevallDnsblMenu',
             'tornevall_dnsbl_pairing' => sanitize_key($notice),
-            'tornevall_dnsbl_pairing_message' => rawurlencode(sanitize_text_field($message)),
+            'tornevall_dnsbl_pairing_message' => sanitize_text_field($message),
         ];
         if ($credentialMode !== '') {
             $args['tornevall_dnsbl_credential_mode'] = sanitize_key($credentialMode);
