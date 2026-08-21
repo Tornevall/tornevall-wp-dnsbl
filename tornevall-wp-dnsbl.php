@@ -32,6 +32,7 @@ foreach ([
     'includes/class-dnsbl-api-client.php',
     'includes/class-dnsbl-write-queue.php',
     'includes/class-dnsbl-integration.php',
+    'includes/class-dnsbl-managed-tools-token.php',
     'includes/class-dnsbl-telemetry.php',
     'includes/class-dnsbl-woocommerce.php',
     'includes/dnsbl-utils.php',
@@ -53,5 +54,6 @@ register_uninstall_hook(TORNEVALL_DNSBL_PLUGIN_FILE, 'tornevall_wp_dnsbl_uninsta
 
 tornevall_dnsbl_register_hooks();
 \Tornevall\Networks\DNSBL\Integration::registerHooks();
+\Tornevall\Networks\DNSBL\ManagedToolsToken::registerHooks();
 \Tornevall\Networks\DNSBL\Telemetry::registerHooks();
 \Tornevall\Networks\DNSBL\WooCommerce::registerHooks();
