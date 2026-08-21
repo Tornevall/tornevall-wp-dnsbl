@@ -42,6 +42,9 @@ jobs:
       - name: Run Tools pairing runtime tests
         run: php tests/runtime-tools-pairing.php
 
+      - name: Run WooCommerce checkout protection tests
+        run: php tests/runtime-woocommerce-checkout.php
+
       - name: Run commerce fraud runtime tests
         run: php tests/runtime-commerce-fraud.php
 
