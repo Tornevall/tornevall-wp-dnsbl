@@ -35,6 +35,7 @@ foreach ([
     'includes/class-dnsbl-managed-tools-token.php',
     'includes/class-dnsbl-tools-pairing.php',
     'includes/class-dnsbl-telemetry.php',
+    'includes/class-dnsbl-woocommerce.php',
     'includes/class-dnsbl-commerce-fraud.php',
     'includes/class-dnsbl-woocommerce-gateway-observer.php',
     'includes/dnsbl-utils.php',
@@ -59,5 +60,6 @@ tornevall_dnsbl_register_hooks();
 \Tornevall\Networks\DNSBL\ManagedToolsToken::registerHooks();
 \Tornevall\Networks\DNSBL\ToolsPairing::registerHooks();
 \Tornevall\Networks\DNSBL\Telemetry::registerHooks();
+\Tornevall\Networks\DNSBL\WooCommerce::registerHooks();
 \Tornevall\Networks\DNSBL\CommerceFraud::registerHooks();
 \Tornevall\Networks\DNSBL\WooCommerceGatewayObserver::registerHooks();
