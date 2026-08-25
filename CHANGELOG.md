@@ -12,6 +12,9 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Explicit DNSBL plugin token settings keep priority over managed credentials.
 - Managed credentials are resolved server-side only and are not rendered into browser markup, JavaScript, diagnostics or logs by the bridge.
 
+### Fixed
+- Deprecated DNSBL bit 1 (`FREE_SLOT_1_PREVIOUSLY_REPORTED`) is no longer offered as a WordPress trigger flag, and legacy saved selections are normalized away without changing `IP_CONFIRMED` on bit 2 or the internal legacy response map.
+
 ## 3.1.6 - 2026-08-19
 
 ### Added
