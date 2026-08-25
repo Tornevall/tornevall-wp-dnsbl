@@ -1,7 +1,5 @@
 <?php
 
-define('ABSPATH', __DIR__ . '/');
-
 namespace Tornevall\Networks\DNSBL {
     class Plugin
     {
@@ -33,6 +31,8 @@ namespace Tornevall\Networks\DNSBL {
 }
 
 namespace {
+    define('ABSPATH', __DIR__ . '/');
+
     require_once dirname(__DIR__) . '/includes/class-dnsbl-deprecated-flag-guard.php';
 
     use Tornevall\Networks\DNSBL\DeprecatedFlagGuard;
