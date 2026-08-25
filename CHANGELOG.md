@@ -11,6 +11,9 @@ All notable changes to the DNSBL plugin should be documented in this file.
 - Added direct Tornevall Tools account pairing for DNSBL credentials, including existing-token rotation, separate site-token creation and non-admin copies of selected admin-token permissions.
 - Added the optional server-side `tornevall_dnsbl_managed_api_token` bridge so Tornevall Tools for WordPress can supply a managed fallback credential without duplicating DNSBL functionality.
 
+### Changed
+- Normalized the internal WooCommerce trait filenames from the incorrect `woo-commerce-*` prefix to `woocommerce-*` and updated the loader references accordingly.
+
 ### Security
 - Pending and review states are recorded without being published as confirmed fraud, and removal requires a matching locally owned source/order/payment reference.
 - Ordinary payment rejection is not automatically classified as fraud unless an explicit fraud signal or trusted classifier confirms it.
