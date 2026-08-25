@@ -36,6 +36,7 @@ foreach ([
     'includes/class-dnsbl-tools-pairing.php',
     'includes/class-dnsbl-telemetry.php',
     'includes/class-dnsbl-woocommerce.php',
+    'includes/class-dnsbl-deprecated-flag-guard.php',
     'includes/dnsbl-utils.php',
     'includes/dnsbl-migrations.php',
     'includes/dnsbl-bootstrap.php',
@@ -59,3 +60,4 @@ tornevall_dnsbl_register_hooks();
 \Tornevall\Networks\DNSBL\ToolsPairing::registerHooks();
 \Tornevall\Networks\DNSBL\Telemetry::registerHooks();
 \Tornevall\Networks\DNSBL\WooCommerce::registerHooks();
+\Tornevall\Networks\DNSBL\DeprecatedFlagGuard::registerHooks();
