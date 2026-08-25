@@ -7,11 +7,11 @@ if (!defined('ABSPATH')) {
 }
 
 foreach ([
-    'woo-commerce-core-trait.php',
-    'woo-commerce-settings-trait.php',
-    'woo-commerce-admin-trait.php',
-    'woo-commerce-checkout-trait.php',
-    'woo-commerce-notifications-trait.php',
+    'woocommerce-core-trait.php',
+    'woocommerce-settings-trait.php',
+    'woocommerce-admin-trait.php',
+    'woocommerce-checkout-trait.php',
+    'woocommerce-notifications-trait.php',
 ] as $tornevallDnsblWooCommerceTrait) {
     require_once TORNEVALL_DNSBL_PLUGIN_DIR . 'includes/traits/' . $tornevallDnsblWooCommerceTrait;
 }
